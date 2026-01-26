@@ -1,43 +1,52 @@
+mod shader;
+
 use crate::{
-    screenshots::{MonitorData, screenshots},
+    app::{shader::ScreenlandShaderProgram},
+    screenshots::{MonitorData, get_outputs},
 };
+use glam::Vec2;
 use iced::{
-    Element, Event, Subscription, Task, event, exit, keyboard::{self, Key, key::Named}, window::{self, Settings}
+    Element, Event, Length, Subscription, Task,
+    event, exit,
+    keyboard::{self, Key, key::Named},
+    mouse,
+    widget::Shader,
+    window::{self, Settings},
 };
-use image::RgbaImage;
+use std::{
+    collections::HashMap, sync::OnceLock, time::{Duration, Instant}
+};
+
+pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
 #[derive(Clone)]
 pub enum Message {
-    Close
+    Close,
 }
 
+
 pub struct Screenland {
-    imgs: Vec<(MonitorData, RgbaImage, window::Id)>,
+    windows_data: HashMap<window::Id, MonitorData>,
 }
 
 impl Screenland {
     pub fn new() -> (Self, Task<Message>) {
         let mut windows_task = Task::none();
-        let screenshots = screenshots();
-        let mut windows = vec![];
+        let mut windows_data = HashMap::new();
 
-        for _ in 0..screenshots.len() {
+        for monitor_data in get_outputs() {
             let (id, window_task) = window::open(Settings {
                 fullscreen: true,
                 ..Default::default()
             });
             windows_task = windows_task.chain(window_task.discard());
 
-            windows.push(id);
+            windows_data.insert(id, monitor_data);
         }
 
         (
             Self {
-                imgs: screenshots
-                    .into_iter()
-                    .zip(windows)
-                    .map(|((a, b), c)| (a, b, c))
-                    .collect(),
+                windows_data,
             },
             windows_task,
         )
@@ -47,35 +56,50 @@ impl Screenland {
         iced::Theme::Dark
     }
 
-    pub fn titel(&self, current_id: window::Id) -> String {
+    pub fn title(&self, id: window::Id) -> String {
         format!(
             "screenland-{}",
-            self.imgs
-                .iter()
-                .find_map(|(monitor_data, _, id)| {
-                    (current_id == *id).then_some(monitor_data.name.clone())
-                })
-                .unwrap()
+            self.windows_data.get(&id).unwrap().name
         )
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        Subscription::batch(vec![
-            window::close_events().map(|_| Message::Close),
-            event::listen().filter_map(|event| {
-                if let Event::Keyboard(keyboard::Event::KeyPressed {
-                    key: Key::Named(key),
+        Subscription::batch(vec![event::listen().filter_map(|event| {
+            match event {
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: Key::Named(Named::Escape),
                     ..
-                }) = event {
-                    match key {
-                        Named::Escape => Some(Message::Close),
-                        _ => None,
+                }) => Some(Message::Close),
+                Event::Mouse(mouse::Event::CursorMoved { position: _ }) => {
+                    None // Some(Message::MoveMouse(position))
+                }
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                    None // Some(Message::TouchStart)
+                }
+                Event::Window(window::Event::Opened { .. }) => {
+                    if START_TIME.get().is_none() {
+                        let _ = START_TIME.set(Instant::now());
                     }
-                } else {
                     None
                 }
-            }),
-        ])
+                Event::Window(window::Event::Closed) => Some(Message::Close),
+                Event::Window(window::Event::Moved(_)) => {
+                    if let Some(start_time) = START_TIME.get() {
+                        (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::Close)
+                    } else {
+                        None
+                    }
+                }
+                Event::Window(window::Event::Resized(_)) => {
+                    if let Some(start_time) = START_TIME.get() {
+                        (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::Close)
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            }
+        })])
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -84,13 +108,12 @@ impl Screenland {
         }
     }
 
-    pub fn view(&self, current_id: window::Id) -> Element<'_, Message> {
-        let (_, img, _) = self.imgs.iter().find(|(_, _, id)| current_id == *id).unwrap();
-
-        iced::widget::image(iced::widget::image::Handle::from_rgba(
-            img.width(),
-            img.height(),
-            img.to_vec()
-        )).into()
+    pub fn view(&self, id: window::Id) -> Element<'_, Message> {
+        let window_data = self.windows_data.get(&id).unwrap();
+        let result = Shader::new(ScreenlandShaderProgram{monitor_pos: Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _) })
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
+        result
     }
 }

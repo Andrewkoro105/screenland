@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-iced = { version = "0.14.0", features = ["image"]}
+iced = { version = "0.14.0", features = ["image", "advanced"] }
+bytemuck = "1.24.0"
+glam = { version = "0.25.0", features = ["bytemuck"] }
 iced_aw = "0.13.0"
 grim-rs = "0.1.1"
 tokio = { version = "1.49.0", features = ["full"] }

@@ -5,34 +5,34 @@ pub mod screenshots;
 use app::Screenland;
 use clap::Parser;
 use iced_aw::ICED_AW_FONT_BYTES;
-
 use crate::screenshots::get_outputs;
 
 #[derive(Parser)]
 #[command(name = "Screenland")]
 #[command(about = "Screenland is a program for creating and editing screenshots", long_about = None)]
 struct Args {
-    /// Входной файл
+    /// generate hyprland config
     #[arg(short, long)]
-    ganerate_config: bool,
+    generate_config: bool,
 }
 
 fn main() -> iced::Result {
+    println!("run");
     let args = Args::parse();
 
-    if args.ganerate_config {
+    if args.generate_config {
         println!(
             "```\n{}\n```",
             get_outputs()
                 .iter()
-                .map(|name| format!("windowrule = match:title screenland-{name}, monitor {name}"))
+                .map(|outputs| format!("windowrule = match:title screenland-{}, monitor {}", outputs.name, outputs.name))
                 .collect::<Vec<_>>()
                 .join("\n")
         );
         iced::Result::Ok(())
     } else {
         iced::daemon(Screenland::new, Screenland::update, Screenland::view)
-            .title(Screenland::titel)
+            .title(Screenland::title)
             .font(ICED_AW_FONT_BYTES)
             .theme(Screenland::theme)
             .subscription(Screenland::subscription)
