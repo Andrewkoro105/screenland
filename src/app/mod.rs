@@ -11,7 +11,7 @@ use iced::{
     keyboard::{self, Key, key::Named},
     mouse,
     widget::Shader,
-    window::{self, Settings},
+    window::{self, Settings, settings::PlatformSpecific},
 };
 use std::{
     collections::HashMap, sync::OnceLock, time::{Duration, Instant}
@@ -37,6 +37,10 @@ impl Screenland {
         for monitor_data in get_outputs() {
             let (id, window_task) = window::open(Settings {
                 fullscreen: true,
+                platform_specific: PlatformSpecific {
+                    application_id: "screenland".into(),
+                    ..Default::default()
+                },
                 ..Default::default()
             });
             windows_task = windows_task.chain(window_task.discard());

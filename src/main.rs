@@ -2,10 +2,10 @@ pub mod app;
 pub mod move_window;
 pub mod screenshots;
 
+use crate::screenshots::get_outputs;
 use app::Screenland;
 use clap::Parser;
 use iced_aw::ICED_AW_FONT_BYTES;
-use crate::screenshots::get_outputs;
 
 #[derive(Parser)]
 #[command(name = "Screenland")]
@@ -21,10 +21,19 @@ fn main() -> iced::Result {
 
     if args.generate_config {
         println!(
-            "\n\n# screenland stings\n{}",
+            r"
+
+# screenland stings
+{}
+
+windowrule = match:class screenland, no_anim on
+",
             get_outputs()
                 .iter()
-                .map(|outputs| format!("windowrule = match:title screenland-{}, monitor {}", outputs.name, outputs.name))
+                .map(|outputs| format!(
+                    "windowrule = match:title screenland-{}, monitor {}",
+                    outputs.name, outputs.name
+                ))
                 .collect::<Vec<_>>()
                 .join("\n")
         );
