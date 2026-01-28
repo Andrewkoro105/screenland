@@ -17,12 +17,11 @@ struct Args {
 }
 
 fn main() -> iced::Result {
-    println!("run");
     let args = Args::parse();
 
     if args.generate_config {
         println!(
-            "```\n{}\n```",
+            "\n\n# screenland stings\n{}",
             get_outputs()
                 .iter()
                 .map(|outputs| format!("windowrule = match:title screenland-{}, monitor {}", outputs.name, outputs.name))
