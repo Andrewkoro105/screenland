@@ -1,7 +1,7 @@
 use glam::Vec2;
 use iced::{Element, Length, widget::Shader, window};
 
-use crate::app::{Message, Mode, Screenland, shader};
+use crate::app::{update::Message, Mode, Screenland, shader};
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {

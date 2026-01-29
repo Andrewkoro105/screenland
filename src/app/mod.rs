@@ -1,3 +1,4 @@
+mod end;
 mod selection;
 mod shader;
 mod subscription;
@@ -5,25 +6,17 @@ mod update;
 mod view;
 
 use crate::{
-    app::selection::Selection,
+    app::{selection::Selection, update::Message},
     screenshots::{MonitorData, get_outputs},
 };
 use glam::Vec2;
 use iced::{
-    Point, Task,
+    Task,
     window::{self, Settings, settings::PlatformSpecific},
 };
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
-
-#[derive(Clone)]
-pub enum Message {
-    Close,
-    MoveMouse(Point),
-    TouchStart,
-    TouchEnd,
-}
 
 pub enum SelectionMode {
     Start,
@@ -38,6 +31,8 @@ pub enum Mode {
 }
 
 pub struct Screenland {
+    transparency: bool,
+    auto_exit: bool,
     windows_data: HashMap<window::Id, MonitorData>,
     selection: Selection,
     mode: Mode,
@@ -69,6 +64,8 @@ impl Screenland {
                 selection: Default::default(),
                 mode: Default::default(),
                 mouse_pos: Default::default(),
+                transparency: false,
+                auto_exit: true,
             },
             windows_task,
         )

@@ -1,12 +1,30 @@
 use glam::Vec2;
-use iced::{Task, exit};
+use iced::{Point, Task, exit, window};
 
-use crate::app::{Message, Mode, Screenland, SelectionMode};
+use crate::app::{Mode, Screenland, SelectionMode, end::End};
+
+#[derive(Clone)]
+pub enum Message {
+    Exit,
+    AutoExit,
+    Transparency(bool),
+    MoveMouse(Point),
+    TouchStart,
+    TouchEnd,
+    End(End),
+}
 
 impl Screenland {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::Close => exit(),
+            Message::Exit => exit(),
+            Message::AutoExit => {
+                if self.auto_exit {
+                    Task::done(Message::Exit)
+                } else {
+                    Task::none()
+                }
+            }
             Message::MoveMouse(point) => {
                 self.mouse_pos = Vec2 {
                     x: point.x,
@@ -45,6 +63,33 @@ impl Screenland {
                     Task::none()
                 }
             },
+            Message::Transparency(transparency) => {
+                self.transparency = transparency;
+                Task::none()
+            }
+            Message::End(end) => {
+                self.auto_exit = false;
+                let selection = self.selection.clone();
+                let windows_data = self.windows_data.clone();
+                Task::done(Message::Transparency(true)).chain(
+                    Task::future(async move {
+                        let screen = Self::screenshot(selection);
+
+                        let mut windows_task = Task::<Message>::none();
+
+                        for (id, _) in windows_data.iter() {
+                            windows_task = windows_task.chain(window::close(id.clone()));
+                        }
+                        windows_task.chain(
+                            Task::future(async move {
+                                end.end(screen);
+                            })
+                            .discard(),
+                        )
+                    })
+                    .then(|task| task),
+                )
+            }
         }
     }
 }

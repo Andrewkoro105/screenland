@@ -26,6 +26,7 @@ fn main() -> iced::Result {
 {}
 
 windowrule = match:class screenland, no_anim on
+windowrule = match:title Save As, float on
 ",
             get_outputs()
                 .iter()
