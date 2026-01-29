@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
+use tokio::time::sleep;
 
 use crate::app::{Mode, Screenland, SelectionMode, end::End};
 
@@ -87,7 +90,8 @@ impl Screenland {
                             .discard(),
                         )
                     })
-                    .then(|task| task),
+                    .then(|task| task)
+                    .chain(exit()),
                 )
             }
         }

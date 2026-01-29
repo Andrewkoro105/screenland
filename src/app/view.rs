@@ -1,7 +1,7 @@
 use glam::Vec2;
 use iced::{Element, Length, widget::Shader, window};
 
-use crate::app::{update::Message, Mode, Screenland, shader};
+use crate::app::{Mode, Screenland, shader, update::Message};
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
@@ -12,7 +12,11 @@ impl Screenland {
             monitor_pos,
             command: match &self.mode {
                 Mode::Base => shader::Command::None,
-                Mode::Selection(_) => shader::Command::Selection(self.selection),
+                Mode::Selection(_) => shader::Command::Selection(if self.transparency {
+                    self.selection.add(1000000.)
+                } else {
+                    self.selection
+                }),
             },
         })
         .width(Length::Fill)

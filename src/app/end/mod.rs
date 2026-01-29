@@ -33,7 +33,7 @@ impl End {
             End::Save => {
                 img.save(
                     DialogBuilder::file()
-                        .set_location("~/Desktop")
+                        .set_location("./")
                         .add_filter("PNG Image", ["png"])
                         .add_filter("JPEG Image", ["jpg", "jpeg"])
                         .set_filename(Local::now().format("screenshot_%Y-%m-%d_%H:%M:%S.png"))

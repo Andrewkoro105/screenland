@@ -21,4 +21,14 @@ impl Selection {
             },
         }
     }
+    pub fn add(&self, value: f32) -> Self {
+        let mut result = self.clone();
+
+        result.start.x -= value;
+        result.start.y -= value;
+        result.end.x += value;
+        result.end.y += value;
+
+        result
+    }
 }
