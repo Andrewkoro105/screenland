@@ -1,4 +1,3 @@
-mod object;
 mod selection;
 mod shader;
 mod subscription;
