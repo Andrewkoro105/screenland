@@ -1,27 +1,31 @@
 use bytemuck::{Pod, Zeroable};
-use glam::{Vec2};
+use glam::Vec2;
+use iced::Rectangle;
 use iced::wgpu;
 use iced::widget::shader;
-use iced::{Point, Rectangle};
 
 use crate::app::Message;
+use crate::app::selection::Selection;
 use crate::screenshots::full_screenshot;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
-struct Uniforms {
+pub struct BaseData {
     resolution: Vec2,
-    mouse: Vec2,
     monitor_pos: Vec2,
 }
 
-pub struct ScreenlandShaderPipeline {
+pub struct Pipeline {
     pipeline: wgpu::RenderPipeline,
-    uniform_buffer: wgpu::Buffer,
-    bind_group: wgpu::BindGroup,
+
+    base_data_buffer: wgpu::Buffer,
+    selection_buffer: wgpu::Buffer,
+
+    edit_bg: wgpu::BindGroup,
+    screen_bg: wgpu::BindGroup,
 }
 
-impl shader::Pipeline for ScreenlandShaderPipeline {
+impl shader::Pipeline for Pipeline {
     fn new(device: &wgpu::Device, queue: &wgpu::Queue, format: wgpu::TextureFormat) -> Self {
         let image = full_screenshot();
 
@@ -72,14 +76,14 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
         });
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("MyShader"),
+            label: Some("shader"),
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!(
                 "shader.wgsl"
             ))),
         });
 
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("MyShader Bind Group Layout"),
+        let edit_bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("edit_bgl"),
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -94,6 +98,22 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
                     visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            ],
+        });
+
+        let screen_bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("screen_bgl"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
                         multisampled: false,
                         view_dimension: wgpu::TextureViewDimension::D2,
@@ -102,7 +122,7 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
-                    binding: 2,
+                    binding: 1,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                     count: None,
@@ -111,13 +131,13 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
         });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("MyShader Pipeline Layout"),
-            bind_group_layouts: &[&bind_group_layout],
+            label: Some("pipeline_layout"),
+            bind_group_layouts: &[&screen_bgl, &edit_bgl],
             push_constant_ranges: &[],
         });
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("MyPipeline"),
+            label: Some("pipeline"),
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
@@ -142,27 +162,45 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
             cache: Default::default(),
         });
 
-        let uniform_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Uniform buffer"),
-            size: std::mem::size_of::<Uniforms>() as u64,
+        let base_data_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("start_data_buffer"),
+            size: std::mem::size_of::<BaseData>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("Bind group"),
-            layout: &bind_group_layout,
+        let selection_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("selection_buffer"),
+            size: std::mem::size_of::<Selection>() as u64,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        let edit_bg = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("edit_bg"),
+            layout: &edit_bgl,
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
-                    resource: uniform_buffer.as_entire_binding(),
+                    resource: base_data_buffer.as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
+                    resource: selection_buffer.as_entire_binding(),
+                },
+            ],
+        });
+
+        let screen_bg = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("screen_bg"),
+            layout: &screen_bgl,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
                     resource: wgpu::BindingResource::TextureView(&texture_view),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 2,
+                    binding: 1,
                     resource: wgpu::BindingResource::Sampler(&sampler),
                 },
             ],
@@ -170,21 +208,28 @@ impl shader::Pipeline for ScreenlandShaderPipeline {
 
         Self {
             pipeline,
-            uniform_buffer,
-            bind_group,
+            base_data_buffer,
+            selection_buffer,
+            edit_bg,
+            screen_bg,
         }
     }
 }
 
-#[derive(Debug)]
-pub struct ScreenlandShaderPrimitive {
-    resolution: (f32, f32),
-    mouse: (f32, f32),
-    monitor_pos: Vec2,
+#[derive(Debug, Clone)]
+pub enum PrimitiveCommand {
+    None,
+    Selection(Selection),
 }
 
-impl shader::Primitive for ScreenlandShaderPrimitive {
-    type Pipeline = ScreenlandShaderPipeline;
+#[derive(Debug, Clone)]
+pub struct Primitive {
+    start_data: BaseData,
+    command: PrimitiveCommand,
+}
+
+impl shader::Primitive for Primitive {
+    type Pipeline = Pipeline;
 
     fn prepare(
         &self,
@@ -194,41 +239,63 @@ impl shader::Primitive for ScreenlandShaderPrimitive {
         _bounds: &Rectangle,
         _viewport: &shader::Viewport,
     ) {
-        let uniforms = Uniforms {
-            resolution: Vec2::new(self.resolution.0, self.resolution.1),
-            mouse: Vec2::new(self.mouse.0, self.mouse.1),
-            monitor_pos: self.monitor_pos,
-        };
-        queue.write_buffer(&pipeline.uniform_buffer, 0, bytemuck::bytes_of(&uniforms));
+        queue.write_buffer(
+            &pipeline.base_data_buffer,
+            0,
+            bytemuck::bytes_of(&self.start_data),
+        );
+
+        match self.command {
+            PrimitiveCommand::None => {}
+            PrimitiveCommand::Selection(selection) => queue.write_buffer(
+                &pipeline.selection_buffer,
+                0,
+                bytemuck::bytes_of(&selection.normalize()),
+            ),
+        }
     }
 
     fn draw(&self, pipeline: &Self::Pipeline, render_pass: &mut wgpu::RenderPass<'_>) -> bool {
         render_pass.set_pipeline(&pipeline.pipeline);
-        render_pass.set_bind_group(0, &pipeline.bind_group, &[]);
+        render_pass.set_bind_group(0, &pipeline.screen_bg, &[]);
+        render_pass.set_bind_group(1, &pipeline.edit_bg, &[]);
         render_pass.draw(0..3, 0..1);
         true
     }
 }
 
-pub struct ScreenlandShaderProgram {
-    pub monitor_pos: Vec2,
+pub enum Command {
+    None,
+    Selection(Selection),
 }
 
-impl shader::Program<Message> for ScreenlandShaderProgram {
+pub struct Program {
+    pub monitor_pos: Vec2,
+    pub command: Command,
+}
+
+impl shader::Program<Message> for Program {
     type State = ();
-    type Primitive = ScreenlandShaderPrimitive;
+    type Primitive = Primitive;
 
     fn draw(
         &self,
         _state: &Self::State,
-        cursor: iced::mouse::Cursor,
+        _cursor: iced::mouse::Cursor,
         bounds: Rectangle,
     ) -> Self::Primitive {
-        let mouse_pos = cursor.position().unwrap_or(Point::new(-300., -300.));
-        ScreenlandShaderPrimitive {
-            resolution: (bounds.width, bounds.height),
-            mouse: (mouse_pos.x, mouse_pos.y),
-            monitor_pos: self.monitor_pos,
+        Self::Primitive {
+            start_data: BaseData {
+                resolution: Vec2 {
+                    x: bounds.x,
+                    y: bounds.y,
+                },
+                monitor_pos: self.monitor_pos.clone(),
+            },
+            command: match self.command {
+                Command::None => PrimitiveCommand::None,
+                Command::Selection(selection) => PrimitiveCommand::Selection(selection),
+            },
         }
     }
 }
