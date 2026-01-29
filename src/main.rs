@@ -1,5 +1,4 @@
 pub mod app;
-pub mod move_window;
 pub mod screenshots;
 
 use crate::screenshots::get_outputs;
