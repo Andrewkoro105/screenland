@@ -99,7 +99,8 @@ impl Screenland {
                         )
                     })
                     .then(|task| task)
-                    .chain(exit()),
+                    .chain(exit())
+                    ,
                 )
             }
         }

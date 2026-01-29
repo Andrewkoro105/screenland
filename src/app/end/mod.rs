@@ -1,6 +1,8 @@
 use chrono::Local;
 use image::{RgbaImage, imageops::crop};
 use native_dialog::DialogBuilder;
+use arboard::{Clipboard, ImageData};
+use std::borrow::Cow;
 
 use crate::{
     app::{Screenland, selection::Selection},
@@ -10,6 +12,7 @@ use crate::{
 #[derive(Clone)]
 pub enum End {
     Save,
+    Copy,
 }
 
 impl Screenland {
@@ -43,6 +46,17 @@ impl End {
                         .unwrap(),
                 )
                 .unwrap();
+            }
+            End::Copy => {
+                let image_data = ImageData {
+                    width: img.width() as usize,
+                    height: img.height() as usize,
+                    bytes: Cow::from(img.into_vec()),
+                };
+
+                let mut clipboard = Clipboard::new().unwrap();
+
+                clipboard.set_image(image_data).unwrap();
             }
         }
     }

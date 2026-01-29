@@ -40,6 +40,11 @@ impl Screenland {
                 modifiers: Modifiers::CTRL,
                 ..
             }) => Some(Message::End(End::Save)),
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                physical_key: key::Physical::Code(key::Code::KeyC),
+                modifiers: Modifiers::CTRL,
+                ..
+            }) => Some(Message::End(End::Copy)),
             Event::Mouse(mouse::Event::CursorMoved { position }) => {
                 Some(Message::MoveMouse(position, id))
             }

@@ -43,7 +43,7 @@ screenland -g >> ~/.config/hypr/hyprland.conf
 
 ## Basic features:
 
-- [ ]  Screenshot of an area
+- [X]  Screenshot of an area
 - [ ]  Recording of an area
 - [ ]  Magnifying glass
 - [ ]  Manual selection of an area with the ability to change it before clicking the save button
@@ -63,7 +63,7 @@ Generated areas
 
 You can either select one area or hold down Shift to combine the desired areas (of course, there is also the classic manual selection).
 
-### 2 Image editing objects 
+### 2 Image editing objects
 
 You can add objects to the screenshot that will change it
 
@@ -75,6 +75,7 @@ You can add objects to the screenshot that will change it
 - [ ]  Text
   Only the settings that are in the library for this will be implemented.
   Settings:
+
   - [ ]  Outline: Presence, size, color
   - [ ]  Under/overlining
   - [ ]  Font selection
@@ -84,9 +85,8 @@ You can add objects to the screenshot that will change it
 - [ ]  Counter
 - [ ]  Image
 - [ ]  More objects added via config
-All new objects have a name and an importance parameter (placing them either in the main menu or in the additional menu)
+  All new objects have a name and an importance parameter (placing them either in the main menu or in the additional menu)
   Types:
-
 - [ ]  Picture/video
 - [ ]  Shader + shader settings interface configuration
 
@@ -94,8 +94,8 @@ Color and size selection are global settings!
 
 ### 3 What to do with the screenshot
 
-- [ ]  Save
-- [ ]  Copy
+- [X]  Save
+- [X]  Copy
 - [ ]  Pin
 - [ ]  Auto-download with link retrieval, services are added via settings
 - [ ]  Saving and transferring control of a file to a script

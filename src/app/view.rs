@@ -8,7 +8,6 @@ impl Screenland {
         let window_data = self.windows_data.get(&id).unwrap();
         let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
 
-        
         Shader::new(shader::Program {
             monitor_pos,
             command: match &self.mode {
