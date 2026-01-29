@@ -37,6 +37,7 @@ pub struct Screenland {
     selection: Selection,
     mode: Mode,
     mouse_pos: Vec2,
+    focus_id: Option<window::Id>,
 }
 
 impl Screenland {
@@ -66,6 +67,7 @@ impl Screenland {
                 mouse_pos: Default::default(),
                 transparency: false,
                 auto_exit: true,
+                focus_id: None
             },
             windows_task,
         )

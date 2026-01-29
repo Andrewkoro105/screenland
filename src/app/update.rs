@@ -1,8 +1,5 @@
-use std::time::Duration;
-
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
-use tokio::time::sleep;
 
 use crate::app::{Mode, Screenland, SelectionMode, end::End};
 
@@ -11,7 +8,8 @@ pub enum Message {
     Exit,
     AutoExit,
     Transparency(bool),
-    MoveMouse(Point),
+    FocusId(Option<window::Id>),
+    MoveMouse(Point, Option<window::Id>),
     TouchStart,
     TouchEnd,
     End(End),
@@ -28,11 +26,21 @@ impl Screenland {
                     Task::none()
                 }
             }
-            Message::MoveMouse(point) => {
+            Message::FocusId(id) => {
+                self.focus_id = id;
+                Task::none()
+            }
+            Message::MoveMouse(point, id) => {
                 self.mouse_pos = Vec2 {
                     x: point.x,
                     y: point.y,
-                };
+                } + id
+                    .and_then(|id| self.windows_data.get(&id))
+                    .map(|window_data| Vec2 {
+                        x: window_data.pos.0 as _,
+                        y: window_data.pos.1 as _,
+                    })
+                    .unwrap_or(Vec2 { x: 0., y: 0. });
 
                 match &self.mode {
                     Mode::Base => Task::none(),
@@ -72,7 +80,7 @@ impl Screenland {
             }
             Message::End(end) => {
                 self.auto_exit = false;
-                let selection = self.selection.clone();
+                let selection = self.selection;
                 let windows_data = self.windows_data.clone();
                 Task::done(Message::Transparency(true)).chain(
                     Task::future(async move {
@@ -81,7 +89,7 @@ impl Screenland {
                         let mut windows_task = Task::<Message>::none();
 
                         for (id, _) in windows_data.iter() {
-                            windows_task = windows_task.chain(window::close(id.clone()));
+                            windows_task = windows_task.chain(window::close(*id));
                         }
                         windows_task.chain(
                             Task::future(async move {

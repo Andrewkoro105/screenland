@@ -65,8 +65,8 @@ pub fn hypr_screenshots() -> Vec<(MonitorData, RgbaImage)> {
                 name: output.name().to_string(),
                 pos: (output.geometry().x(), output.geometry().y()),
                 size: (
-                    output.geometry().width().abs() as _,
-                    output.geometry().height().abs() as _,
+                    output.geometry().width().unsigned_abs(),
+                    output.geometry().height().unsigned_abs(),
                 ),
             },
             RgbaImage::from_raw(img.width(), img.height(), img.data().to_vec()).unwrap(),

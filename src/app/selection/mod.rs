@@ -22,7 +22,7 @@ impl Selection {
         }
     }
     pub fn add(&self, value: f32) -> Self {
-        let mut result = self.clone();
+        let mut result = *self;
 
         result.start.x -= value;
         result.start.y -= value;

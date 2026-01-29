@@ -13,10 +13,23 @@ use crate::app::{START_TIME, Screenland, end::End, update::Message};
 
 impl Screenland {
     pub fn subscription(&self) -> Subscription<Message> {
-        Subscription::batch(vec![event::listen().filter_map(|event| Self::event_handler(event))])
+        let id = self.focus_id;
+        Subscription::batch(vec![
+            window::events().filter_map(move |(id, event)| Self::focused_event_handler(id, event)),
+            event::listen()
+                .with(id)
+                .filter_map(move |(id, event)| Self::event_handler(id, event)),
+        ])
     }
 
-    fn event_handler(event: Event) -> Option<Message> {
+    fn focused_event_handler(id: window::Id, event: window::Event) -> Option<Message> {
+        match event {
+            window::Event::Focused => Some(Message::FocusId(Some(id))),
+            _ => None,
+        }
+    }
+
+    fn event_handler(id: Option<window::Id>, event: Event) -> Option<Message> {
         match event {
             Event::Keyboard(keyboard::Event::KeyPressed {
                 key: Key::Named(Named::Escape),
@@ -28,7 +41,7 @@ impl Screenland {
                 ..
             }) => Some(Message::End(End::Save)),
             Event::Mouse(mouse::Event::CursorMoved { position }) => {
-                Some(Message::MoveMouse(position))
+                Some(Message::MoveMouse(position, id))
             }
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 Some(Message::TouchStart)
@@ -43,18 +56,12 @@ impl Screenland {
                 None
             }
             Event::Window(window::Event::Closed) => Some(Message::AutoExit),
-            Event::Window(window::Event::Moved(_)) => START_TIME
-                .get()
-                .map(|start_time| {
-                    (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::AutoExit)
-                })
-                .flatten(),
-            Event::Window(window::Event::Resized(_)) => START_TIME
-                .get()
-                .map(|start_time| {
-                    (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::AutoExit)
-                })
-                .flatten(),
+            Event::Window(window::Event::Moved(_)) => START_TIME.get().and_then(|start_time| {
+                (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::AutoExit)
+            }),
+            Event::Window(window::Event::Resized(_)) => START_TIME.get().and_then(|start_time| {
+                (start_time.elapsed() > Duration::new(1, 0)).then_some(Message::AutoExit)
+            }),
             _ => None,
         }
     }

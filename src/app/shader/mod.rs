@@ -83,7 +83,7 @@ impl shader::Program<Message> for Program {
                     x: bounds.x,
                     y: bounds.y,
                 },
-                monitor_pos: self.monitor_pos.clone(),
+                monitor_pos: self.monitor_pos,
             },
             command: match self.command {
                 Command::None => PrimitiveCommand::None,
