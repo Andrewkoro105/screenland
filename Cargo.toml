@@ -15,4 +15,6 @@ chrono = "0.4.43"
 clap = { version = "4.5.54", features = ["derive"] }
 native-dialog = "0.9.6"
 arboard = { version = "3.6.1", features = ["wayland-data-control"] }
-
+serde = "1.0.228"
+serde_yaml = "0.9.34"
+directories = "6.0.0"

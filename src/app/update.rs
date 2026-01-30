@@ -70,8 +70,12 @@ impl Screenland {
             Message::TouchEnd => match self.mode {
                 Mode::Base => Task::none(),
                 Mode::Selection(_) => {
-                    self.mode = Mode::Selection(SelectionMode::End);
-                    Task::none()
+                    if let Some(end) = &self.settings.base_end {
+                        Task::done(Message::End(end.clone()))
+                    } else {
+                        self.mode = Mode::Selection(SelectionMode::End);
+                        Task::none()
+                    }
                 }
             },
             Message::Transparency(transparency) => {
@@ -82,6 +86,7 @@ impl Screenland {
                 self.auto_exit = false;
                 let selection = self.selection;
                 let windows_data = self.windows_data.clone();
+                let settings = self.settings.clone();
                 Task::done(Message::Transparency(true)).chain(
                     Task::future(async move {
                         let screen = Self::screenshot(selection);
@@ -93,7 +98,7 @@ impl Screenland {
                         }
                         windows_task.chain(
                             Task::future(async move {
-                                end.end(screen);
+                                end.end(&settings, screen);
                             })
                             .discard(),
                         )

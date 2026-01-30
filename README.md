@@ -38,10 +38,57 @@ For supported compositors, this can be done with a single command
 #### hyprland
 
 ```bash
-screenland -g >> ~/.config/hypr/hyprland.conf
+screenland -s hyprland >> ~/.config/hypr/hyprland.conf
 ```
 
-## Basic features:
+# Settings
+
+## Config
+
+The configuration file is written in YAML format and is located by default at `~/.config/screenland/config.yaml` (it will not be there if the settings have not been changed).
+
+The structure of config.yaml looks like this:
+
+```yaml
+# path to config. Usually `~/.config/screenland/config.yaml`
+config_path: <PATH>
+# path to the folder where screenshots will be saved
+path: <PATH>
+# file name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+format: <CHRONO_FORMAT>
+# complete the screenshot immediately after selection
+base_end: (null | Save | Copy)
+
+```
+
+A standard configuration file can be created using `screenland -g`.
+
+## CLI
+
+```
+❯ screenland --help
+Screenland is a program for creating and editing screenshots
+
+Usage: screenland [OPTIONS]
+
+Options:
+  -s, --support-config <SUPPORT_CONFIG>
+          generate config for the supported system (hypr | hyprland)
+  -g, --generate-config
+          generate config
+  -c, --config <CONFIG>
+          path to config. Usually `~/.config/screenland/config.yaml`
+  -f, --format <FORMAT>
+          file name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+  -p, --path <PATH>
+          path to the folder where screenshots will be saved
+  -e, --end <END>
+          complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+  -h, --help
+          Print help
+```
+
+# Basic features:
 
 - [X]  Screenshot of an area
 - [ ]  Recording of an area

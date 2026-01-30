@@ -2,14 +2,15 @@ use chrono::Local;
 use image::{RgbaImage, imageops::crop};
 use native_dialog::DialogBuilder;
 use arboard::{Clipboard, ImageData};
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 use crate::{
-    app::{Screenland, selection::Selection},
+    app::{Screenland, selection::Selection, settings::Settings},
     screenshots::full_screenshot,
 };
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum End {
     Save,
     Copy,
@@ -31,15 +32,15 @@ impl Screenland {
 }
 
 impl End {
-    pub fn end(&self, img: RgbaImage) {
+    pub fn end(&self, settings: &Settings, img: RgbaImage) {
         match self {
             End::Save => {
                 img.save(
                     DialogBuilder::file()
-                        .set_location("./")
+                        .set_location(&settings.path)
                         .add_filter("PNG Image", ["png"])
                         .add_filter("JPEG Image", ["jpg", "jpeg"])
-                        .set_filename(Local::now().format("screenshot_%Y-%m-%d_%H:%M:%S.png"))
+                        .set_filename(Local::now().format(&settings.format))
                         .save_single_file()
                         .show()
                         .unwrap()

@@ -1,4 +1,5 @@
-mod end;
+pub mod settings;
+pub mod end;
 mod selection;
 mod shader;
 mod subscription;
@@ -6,13 +7,12 @@ mod update;
 mod view;
 
 use crate::{
-    app::{selection::Selection, update::Message},
+    app::{selection::Selection, settings::Settings, update::Message},
     screenshots::{MonitorData, get_outputs},
 };
 use glam::Vec2;
 use iced::{
-    Task,
-    window::{self, Settings, settings::PlatformSpecific},
+    Task, application::BootFn, window::{self, settings::PlatformSpecific}
 };
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
@@ -38,15 +38,16 @@ pub struct Screenland {
     mode: Mode,
     mouse_pos: Vec2,
     focus_id: Option<window::Id>,
+    settings: Settings,
 }
 
-impl Screenland {
-    pub fn new() -> (Self, Task<Message>) {
+impl BootFn<Screenland, Message> for Settings {
+    fn boot(&self) -> (Screenland, Task<Message>) {
         let mut windows_task = Task::none();
         let mut windows_data = HashMap::new();
 
         for monitor_data in get_outputs() {
-            let (id, window_task) = window::open(Settings {
+            let (id, window_task) = window::open(window::Settings {
                 fullscreen: true,
                 platform_specific: PlatformSpecific {
                     application_id: "screenland".into(),
@@ -60,19 +61,22 @@ impl Screenland {
         }
 
         (
-            Self {
+            Screenland {
                 windows_data,
                 selection: Default::default(),
                 mode: Default::default(),
                 mouse_pos: Default::default(),
                 transparency: false,
                 auto_exit: true,
-                focus_id: None
+                focus_id: None,
+                settings: self.clone()
             },
             windows_task,
         )
     }
+}
 
+impl Screenland {
     pub fn theme(&self, _id: window::Id) -> iced::Theme {
         iced::Theme::Dark
     }
