@@ -1,24 +1,26 @@
 mod pipeline;
 
+use crate::app::Message;
+use crate::app::edit_object::UIPoint;
+use crate::app::selection::Selection;
+use crate::app::shader::pipeline::Pipeline;
+use crate::app::shader::pipeline::edit_bg::BaseData;
 use glam::Vec2;
 use iced::Rectangle;
 use iced::wgpu;
 use iced::widget::shader;
-use crate::app::Message;
-use crate::app::selection::Selection;
-use crate::app::shader::pipeline::Pipeline;
-use crate::app::shader::pipeline::edit_bg::BaseData;
 
 #[derive(Debug, Clone)]
-pub enum PrimitiveCommand {
+pub enum Command {
     None,
     Selection(Selection),
+    Points(Vec<UIPoint>),
 }
 
 #[derive(Debug, Clone)]
 pub struct Primitive {
     start_data: BaseData,
-    command: PrimitiveCommand,
+    commands: Vec<Command>,
 }
 
 impl shader::Primitive for Primitive {
@@ -27,24 +29,47 @@ impl shader::Primitive for Primitive {
     fn prepare(
         &self,
         pipeline: &mut Self::Pipeline,
-        _device: &wgpu::Device,
+        device: &wgpu::Device,
         queue: &wgpu::Queue,
         _bounds: &Rectangle,
         _viewport: &shader::Viewport,
     ) {
         queue.write_buffer(
-            &pipeline.edit_bg.base_data_buffer,
+            &pipeline.edit_bg.data.base_data_buffer,
             0,
             bytemuck::bytes_of(&self.start_data),
         );
 
-        match self.command {
-            PrimitiveCommand::None => {}
-            PrimitiveCommand::Selection(selection) => queue.write_buffer(
-                &pipeline.edit_bg.selection_buffer,
-                0,
-                bytemuck::bytes_of(&selection.normalize()),
-            ),
+        for command in &self.commands {
+            match command {
+                Command::None => {}
+                Command::Selection(selection) => queue.write_buffer(
+                    &pipeline.edit_bg.data.selection_buffer,
+                    0,
+                    bytemuck::bytes_of(&selection.normalize()),
+                ),
+                Command::Points(ui_points) => {
+                    pipeline.edit_bg.points_resize(
+                        device,
+                        ((std::mem::size_of::<u32>()) * 2
+                            + (if ui_points.is_empty() {
+                                1
+                            } else {
+                                ui_points.len()
+                            } * std::mem::size_of::<UIPoint>())) as _,
+                    );
+                    queue.write_buffer(
+                        &pipeline.edit_bg.data.point_buffer,
+                        0,
+                        [
+                            bytemuck::bytes_of(&ui_points.len()),
+                            bytemuck::cast_slice(ui_points),
+                        ]
+                        .concat()
+                        .as_slice(),
+                    );
+                }
+            }
         }
     }
 
@@ -57,14 +82,9 @@ impl shader::Primitive for Primitive {
     }
 }
 
-pub enum Command {
-    None,
-    Selection(Selection),
-}
-
 pub struct Program {
     pub monitor_pos: Vec2,
-    pub command: Command,
+    pub commands: Vec<Command>,
 }
 
 impl shader::Program<Message> for Program {
@@ -85,10 +105,7 @@ impl shader::Program<Message> for Program {
                 },
                 monitor_pos: self.monitor_pos,
             },
-            command: match self.command {
-                Command::None => PrimitiveCommand::None,
-                Command::Selection(selection) => PrimitiveCommand::Selection(selection),
-            },
+            commands: self.commands.clone(),
         }
     }
 }

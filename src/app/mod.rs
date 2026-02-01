@@ -1,5 +1,6 @@
 pub mod settings;
 pub mod end;
+mod edit_object;
 mod selection;
 mod shader;
 mod subscription;
@@ -7,7 +8,7 @@ mod update;
 mod view;
 
 use crate::{
-    app::{selection::Selection, settings::Settings, update::Message},
+    app::{selection::{Selection}, settings::Settings, update::Message},
     screenshots::{MonitorData, get_outputs},
 };
 use glam::Vec2;
@@ -18,26 +19,21 @@ use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
-pub enum SelectionMode {
-    Start,
-    End,
-}
-
 #[derive(Default)]
 pub enum Mode {
     #[default]
     Base,
-    Selection(SelectionMode),
+    Move(selection::Message),
+    Selection,
+    Transparency,
 }
 
 pub struct Screenland {
-    transparency: bool,
     auto_exit: bool,
     windows_data: HashMap<window::Id, MonitorData>,
     selection: Selection,
     mode: Mode,
     mouse_pos: Vec2,
-    focus_id: Option<window::Id>,
     settings: Settings,
 }
 
@@ -66,9 +62,7 @@ impl BootFn<Screenland, Message> for Settings {
                 selection: Default::default(),
                 mode: Default::default(),
                 mouse_pos: Default::default(),
-                transparency: false,
                 auto_exit: true,
-                focus_id: None,
                 settings: self.clone()
             },
             windows_task,

@@ -26,7 +26,7 @@ impl shader::Pipeline for Pipeline {
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("pipeline_layout"),
-            bind_group_layouts: &[&screen_bg.bgl, &edit_bg.bgl],
+            bind_group_layouts: &[&screen_bg.bgl, &edit_bg.data.bgl],
             push_constant_ranges: &[],
         });
 
