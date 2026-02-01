@@ -55,7 +55,7 @@ fn main() -> iced::Result {
 
 # screenland stings
 {}
-
+windowrule = match:class screenland, float on
 windowrule = match:class screenland, no_anim on
 windowrule = match:title Save As, float on
 ",
