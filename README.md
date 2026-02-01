@@ -27,6 +27,10 @@ cd screenland
 cargo install --path .
 ```
 
+## Bind
+
+The program will be installed in `$HOME/.cargo/bin/`, which should be taken into account when configuring keyboard shortcuts.
+
 ## Features
 
 ### Linux (Wayland)
