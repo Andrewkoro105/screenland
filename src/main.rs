@@ -43,7 +43,7 @@ fn main() -> iced::Result {
         if let Some(user_dirs) = UserDirs::new() {
             user_dirs.home_dir().join(".config/screenland/config.yaml")
         } else {
-            PathBuf::from("config.txt")
+            PathBuf::from("./config.yaml")
         },
     );
 
