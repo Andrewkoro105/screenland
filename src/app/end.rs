@@ -1,7 +1,9 @@
+#[cfg(target_os = "linux")]
+use arboard::SetExtLinux;
+use arboard::{Clipboard, ImageData};
 use chrono::Local;
 use image::{RgbaImage, imageops::crop};
 use native_dialog::DialogBuilder;
-use arboard::{Clipboard, ImageData};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
@@ -57,7 +59,11 @@ impl End {
 
                 let mut clipboard = Clipboard::new().unwrap();
 
-                clipboard.set_image(image_data).unwrap();
+                if cfg!(target_os = "linux") {
+                    clipboard.set().wait().image(image_data).unwrap();
+                } else {
+                    clipboard.set_image(image_data).unwrap();
+                }
             }
         }
     }
