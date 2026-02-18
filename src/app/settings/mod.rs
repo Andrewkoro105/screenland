@@ -1,7 +1,14 @@
+pub mod edit_object_base_settings;
+use iced_helper::ui_elements::num_input::NumInput;
 use serde::{Deserialize, Serialize};
-use std::{fs::{self, OpenOptions}, path::PathBuf};
+use std::{
+    fs::{self, OpenOptions},
+    path::PathBuf,
+};
 
-use crate::app::end::End;
+use crate::app::{end::End, settings::edit_object_base_settings::{ColorInput, EditObjectBaseSettings}};
+
+
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Settings {
@@ -19,6 +26,8 @@ pub struct Settings {
     #[serde(skip_serializing)]
     #[serde(default)]
     pub cli_base_end: bool,
+
+    pub edit_object_base_settings: EditObjectBaseSettings,
 }
 
 impl Settings {
@@ -30,7 +39,17 @@ impl Settings {
             cli_format: false,
             base_end: None,
             cli_base_end: false,
-            config_path
+            config_path,
+            edit_object_base_settings: EditObjectBaseSettings {
+                color: ColorInput {
+                    r: NumInput::new(1.),
+                    g: NumInput::new(0.),
+                    b: NumInput::new(0.),
+                    a: NumInput::new(1.),
+                    hide_color: false,
+                },
+                size: NumInput::new(6.),
+            },
         }
     }
 
@@ -46,7 +65,9 @@ impl Settings {
                 .create(true)
                 .truncate(true)
                 .open(&self.config_path)
-                .unwrap_or_else(|err| panic!("Unable to open file: {:?}. Error: {err}", self.config_path)),
+                .unwrap_or_else(|err| {
+                    panic!("Unable to open file: {:?}. Error: {err}", self.config_path)
+                }),
             &self,
         )
         .unwrap();

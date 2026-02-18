@@ -1,18 +1,25 @@
+use std::{thread::sleep, time::Duration};
+
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
 
-use crate::app::{Mode, Screenland, edit_object::EditObject, end::End, selection};
+use crate::app::{
+    Mode, Screenland, edit_object::EditObject, end::End, selection,
+    settings::edit_object_base_settings,
+};
 
 #[derive(Clone)]
 pub enum Message {
     Exit,
     AutoExit,
-    Transparency,
+    SetMode(Mode),
     MoveMouse(Point, window::Id),
     TouchStart,
     TouchEnd,
     End(End),
     SelectionUpdate(selection::Message),
+    EditObjectBaseSettings(edit_object_base_settings::Message),
+    None,
 }
 
 impl Screenland {
@@ -25,6 +32,10 @@ impl Screenland {
                 } else {
                     Task::none()
                 }
+            }
+            Message::SetMode(mode) => {
+                self.mode = mode;
+                Task::none()
             }
             Message::MoveMouse(point, id) => {
                 self.mouse_pos = Vec2 {
@@ -41,9 +52,7 @@ impl Screenland {
 
                 match &self.mode {
                     Mode::Base => Task::none(),
-                    Mode::Move(message) => {
-                        self.update(Message::SelectionUpdate(message.clone()))
-                    }
+                    Mode::Move(message) => self.update(Message::SelectionUpdate(message.clone())),
                     Mode::Selection => {
                         self.selection.end = self.mouse_pos;
                         Task::none()
@@ -88,39 +97,43 @@ impl Screenland {
                 }
                 Mode::Transparency => Task::none(),
             },
-            Message::Transparency => {
-                self.mode = Mode::Transparency;
-                Task::none()
-            }
             Message::End(end) => {
                 self.auto_exit = false;
                 let selection = self.selection;
                 let windows_data = self.windows_data.clone();
                 let settings = self.settings.clone();
-                Task::done(Message::Transparency).chain(
-                    Task::future(async move {
-                        let screen = Self::screenshot(selection);
+                Task::done(Message::SetMode(Mode::Transparency))
+                    .chain(
+                        Task::future(async move {
+                            sleep(Duration::from_millis(10));
+                            let screen = Self::screenshot(selection);
 
-                        let mut windows_task = Task::<Message>::none();
+                            let mut windows_task = Task::<Message>::none();
 
-                        for (id, _) in windows_data.iter() {
-                            windows_task = windows_task.chain(window::close(*id));
-                        }
-                        windows_task.chain(
-                            Task::future(async move {
-                                end.end(&settings, screen);
-                            })
-                            .discard(),
-                        )
-                    })
-                    .then(|task| task)
-                    .chain(exit()),
-                )
+                            for (id, _) in windows_data.iter() {
+                                windows_task = windows_task.chain(window::close(*id));
+                            }
+                            windows_task.chain(
+                                Task::future(async move {
+                                    end.end(&settings, screen);
+                                })
+                                .discard(),
+                            )
+                        })
+                        .then(|task| task)
+                        .chain(exit()),
+                    )
             }
             Message::SelectionUpdate(message) => self
                 .selection
                 .update(self.mouse_pos, message)
                 .map(Message::SelectionUpdate),
+            Message::EditObjectBaseSettings(message) => {
+                let task = self.settings.edit_object_base_settings.update(message);
+                self.settings.save();
+                task.map(Message::EditObjectBaseSettings)
+            }
+            Message::None => Task::none(),
         }
     }
 }
