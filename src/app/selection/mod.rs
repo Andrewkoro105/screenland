@@ -1,8 +1,11 @@
+use crate::app::edit_object::{
+    self, EditObject, ui_point::UIPoint,
+    ui_utils::cube::{self, update},
+};
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
-use iced::{Task};
-
-use crate::app::edit_object::{self, EditObject, UIPoint, ui_utils::cube::{self, update}};
+use iced::{Element, Task};
+use iced_font_awesome::fa_icon_solid;
 
 pub type Message = edit_object::ui_utils::cube::Message;
 
@@ -42,29 +45,31 @@ impl Selection {
 impl EditObject<Message> for Selection {
     fn get_ui_point(&self) -> Vec<UIPoint> {
         let new_self = self.normalize();
-        cube::view(&new_self.start, &new_self.end).into_iter().map(Into::into).collect()
+        cube::view(&new_self.start, &new_self.end)
+            .into_iter()
+            .map(Into::into)
+            .collect()
     }
 
-    fn update(
-        &mut self,
-        mouse_pos: Vec2,
-        message: Message,
-    ) -> Task<Message> {
+    fn update(&mut self, mouse_pos: Vec2, message: Message) -> Task<Message> {
         let mut new_self = self.normalize();
 
-        let result = update(
-            &mut new_self.start,
-            &mut new_self.end,
-            &mouse_pos,
-            message
-        ); 
-        
+        let result = update(&mut new_self.start, &mut new_self.end, &mouse_pos, message);
+
         *self = new_self;
 
         result
     }
-    
+
     fn get_messages(&self, position: &Vec2) -> Vec<Message> {
         cube::get_message(&self.start, &self.end, position)
+    }
+
+    fn get_icon(&self) -> Element<'_, Message> {
+        fa_icon_solid("vector-square").into()
+    }
+
+    fn get_menu(&self) -> Option<Element<'_, Message>> {
+        None
     }
 }

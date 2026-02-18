@@ -11,7 +11,7 @@ use crate::{
     app::{selection::{Selection}, settings::Settings, update::Message},
     screenshots::{MonitorData, get_outputs},
 };
-use glam::Vec2;
+use glam::{Vec2};
 use iced::{
     Task, application::BootFn, window::{self, settings::PlatformSpecific}
 };
@@ -19,7 +19,7 @@ use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
-#[derive(Default)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub enum Mode {
     #[default]
     Base,
@@ -63,7 +63,7 @@ impl BootFn<Screenland, Message> for Settings {
                 mode: Default::default(),
                 mouse_pos: Default::default(),
                 auto_exit: true,
-                settings: self.clone()
+                settings: self.clone(),
             },
             windows_task,
         )

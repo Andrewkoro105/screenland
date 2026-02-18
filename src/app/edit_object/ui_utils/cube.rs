@@ -1,9 +1,9 @@
 use glam::Vec2;
 use iced::Task;
 
-use crate::app::edit_object::{UIPoint, UIPointElement};
+use crate::app::edit_object::ui_point::{UIPoint, UIPointElement};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Message {
     MoveStart,
     MoveStartX,

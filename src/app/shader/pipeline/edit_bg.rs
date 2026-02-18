@@ -2,13 +2,14 @@ use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::wgpu;
 
-use crate::app::{edit_object::UIPoint, selection::Selection};
+use crate::app::{edit_object::ui_point::UIPoint, selection::Selection, settings::edit_object_base_settings::EditObjectBaseSettingsFromShader};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
 pub struct BaseData {
     pub resolution: Vec2,
     pub monitor_pos: Vec2,
+    pub edit_object_base_settings: EditObjectBaseSettingsFromShader,
 }
 
 pub struct EditBGData {

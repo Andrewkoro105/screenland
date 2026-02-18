@@ -1,8 +1,9 @@
 mod pipeline;
 
 use crate::app::Message;
-use crate::app::edit_object::UIPoint;
+use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::selection::Selection;
+use crate::app::settings::edit_object_base_settings::EditObjectBaseSettingsFromShader;
 use crate::app::shader::pipeline::Pipeline;
 use crate::app::shader::pipeline::edit_bg::BaseData;
 use glam::Vec2;
@@ -85,6 +86,7 @@ impl shader::Primitive for Primitive {
 pub struct Program {
     pub monitor_pos: Vec2,
     pub commands: Vec<Command>,
+    pub edit_object_base_settings: EditObjectBaseSettingsFromShader
 }
 
 impl shader::Program<Message> for Program {
@@ -104,6 +106,7 @@ impl shader::Program<Message> for Program {
                     y: bounds.y,
                 },
                 monitor_pos: self.monitor_pos,
+                edit_object_base_settings: self.edit_object_base_settings,
             },
             commands: self.commands.clone(),
         }

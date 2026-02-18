@@ -1,10 +1,15 @@
 const blackout = 0.7;
 const select_border_size = 3.;
 const base_color = vec4(0., 0., 1., 1.);
+struct EditObjectBaseSettings {
+    color: vec4<f32>,
+    size: f32,
+}
 
 struct BaseData {
     resolution: vec2<f32>,
     monitor_pos: vec2<f32>,
+    edit_object_base_settings: EditObjectBaseSettings,
 };
 
 struct Selection {
