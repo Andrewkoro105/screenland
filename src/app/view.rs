@@ -1,8 +1,6 @@
 use glam::Vec2;
 use iced::{
-    Alignment, Element, Length,
-    widget::{Shader, container, row, stack},
-    window,
+    Alignment, Border, Element, Length, Theme, widget::{Shader, container, row, stack, text_input}, window
 };
 
 use crate::app::{
@@ -47,63 +45,83 @@ impl Screenland {
 
     fn view_up_menu(&self) -> Element<'_, Message> {
         container(
-            row![
-                "color: ",
-                container(
-                    self.settings
-                        .edit_object_base_settings
-                        .color
-                        .r
-                        .view("", |a| {
-                            Message::EditObjectBaseSettings(
-                                edit_object_base_settings::Message::SetColorR(a),
-                            )
-                        })
-                )
-                .width(40),
-                container(
-                    self.settings
-                        .edit_object_base_settings
-                        .color
-                        .g
-                        .view("", |a| {
-                            Message::EditObjectBaseSettings(
-                                edit_object_base_settings::Message::SetColorG(a),
-                            )
-                        })
-                )
-                .width(40),
-                container(
-                    self.settings
-                        .edit_object_base_settings
-                        .color
-                        .b
-                        .view("", |a| {
-                            Message::EditObjectBaseSettings(
-                                edit_object_base_settings::Message::SetColorG(a),
-                            )
-                        })
-                )
-                .width(40),
-                container(
-                    self.settings
-                        .edit_object_base_settings
-                        .color
-                        .a
-                        .view("", |a| {
-                            Message::EditObjectBaseSettings(
-                                edit_object_base_settings::Message::SetColorA(a),
-                            )
-                        })
-                )
-                .width(40),
-                "size: ",
-                container(self.settings.edit_object_base_settings.size.view("", |a| {
-                    Message::EditObjectBaseSettings(edit_object_base_settings::Message::SetSize(a))
-                }))
-                .width(40),
-            ]
-            .padding(5.),
+            container(
+                row![
+                    "color:",
+                    container(
+                        self.settings
+                            .edit_object_base_settings
+                            .color
+                            .r
+                            .view("", |a| {
+                                Message::EditObjectBaseSettings(
+                                    edit_object_base_settings::Message::SetColorR(a),
+                                )
+                            })
+                    )
+                    .width(40),
+                    container(
+                        self.settings
+                            .edit_object_base_settings
+                            .color
+                            .g
+                            .view("", |a| {
+                                Message::EditObjectBaseSettings(
+                                    edit_object_base_settings::Message::SetColorG(a),
+                                )
+                            })
+                    )
+                    .width(40),
+                    container(
+                        self.settings
+                            .edit_object_base_settings
+                            .color
+                            .b
+                            .view("", |a| {
+                                Message::EditObjectBaseSettings(
+                                    edit_object_base_settings::Message::SetColorG(a),
+                                )
+                            })
+                    )
+                    .width(40),
+                    container(
+                        self.settings
+                            .edit_object_base_settings
+                            .color
+                            .a
+                            .view("", |a| {
+                                Message::EditObjectBaseSettings(
+                                    edit_object_base_settings::Message::SetColorA(a),
+                                )
+                            })
+                    )
+                    .width(40),
+                    "size: ",
+                    container(self.settings.edit_object_base_settings.size.view("", |a| {
+                        Message::EditObjectBaseSettings(
+                            edit_object_base_settings::Message::SetSize(a),
+                        )
+                    }))
+                    .width(40),
+                ]
+                .spacing(10.)
+                .align_y(Alignment::Center),
+            )
+            .padding(10)
+            .style(|theme| {
+                let mut result =
+                    container::Catalog::style(theme, &<Theme as container::Catalog>::default());
+                result.background = Some(
+                    text_input::Catalog::style(
+                        theme,
+                        &<Theme as text_input::Catalog>::default(),
+                        text_input::Status::Active,
+                    )
+                    .background,
+                );
+                result.border = Border::default().rounded(5);
+                result
+            }),
         )
         .padding(10)
         .align_x(Alignment::Center)
