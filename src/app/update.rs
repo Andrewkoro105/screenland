@@ -8,7 +8,7 @@ use crate::app::{
     edit_object::{self, EditObject, EditObjectSettings},
     end::End,
     selection,
-    settings::{edit_object_base_settings},
+    settings::edit_object_base_settings,
 };
 
 #[derive(Clone)]
@@ -141,30 +141,18 @@ impl Screenland {
             Message::AddObject(create_objects) => {
                 match create_objects {
                     edit_object::CreateObjects::Custom(i) => {
-                        self.objects.push(
-                            edit_object::Objects::Custom(
-                                self.settings.custom_objects[i].get_object(
-                                    self.objects.len(),
-                                    &self.settings.edit_object_base_settings.clone().into()
-                                )
-                            )
-                        )
-                    },
+                        self.objects
+                            .push(Box::new(self.settings.custom_objects[i].get_object(
+                                self.objects.len(),
+                                &self.settings.edit_object_base_settings.clone().into(),
+                            )))
+                    }
                 }
                 self.reload_shader_objects();
                 Task::none()
             }
             Message::UpdateEditObject((i, message)) => {
-                match &mut self.objects[i] {
-                    edit_object::Objects::Custom(custom_object) => custom_object.update(
-                        self.mouse_pos,
-                        if let edit_object::Message::Custom(message) = message {
-                            message
-                        } else {
-                            panic!("In Message::UpdateEditObject, a message for the wrong object was sent.")
-                        },
-                    ),
-                }.map(Into::into)
+                self.objects[i].update(self.mouse_pos, message)
             }
             Message::SetF32InCustomObjectsChenel { i, index, value } => {
                 self.custom_objects_chenel.set_f32(
@@ -177,7 +165,7 @@ impl Screenland {
                     value,
                 );
                 Task::none()
-            },
+            }
             Message::None => Task::none(),
         }
     }

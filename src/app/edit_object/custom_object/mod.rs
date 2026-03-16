@@ -13,7 +13,7 @@ use crate::app::{
         self, EditObject, EditObjectSettings,
         custom_object::{
             icon::Icon,
-            param::{ChannelIndex, Param, ShaderType},
+            param::{Chanel, ChannelIndex, Param, ShaderType},
             points::{PointsData, PointsFormat, PointsMessage},
         },
         ui_point::UIPoint,
@@ -211,15 +211,14 @@ fn draw_{name}(pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) 
     }
 }
 
-impl EditObject<Message> for CustomObject {
-    fn get_menu(&self) -> Option<iced::Element<'_, Message>> {
+impl EditObject for CustomObject {
+    fn get_menu(&self) -> Option<iced::Element<'_, app::Message>> {
         self.params.is_empty().not().then_some(
-            Column::from_iter(
-                self.params
-                    .iter()
-                    .enumerate()
-                    .map(|(i, param)| Param::get_menu(param, i)),
-            )
+            Column::from_iter(self.params.iter().enumerate().map(|(i, param)| {
+                Param::get_menu(param, i).map(|message| {
+                    app::Message::UpdateEditObject((self.i, edit_object::Message::Custom(message)))
+                })
+            }))
             .spacing(5)
             .into(),
         )
@@ -232,7 +231,7 @@ impl EditObject<Message> for CustomObject {
             .unwrap_or(vec![])
     }
 
-    fn get_messages(&self, position: &glam::Vec2) -> Vec<Message> {
+    fn get_messages(&self, position: &glam::Vec2) -> Vec<app::Message> {
         self.points_data
             .as_ref()
             .map(|points_data| {
@@ -240,41 +239,55 @@ impl EditObject<Message> for CustomObject {
                     .get_messages(position)
                     .into_iter()
                     .map(Message::Point)
+                    .map(|message| {
+                        app::Message::UpdateEditObject((
+                            self.i,
+                            edit_object::Message::Custom(message),
+                        ))
+                    })
                     .collect()
             })
             .unwrap_or(vec![])
     }
 
-    fn update(&mut self, muse_position: glam::Vec2, message: Message) -> iced::Task<app::Message> {
-        match message {
-            Message::SetF32(index, value) => {
-                if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
-                    Task::done(app::Message::SetF32InCustomObjectsChenel {
-                        i: self.i,
-                        index,
-                        value: num_input.update(&value),
-                    })
-                } else {
-                    panic!("")
+    fn update(
+        &mut self,
+        muse_position: glam::Vec2,
+        message: edit_object::Message,
+    ) -> iced::Task<app::Message> {
+        if let edit_object::Message::Custom(message) = message {
+            match message {
+                Message::SetF32(index, value) => {
+                    if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
+                        Task::done(app::Message::SetF32InCustomObjectsChenel {
+                            i: self.i,
+                            index,
+                            value: num_input.update(&value),
+                        })
+                    } else {
+                        panic!("")
+                    }
+                }
+                Message::Point(points_message) => {
+                    let i = self.i;
+                    self.points_data
+                        .as_mut()
+                        .map(move |points_data| {
+                            points_data
+                                .update(muse_position, points_message)
+                                .map(Message::Point)
+                                .map(move |message| {
+                                    app::Message::UpdateEditObject((
+                                        i.clone(),
+                                        edit_object::Message::Custom(message),
+                                    ))
+                                })
+                        })
+                        .unwrap_or(Task::none())
                 }
             }
-            Message::Point(points_message) => {
-                let i = self.i;
-                self.points_data
-                    .as_mut()
-                    .map(move |points_data| {
-                        points_data
-                            .update(muse_position, points_message)
-                            .map(Message::Point)
-                            .map(move |message| {
-                                app::Message::UpdateEditObject((
-                                    i.clone(),
-                                    edit_object::Message::Custom(message),
-                                ))
-                            })
-                    })
-                    .unwrap_or(Task::none())
-            }
+        } else {
+            panic!("In CustomObject({}), a message for the wrong object was sent.", self.i)
         }
     }
 
@@ -289,6 +302,16 @@ impl EditObject<Message> for CustomObject {
                 }
             })
             .collect()
+    }
+
+    fn get_shader_object(&self, chanel: &mut Chanel) -> edit_object::ShaderObjects {
+        let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
+            channel_index: chanel.get_index(),
+            custom_object_type: self.get_type_id(),
+        });
+
+        chanel.add_f32(self.get_f32_data());
+        result
     }
 }
 

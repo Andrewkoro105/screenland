@@ -50,7 +50,7 @@ pub struct Screenland {
     mode: Mode,
     mouse_pos: Vec2,
     settings: Settings,
-    objects: Vec<edit_object::Objects>,
+    objects: Vec<Box<dyn EditObject>>,
     shader_objects: Vec<edit_object::ShaderObjects>,
     custom_objects_chenel: custom_object::param::Chanel,
 }
@@ -104,18 +104,7 @@ impl Screenland {
         self.shader_objects.clear();
         self.shader_objects.reserve(self.objects.len());
         for object in &self.objects {
-            match object {
-                edit_object::Objects::Custom(custom_object) => {
-                    self.shader_objects.push(edit_object::ShaderObjects::Custom(
-                        CustomObjectFromShader {
-                            channel_index: self.custom_objects_chenel.get_index(),
-                            custom_object_type: custom_object.get_type_id(),
-                        },
-                    ));
-
-                    self.custom_objects_chenel.add_f32(custom_object.get_f32_data());
-                }
-            }
+            self.shader_objects.push(object.get_shader_object(&mut self.custom_objects_chenel));
         }
     }
 }
