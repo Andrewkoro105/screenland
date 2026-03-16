@@ -33,14 +33,6 @@ impl Screenland {
                             custom_objects_chenel: self.custom_objects_chenel.clone(),
                         },
                     ],
-                    Mode::Selection => vec![
-                        shader::Command::Selection(self.selection),
-                        shader::Command::Points(self.selection.get_ui_point()),
-                        shader::Command::UpdateEditObjects {
-                            shader_objects: self.shader_objects.clone(),
-                            custom_objects_chenel: self.custom_objects_chenel.clone(),
-                        },
-                    ],
                     Mode::Transparency => vec![
                         shader::Command::Selection(self.selection.add(100000.)),
                         shader::Command::Points(vec![]),

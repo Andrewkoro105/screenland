@@ -59,10 +59,6 @@ impl Screenland {
                 match &self.mode {
                     Mode::Base => Task::none(),
                     Mode::Move(message) => self.update(Message::SelectionUpdate(message.clone())),
-                    Mode::Selection => {
-                        self.selection.end = self.mouse_pos;
-                        Task::none()
-                    }
                     Mode::Transparency => Task::none(),
                 }
             }
@@ -72,19 +68,13 @@ impl Screenland {
                     if !select_message.is_empty() {
                         self.mode = Mode::Move(select_message[0].clone());
                     } else {
-                        self.mode = Mode::Selection;
+                        self.mode = Mode::Move(selection::Message::MoveEnd);
                         self.selection.start = self.mouse_pos;
                         self.selection.end = self.mouse_pos;
                     }
                     Task::none()
                 }
                 Mode::Move(_) => Task::none(),
-                Mode::Selection => {
-                    self.mode = Mode::Selection;
-                    self.selection.start = self.mouse_pos;
-                    self.selection.end = self.mouse_pos;
-                    Task::none()
-                }
                 Mode::Transparency => Task::none(),
             },
             Message::TouchEnd => match self.mode {
@@ -92,14 +82,6 @@ impl Screenland {
                 Mode::Move(_) => {
                     self.mode = Mode::Base;
                     Task::none()
-                }
-                Mode::Selection => {
-                    if let Some(end) = &self.settings.base_end {
-                        Task::done(Message::End(end.clone()))
-                    } else {
-                        self.mode = Mode::Base;
-                        Task::none()
-                    }
                 }
                 Mode::Transparency => Task::none(),
             },

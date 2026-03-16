@@ -37,8 +37,6 @@ pub enum Mode {
     Base,
     /// Mode for moving the specified point
     Move(selection::Message),
-    /// First allocation mode
-    Selection,
     /// Mode in which the interface is not visible
     Transparency,
 }
