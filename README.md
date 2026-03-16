@@ -80,8 +80,10 @@ Options:
           generate config for the supported system (hypr | hyprland)
   -g, --generate-config
           generate config
+  -o, --output-shader
+          outputs the shader with the current configuration
   -c, --config <CONFIG>
-          path to config. Usually `~/.config/screenland/config.yaml`
+          path to config. By default: `~/.config/screenland/config.yaml`
   -f, --format <FORMAT>
           file name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
   -p, --path <PATH>
@@ -97,7 +99,7 @@ Options:
 - [X]  Screenshot of an area
 - [ ]  Recording of an area
 - [ ]  Magnifying glass
-- [ ]  Manual selection of an area with the ability to change it before clicking the save button
+- [X]  Manual selection of an area with the ability to change it before clicking the save button
 - [ ]  Interface for all configurations
 - [ ]  Ability to get configurations simply by link
 
@@ -110,6 +112,7 @@ Generated areas
 - [ ]  Rectangle search
 - [ ]  Plain text search
 - [ ]  Ability to expand via configuration files
+  
   Script that returns an array of regions in cbor/yaml/json format to the output stream
 
 You can either select one area or hold down Shift to combine the desired areas (of course, there is also the classic manual selection).
@@ -124,6 +127,7 @@ You can add objects to the screenshot that will change it
 - [ ]  Circle (with a choice of line type and fill)
 - [ ]  Blur
 - [ ]  Text
+  
   Only the settings that are in the library for this will be implemented.
   Settings:
 
@@ -136,6 +140,7 @@ You can add objects to the screenshot that will change it
 - [ ]  Counter
 - [ ]  Image
 - [ ]  More objects added via config
+  
   All new objects have a name and an importance parameter (placing them either in the main menu or in the additional menu)
   Types:
 - [ ]  Picture/video

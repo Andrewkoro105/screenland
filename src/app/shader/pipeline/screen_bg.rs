@@ -1,6 +1,6 @@
 use iced::wgpu::{self, Sampler, TextureView};
 
-use crate::screenshots::full_screenshot;
+use crate::{app::settings::Settings, screenshots::full_screenshot};
 
 
 
@@ -11,7 +11,7 @@ pub struct Screen {
 
 impl Screen {
     pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, _format: wgpu::TextureFormat) -> Self {
-        let image = full_screenshot();
+        let image = full_screenshot(&Settings::load(None, None).color_format);
 
         let (width, height) = image.dimensions();
 

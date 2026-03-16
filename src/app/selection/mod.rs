@@ -1,11 +1,7 @@
-use crate::app::edit_object::{
-    self, EditObject, ui_point::UIPoint,
-    ui_utils::cube::{self, update},
-};
+use crate::app::edit_object::{self, ui_point::UIPoint, ui_utils::cube};
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
-use iced::{Element, Task};
-use iced_font_awesome::fa_icon_solid;
+use iced::Task;
 
 pub type Message = edit_object::ui_utils::cube::Message;
 
@@ -18,16 +14,9 @@ pub struct Selection {
 
 impl Selection {
     pub fn normalize(&self) -> Self {
-        Self {
-            start: Vec2 {
-                x: self.start.x.min(self.end.x),
-                y: self.start.y.min(self.end.y),
-            },
-            end: Vec2 {
-                x: self.start.x.max(self.end.x),
-                y: self.start.y.max(self.end.y),
-            },
-        }
+        let mut result = *self;
+        cube::normalize(&mut result.start, &mut result.end);
+        result
     }
 
     pub fn add(&self, value: f32) -> Self {
@@ -42,8 +31,8 @@ impl Selection {
     }
 }
 
-impl EditObject<Message> for Selection {
-    fn get_ui_point(&self) -> Vec<UIPoint> {
+impl Selection {
+    pub fn get_ui_point(&self) -> Vec<UIPoint> {
         let new_self = self.normalize();
         cube::view(&new_self.start, &new_self.end)
             .into_iter()
@@ -51,25 +40,17 @@ impl EditObject<Message> for Selection {
             .collect()
     }
 
-    fn update(&mut self, mouse_pos: Vec2, message: Message) -> Task<Message> {
+    pub fn update(&mut self, mouse_pos: Vec2, message: Message) -> Task<Message> {
         let mut new_self = self.normalize();
 
-        let result = update(&mut new_self.start, &mut new_self.end, &mouse_pos, message);
+        let result = cube::update(&mut new_self.start, &mut new_self.end, &mouse_pos, message);
 
         *self = new_self;
 
         result
     }
 
-    fn get_messages(&self, position: &Vec2) -> Vec<Message> {
+    pub fn get_messages(&self, position: &Vec2) -> Vec<Message> {
         cube::get_message(&self.start, &self.end, position)
-    }
-
-    fn get_icon(&self) -> Element<'_, Message> {
-        fa_icon_solid("vector-square").into()
-    }
-
-    fn get_menu(&self) -> Option<Element<'_, Message>> {
-        None
     }
 }

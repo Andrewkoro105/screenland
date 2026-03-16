@@ -1,7 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 
-
+#[derive(Clone)]
 pub struct UIPointElement<Message> {
     pub point: UIPoint,
     pub message: Message,

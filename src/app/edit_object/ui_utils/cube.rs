@@ -136,3 +136,14 @@ pub fn update(
 
     Task::none()
 }
+
+pub fn normalize(start: &mut Vec2, end: &mut Vec2) {
+    *start = Vec2 {
+        x: start.x.min(end.x),
+        y: start.y.min(end.y),
+    };
+    *end = Vec2 {
+        x: start.x.max(end.x),
+        y: start.y.max(end.y),
+    };
+}

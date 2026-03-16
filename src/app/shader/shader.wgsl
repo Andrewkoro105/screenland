@@ -1,6 +1,7 @@
 const blackout = 0.7;
 const select_border_size = 3.;
 const base_color = vec4(0., 0., 1., 1.);
+
 struct EditObjectBaseSettings {
     color: vec4<f32>,
     size: f32,
@@ -9,7 +10,6 @@ struct EditObjectBaseSettings {
 struct BaseData {
     resolution: vec2<f32>,
     monitor_pos: vec2<f32>,
-    edit_object_base_settings: EditObjectBaseSettings,
 };
 
 struct Selection {
@@ -27,6 +27,25 @@ struct Points {
     points: array<UIPoint>,
 }
 
+struct ChannelIndex {
+    f32_index: u32,
+}
+
+struct CustomObject {
+    custom_object_type: u32,
+    channel_index: ChannelIndex
+}
+
+struct CustomObjects {
+    size: u32,
+    custom_objects: array<CustomObject>,
+}
+
+struct F32Chanel {
+    size: u32,
+    f32_channel: array<f32>
+}
+
 @group(0) @binding(0)
 var my_texture: texture_2d<f32>;
 
@@ -41,6 +60,13 @@ var<uniform> selection: Selection;
 
 @group(1) @binding(2)
 var<storage> points: Points;
+
+@group(1) @binding(3)
+var<storage> custom_objects: CustomObjects;
+
+@group(1) @binding(4)
+var<storage> f32_channel: F32Chanel;
+
 
 @vertex
 fn vs_main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4<f32> {
@@ -58,6 +84,7 @@ fn fs_main(@builtin(position) pixel_pos: vec4<f32>) -> @location(0) vec4<f32> {
     let screen_pixel_pos = pixel_pos.xy + base_data.monitor_pos;
     let uv = screen_pixel_pos / vec2<f32>(textureDimensions(my_texture));
     var result = textureSample(my_texture, my_sampler, uv);
+    result = draw_custom_objects(result, screen_pixel_pos);
     result = selection_effect(result, screen_pixel_pos);
     result = ui_points(result, screen_pixel_pos);
 
@@ -75,7 +102,7 @@ fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32>
         selection.end + vec2<f32>(select_border_size, select_border_size));
 
     if !in_border {
-        return result * vec4(blackout, blackout, blackout, 0.);
+        return result * vec4(blackout, blackout, blackout, 1.);
     } else if !in_selection(screen_pixel_pos, selection.start, selection.end) {
         return base_color;
     }
@@ -91,3 +118,15 @@ fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     }
     return result;
 }
+
+fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
+    var result = input;
+    for(var i = 0u; i < custom_objects.size; i = i + 1u) {
+        switch (custom_objects.custom_objects[i].custom_object_type) {
+            //{DRAW_CUSTOM_OBJECTS}
+            default: {}
+        }
+    }
+    return result;
+}
+//{DRAW_CUSTOM_OBJECTS_FUNCTION}

@@ -21,3 +21,4 @@ serde_yaml = "0.9.34"
 directories = "6.0.0"
 iced_font_awesome = "0.4.1"
 iced_helper = {git = "https://github.com/Andrewkoro105/iced_helper.git"}
+#iced_helper = {path = "../iced_helper"}

@@ -9,7 +9,7 @@ use std::borrow::Cow;
 
 use crate::{
     app::{Screenland, selection::Selection, settings::Settings},
-    screenshots::full_screenshot,
+    screenshots::{ColorFormat, full_screenshot},
 };
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -19,8 +19,8 @@ pub enum End {
 }
 
 impl Screenland {
-    pub fn screenshot(selection: Selection) -> RgbaImage {
-        let mut screenshot = full_screenshot();
+    pub fn screenshot(selection: Selection, color_format: &ColorFormat) -> RgbaImage {
+        let mut screenshot = full_screenshot(color_format);
         let select = selection.normalize();
         crop(
             &mut screenshot,

@@ -1,30 +1,52 @@
 use glam::Vec2;
 use iced::{
-    Alignment, Border, Element, Length, Theme, widget::{Shader, container, row, stack, text_input}, window
+    Alignment, Border, Element, Length, Theme,
+    widget::{Row, Shader, button, container, row, stack, text_input},
+    window,
 };
 
 use crate::app::{
-    Mode, Screenland, edit_object::EditObject, settings::edit_object_base_settings, shader,
+    Mode, Screenland,
+    edit_object::{self, CreateObjects, custom_object::CustomIndexedObjectSettings},
+    settings::edit_object_base_settings,
+    shader,
     update::Message,
 };
 
+use crate::app::edit_object::EditObjectSettings;
+
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
+        println!("[================]");
+        println!("\nobjects: {:?}", self.objects);
+        println!("\nshader_objects: {:?}", self.shader_objects);
+        println!("\ncustom_objects_chenel: {:?}", self.custom_objects_chenel);
+
         let window_data = self.windows_data.get(&id).unwrap();
         let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
         stack![
             Shader::new(shader::Program {
                 monitor_pos,
-                edit_object_base_settings: self.settings.edit_object_base_settings.clone().into(),
                 commands: match &self.mode {
-                    Mode::Base => vec![shader::Command::None],
+                    Mode::Base => vec![shader::Command::UpdateEditObjects {
+                        shader_objects: self.shader_objects.clone(),
+                        custom_objects_chenel: self.custom_objects_chenel.clone(),
+                    }],
                     Mode::Move(_) => vec![
                         shader::Command::Selection(self.selection),
                         shader::Command::Points(self.selection.get_ui_point()),
+                        shader::Command::UpdateEditObjects {
+                            shader_objects: self.shader_objects.clone(),
+                            custom_objects_chenel: self.custom_objects_chenel.clone(),
+                        },
                     ],
                     Mode::Selection => vec![
                         shader::Command::Selection(self.selection),
                         shader::Command::Points(self.selection.get_ui_point()),
+                        shader::Command::UpdateEditObjects {
+                            shader_objects: self.shader_objects.clone(),
+                            custom_objects_chenel: self.custom_objects_chenel.clone(),
+                        },
                     ],
                     Mode::Transparency => vec![
                         shader::Command::Selection(self.selection.add(100000.)),
@@ -47,7 +69,7 @@ impl Screenland {
         container(
             container(
                 row![
-                    "color:",
+                    "color: ",
                     container(
                         self.settings
                             .edit_object_base_settings
@@ -103,6 +125,15 @@ impl Screenland {
                         )
                     }))
                     .width(40),
+                    " | ",
+                    Row::from_iter(self.settings.custom_objects.iter().enumerate().map(
+                        |(i, object)| {
+                            button(object.get_icon().map(|()| unreachable!()))
+                                .on_press(Message::AddObject(CreateObjects::Custom(i)))
+                                .into()
+                        }
+                    ),)
+                    .spacing(10.),
                 ]
                 .spacing(10.)
                 .align_y(Alignment::Center),

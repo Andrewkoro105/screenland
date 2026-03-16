@@ -4,8 +4,11 @@ use glam::Vec2;
 use iced::{Point, Task, exit, window};
 
 use crate::app::{
-    Mode, Screenland, edit_object::EditObject, end::End, selection,
-    settings::edit_object_base_settings,
+    Mode, Screenland,
+    edit_object::{self, EditObject, EditObjectSettings, custom_object::CustomObject},
+    end::End,
+    selection,
+    settings::{self, edit_object_base_settings},
 };
 
 #[derive(Clone)]
@@ -19,6 +22,9 @@ pub enum Message {
     End(End),
     SelectionUpdate(selection::Message),
     EditObjectBaseSettings(edit_object_base_settings::Message),
+    AddObject(edit_object::CreateObjects),
+    UpdateEditObject((usize, edit_object::Message)),
+    SetF32InCustomObjectsChenel { i: usize, index: usize, value: f32 },
     None,
 }
 
@@ -102,27 +108,26 @@ impl Screenland {
                 let selection = self.selection;
                 let windows_data = self.windows_data.clone();
                 let settings = self.settings.clone();
-                Task::done(Message::SetMode(Mode::Transparency))
-                    .chain(
-                        Task::future(async move {
-                            sleep(Duration::from_millis(10));
-                            let screen = Self::screenshot(selection);
+                Task::done(Message::SetMode(Mode::Transparency)).chain(
+                    Task::future(async move {
+                        sleep(Duration::from_millis(10));
+                        let screen = Self::screenshot(selection, &settings.color_format);
 
-                            let mut windows_task = Task::<Message>::none();
+                        let mut windows_task = Task::<Message>::none();
 
-                            for (id, _) in windows_data.iter() {
-                                windows_task = windows_task.chain(window::close(*id));
-                            }
-                            windows_task.chain(
-                                Task::future(async move {
-                                    end.end(&settings, screen);
-                                })
-                                .discard(),
-                            )
-                        })
-                        .then(|task| task)
-                        .chain(exit()),
-                    )
+                        for (id, _) in windows_data.iter() {
+                            windows_task = windows_task.chain(window::close(*id));
+                        }
+                        windows_task.chain(
+                            Task::future(async move {
+                                end.end(&settings, screen);
+                            })
+                            .discard(),
+                        )
+                    })
+                    .then(|task| task)
+                    .chain(exit()),
+                )
             }
             Message::SelectionUpdate(message) => self
                 .selection
@@ -133,6 +138,46 @@ impl Screenland {
                 self.settings.save();
                 task.map(Message::EditObjectBaseSettings)
             }
+            Message::AddObject(create_objects) => {
+                match create_objects {
+                    edit_object::CreateObjects::Custom(i) => {
+                        self.objects.push(
+                            edit_object::Objects::Custom(
+                                self.settings.custom_objects[i].get_object(
+                                    self.objects.len(),
+                                    &self.settings.edit_object_base_settings.clone().into()
+                                )
+                            )
+                        )
+                    },
+                }
+                self.reload_shader_objects();
+                Task::none()
+            }
+            Message::UpdateEditObject((i, message)) => {
+                match &mut self.objects[i] {
+                    edit_object::Objects::Custom(custom_object) => custom_object.update(
+                        self.mouse_pos,
+                        if let edit_object::Message::Custom(message) = message {
+                            message
+                        } else {
+                            panic!("In Message::UpdateEditObject, a message for the wrong object was sent.")
+                        },
+                    ),
+                }.map(Into::into)
+            }
+            Message::SetF32InCustomObjectsChenel { i, index, value } => {
+                self.custom_objects_chenel.set_f32(
+                    if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {
+                        custom_shader_object.channel_index
+                    } else {
+                        panic!("In Message::SetF32InCustomObjectsChenel, a message for the wrong object was sent.")
+                    },
+                    index,
+                    value,
+                );
+                Task::none()
+            },
             Message::None => Task::none(),
         }
     }

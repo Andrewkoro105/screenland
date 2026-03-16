@@ -1,4 +1,4 @@
 /target
 /.vscode
-Cargo.lock
 screenshot_*
+flake.*
