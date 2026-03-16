@@ -28,19 +28,18 @@ pub struct Settings {
     #[serde(default)]
     pub cli_color_format: bool,
     pub color_format: ColorFormat,
-
-    pub path: PathBuf,
     #[serde(skip)]
     #[serde(default)]
     pub cli_path: bool,
-    pub format: String,
+    pub path: PathBuf,
     #[serde(skip)]
     #[serde(default)]
     pub cli_format: bool,
-    pub base_end: Option<End>,
+    pub format: String,
     #[serde(skip)]
     #[serde(default)]
     pub cli_base_end: bool,
+    pub base_end: Option<End>,
 
     pub edit_object_base_settings: EditObjectBaseSettings,
     #[serde(deserialize_with = "add_type_id_deserialize")]
@@ -150,6 +149,21 @@ impl Settings {
     }
 
     pub fn save(&self) {
+        let mut save_data = self.clone();
+        let base_save_data = Self::new(self.config_path.clone());
+        if !save_data.cli_color_format {
+            save_data.color_format = base_save_data.color_format;
+        }
+        if !save_data.cli_path {
+            save_data.path = base_save_data.path;
+        }
+        if !save_data.cli_format {
+            save_data.format = base_save_data.format;
+        }
+        if !save_data.cli_base_end {
+            save_data.base_end = base_save_data.base_end;
+        }
+
         if let Some(parent) = self.config_path.parent()
             && !parent.exists()
         {
@@ -164,7 +178,7 @@ impl Settings {
                 .unwrap_or_else(|err| {
                     panic!("Unable to open file: {:?}. Error: {err}", self.config_path)
                 }),
-            &self,
+            &save_data,
         )
         .unwrap();
     }

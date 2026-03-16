@@ -179,7 +179,6 @@ impl EditBG {
 
     fn get_custom_objects_buffer(device: &wgpu::Device, size: usize) -> wgpu::Buffer {
         let len = Self::get_vec_buff_size(size, std::mem::size_of::<CustomObjectFromShader>(), 2);
-        println!("get_custom_objects_buffer len: {len}");
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("custom_objects"),
             size: len,
@@ -189,7 +188,6 @@ impl EditBG {
     }
 
     pub fn set_f32_channel_buffer(&mut self, device: &wgpu::Device, size: usize) -> bool {
-        println!("size != self.data.custom_objects_size: {} != {} => {}", size, self.data.custom_objects_size, size != self.data.custom_objects_size);
         if size != self.data.f32_channel_size {
             self.data.f32_channel_size = size;
             self.data.f32_channel = Self::get_f32_channel_buffer(device, size);
@@ -202,7 +200,6 @@ impl EditBG {
 
     fn get_f32_channel_buffer(device: &wgpu::Device, size: usize) -> wgpu::Buffer {
         let len = Self::get_vec_buff_size(size, std::mem::size_of::<f32>(), 1);
-        println!("get_f32_channel_buffer len: {len}");
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("f32_channel"),
             size: len,

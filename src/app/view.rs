@@ -6,10 +6,7 @@ use iced::{
 };
 
 use crate::app::{
-    Mode, Screenland,
-    edit_object::{self, CreateObjects, custom_object::CustomIndexedObjectSettings},
-    settings::edit_object_base_settings,
-    shader,
+    Mode, Screenland, edit_object::CreateObjects, settings::edit_object_base_settings, shader,
     update::Message,
 };
 
@@ -17,10 +14,6 @@ use crate::app::edit_object::EditObjectSettings;
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
-        println!("[================]");
-        println!("\nobjects: {:?}", self.objects);
-        println!("\nshader_objects: {:?}", self.shader_objects);
-        println!("\ncustom_objects_chenel: {:?}", self.custom_objects_chenel);
 
         let window_data = self.windows_data.get(&id).unwrap();
         let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);

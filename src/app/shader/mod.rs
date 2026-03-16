@@ -10,7 +10,6 @@ use crate::app::selection::Selection;
 use crate::app::settings::Settings;
 use crate::app::shader::pipeline::Pipeline;
 use crate::app::shader::pipeline::edit_bg::BaseData;
-use crate::app::shader::pipeline::edit_bg::EditBG;
 use glam::Vec2;
 use iced::Rectangle;
 use iced::wgpu;
@@ -81,7 +80,6 @@ impl shader::Primitive for Primitive {
                         let seted_custom_objects_buffer = pipeline
                             .edit_bg
                             .set_custom_objects_buffer(device, custom_objects.len());
-                        println!("custom_objects_chenel.get_f32().len(): {}", custom_objects_chenel.get_f32().len());
                         let seted_f32_channel_buffer = pipeline
                             .edit_bg
                             .set_f32_channel_buffer(device, custom_objects_chenel.get_f32().len());
@@ -90,7 +88,6 @@ impl shader::Primitive for Primitive {
 
                     if resize {
                         pipeline.edit_bg.reload_bg(device);
-                        println!("edit_bg.reload_bg");
                     }
 
                     let write = || {

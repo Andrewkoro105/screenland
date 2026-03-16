@@ -5,10 +5,10 @@ use iced::{Point, Task, exit, window};
 
 use crate::app::{
     Mode, Screenland,
-    edit_object::{self, EditObject, EditObjectSettings, custom_object::CustomObject},
+    edit_object::{self, EditObject, EditObjectSettings},
     end::End,
     selection,
-    settings::{self, edit_object_base_settings},
+    settings::{edit_object_base_settings},
 };
 
 #[derive(Clone)]
