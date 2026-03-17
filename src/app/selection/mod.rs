@@ -29,9 +29,7 @@ impl Selection {
 
         result
     }
-}
-
-impl Selection {
+    
     pub fn get_ui_point(&self) -> Vec<UIPoint> {
         let new_self = self.normalize();
         cube::view(&new_self.start, &new_self.end)

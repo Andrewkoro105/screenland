@@ -5,7 +5,7 @@ use iced::{Point, Task, exit, window};
 
 use crate::app::{
     Mode, Screenland,
-    edit_object::{self, EditObject, EditObjectSettings},
+    edit_object::{self, EditObjectSettings},
     end::End,
     selection,
     settings::edit_object_base_settings,

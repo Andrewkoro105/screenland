@@ -14,7 +14,6 @@ use crate::app::edit_object::EditObjectSettings;
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
-
         let window_data = self.windows_data.get(&id).unwrap();
         let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
         stack![
@@ -110,7 +109,11 @@ impl Screenland {
                         )
                     }))
                     .width(40),
-                    " | ",
+                    if self.settings.custom_objects.len() > 0 {
+                        " | "
+                    } else {
+                        ""
+                    },
                     Row::from_iter(self.settings.custom_objects.iter().enumerate().map(
                         |(i, object)| {
                             button(object.get_icon().map(|()| unreachable!()))
