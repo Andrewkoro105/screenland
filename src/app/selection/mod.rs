@@ -39,11 +39,11 @@ impl Selection {
     }
 
     pub fn update(&mut self, mouse_pos: Vec2, message: Message) -> Task<Message> {
-        let mut new_self = self.normalize();
+        //let mut new_self = self.normalize();
 
-        let result = cube::update(&mut new_self.start, &mut new_self.end, &mouse_pos, message);
+        let result = cube::update(&mut self.start, &mut self.end, &mouse_pos, message);
 
-        *self = new_self;
+        //*self = new_self;
 
         result
     }

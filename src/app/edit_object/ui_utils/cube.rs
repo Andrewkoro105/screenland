@@ -138,12 +138,15 @@ pub fn update(
 }
 
 pub fn normalize(start: &mut Vec2, end: &mut Vec2) {
-    *start = Vec2 {
+    let new_start = Vec2 {
         x: start.x.min(end.x),
         y: start.y.min(end.y),
     };
-    *end = Vec2 {
+    let new_end = Vec2 {
         x: start.x.max(end.x),
         y: start.y.max(end.y),
     };
+
+    *start = new_start;
+    *end = new_end;
 }
