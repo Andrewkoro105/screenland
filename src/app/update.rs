@@ -5,7 +5,7 @@ use iced::{Point, Task, exit, window};
 
 use crate::app::{
     Mode, Screenland,
-    edit_object::{self, EditObjectSettings},
+    edit_object::{self, EditObjectSettings, custom_object::param::chanel},
     end::End,
     selection,
     settings::edit_object_base_settings,
@@ -24,7 +24,7 @@ pub enum Message {
     EditObjectBaseSettings(edit_object_base_settings::Message),
     AddObject(edit_object::CreateObjects),
     UpdateEditObject((usize, edit_object::Message)),
-    SetF32InCustomObjectsChenel { i: usize, index: usize, value: f32 },
+    CustomObjectsChenelUpdate { i: usize, index: usize, message: chanel::Message },
     None,
 }
 
@@ -136,15 +136,15 @@ impl Screenland {
             Message::UpdateEditObject((i, message)) => {
                 self.objects[i].update(self.mouse_pos, message)
             }
-            Message::SetF32InCustomObjectsChenel { i, index, value } => {
-                self.custom_objects_chenel.set_f32(
+            Message::CustomObjectsChenelUpdate { i, index, message } => {
+                self.custom_objects_chenel.update(
+                    message,
                     if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {
                         custom_shader_object.channel_index
                     } else {
                         panic!("In Message::SetF32InCustomObjectsChenel, a message for the wrong object was sent.")
                     },
                     index,
-                    value,
                 );
                 Task::none()
             }

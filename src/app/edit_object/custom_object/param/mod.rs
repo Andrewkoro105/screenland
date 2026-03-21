@@ -2,7 +2,6 @@ pub mod chanel;
 
 use std::{collections::HashMap, hash::Hash};
 
-use bytemuck::{Pod, Zeroable};
 use iced::widget::{row, text};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};

@@ -15,7 +15,7 @@ use crate::app::{
             icon::Icon,
             param::{
                 Param, ShaderType,
-                chanel::{Chanel, ChannelIndex},
+                chanel::{self, Chanel, ChannelIndex},
             },
             points::{PointsData, PointsFormat, PointsMessage},
         },
@@ -262,10 +262,10 @@ impl EditObject for CustomObject {
             match message {
                 Message::SetF32(index, value) => {
                     if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
-                        Task::done(app::Message::SetF32InCustomObjectsChenel {
+                        Task::done(app::Message::CustomObjectsChenelUpdate {
                             i: self.i,
                             index,
-                            value: num_input.update(&value),
+                            message: chanel::Message::F32(num_input.update(&value)),
                         })
                     } else {
                         panic!("")

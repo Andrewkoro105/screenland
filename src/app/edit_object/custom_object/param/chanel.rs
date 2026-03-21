@@ -1,5 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 
+#[derive(Clone)]
 pub enum Message {
     F32(f32)
 }
@@ -33,7 +34,7 @@ impl Chanel {
         self.f32.append(&mut data);
     }
 
-    pub fn set_f32(&mut self, chanel_index: ChannelIndex, index: usize, value: f32) {
+    fn set_f32(&mut self, chanel_index: ChannelIndex, index: usize, value: f32) {
         self.f32[chanel_index.f32 as usize + index] = value;
     }
 
@@ -41,7 +42,9 @@ impl Chanel {
         &self.f32
     }
 
-    pub fn update(&mut self, _message: Message, _i: usize) {
-        todo!()
+    pub fn update(&mut self, message: Message, chanel_index: ChannelIndex, index: usize) {
+        match message {
+            Message::F32(value) => self.set_f32(chanel_index, index, value),
+        }
     }
 }

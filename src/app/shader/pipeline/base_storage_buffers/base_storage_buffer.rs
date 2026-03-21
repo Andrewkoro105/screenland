@@ -74,7 +74,6 @@ impl BaseStorageBuffer {
         ]
         .concat();
 
-        println!("{}: {} ({}) -> {} -> {}", self.data.name, data.len(), self.data.type_size, bytemuck::cast_slice::<_, u8>(data).len(), new_data.len());
         queue.write_buffer(&self.buff, 0, new_data.as_slice());
     }
 
