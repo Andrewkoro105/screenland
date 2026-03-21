@@ -5,15 +5,20 @@ use crate::app::edit_object;
 use crate::app::edit_object::EditObjectSettings;
 use crate::app::edit_object::custom_object;
 use crate::app::edit_object::custom_object::CustomIndexedObjectSettings;
+use crate::app::edit_object::custom_object::param::chanel::ChanelType;
 use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::selection::Selection;
 use crate::app::settings::Settings;
 use crate::app::shader::pipeline::Pipeline;
+use crate::app::shader::pipeline::base_storage_buffers::GetShader;
 use crate::app::shader::pipeline::edit_bg::BaseData;
+use crate::app::shader::pipeline::edit_bg::BufferType;
 use glam::Vec2;
 use iced::Rectangle;
 use iced::wgpu;
 use iced::widget::shader;
+
+pub mod get_shader;
 
 #[derive(Debug, Clone)]
 pub enum Command {
@@ -22,7 +27,7 @@ pub enum Command {
     Points(Vec<UIPoint>),
     UpdateEditObjects {
         shader_objects: Vec<edit_object::ShaderObjects>,
-        custom_objects_chenel: custom_object::param::Chanel,
+        custom_objects_chenel: custom_object::param::chanel::Chanel,
     },
 }
 
@@ -58,10 +63,21 @@ impl shader::Primitive for Primitive {
                     bytemuck::bytes_of(&selection.normalize()),
                 ),
                 Command::Points(ui_points) => {
-                    if pipeline.edit_bg.set_points_buffer(device, ui_points.len()) {
+                    let edited = pipeline.edit_bg.data.storage_buffers.set_buffer(
+                        &BufferType::Points,
+                        device,
+                        ui_points.len() as _,
+                    );
+
+                    if edited {
                         pipeline.edit_bg.reload_bg(device);
                     }
-                    pipeline.edit_bg.write_points_buffer(queue, ui_points);
+
+                    pipeline.edit_bg.data.storage_buffers.write(
+                        &BufferType::Points,
+                        queue,
+                        ui_points,
+                    );
                 }
                 Command::UpdateEditObjects {
                     shader_objects,
@@ -79,10 +95,15 @@ impl shader::Primitive for Primitive {
                     let resize = {
                         let seted_custom_objects_buffer = pipeline
                             .edit_bg
-                            .set_custom_objects_buffer(device, custom_objects.len());
-                        let seted_f32_channel_buffer = pipeline
-                            .edit_bg
-                            .set_f32_channel_buffer(device, custom_objects_chenel.get_f32().len());
+                            .data
+                            .storage_buffers
+                            .set_buffer(&BufferType::CustomObjects, device, custom_objects.len() as _);
+                        let seted_f32_channel_buffer =
+                            pipeline.edit_bg.data.storage_buffers.set_buffer(
+                                &BufferType::Chanel(ChanelType::F32),
+                                device,
+                                custom_objects_chenel.get_f32().len() as _,
+                            );
                         seted_custom_objects_buffer || seted_f32_channel_buffer
                     };
 
@@ -91,12 +112,16 @@ impl shader::Primitive for Primitive {
                     }
 
                     let write = || {
-                        pipeline
-                            .edit_bg
-                            .write_custom_objects_buffer(queue, &custom_objects);
-                        pipeline
-                            .edit_bg
-                            .write_f32_channel_buffer(queue, custom_objects_chenel.get_f32());
+                        pipeline.edit_bg.data.storage_buffers.write(
+                            &BufferType::CustomObjects,
+                            queue,
+                            &custom_objects,
+                        );
+                        pipeline.edit_bg.data.storage_buffers.write(
+                            &BufferType::Chanel(ChanelType::F32),
+                            queue,
+                            custom_objects_chenel.get_f32(),
+                        );
                     };
                     write();
                 }
@@ -139,31 +164,4 @@ impl shader::Program<Message> for Program {
             commands: self.commands.clone(),
         }
     }
-}
-
-pub fn get_shader() -> String {
-    let custom_objects = Settings::load(None, None).custom_objects;
-
-    include_str!("shader.wgsl")
-        .to_string()
-        .replace(
-            "//{DRAW_CUSTOM_OBJECTS}",
-            &custom_objects
-                .iter()
-                .enumerate()
-                .map(|(i, custom_object)| {
-                    let name: String = custom_object.get_name();
-                    format!("case {i}: {{result = draw_{name}(result, screen_pixel_pos, get_data_{name}(custom_objects.custom_objects[i].channel_index));}}")
-                })
-                .collect::<Vec<_>>()
-                .join("\t\t\t\n")
-        )
-        .replace(
-            "//{DRAW_CUSTOM_OBJECTS_FUNCTION}",
-            &custom_objects
-                .iter()
-                .map(CustomIndexedObjectSettings::get_shader)
-                .collect::<Vec<_>>()
-                .join("\n"),
-        )
 }

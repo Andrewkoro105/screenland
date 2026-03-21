@@ -2,7 +2,7 @@ pub mod app;
 pub mod screenshots;
 
 use crate::{
-    app::{settings::Settings, shader::get_shader},
+    app::{settings::Settings, shader::get_shader::get_shader},
     screenshots::get_outputs,
 };
 use app::Screenland;
@@ -74,7 +74,7 @@ windowrule = match:title Save As, float on
         Settings::new(arg_config).save();
         iced::Result::Ok(())
     } else if args.output_shader {
-        println!("{}", get_shader());
+        println!("{}", get_shader(None));
         iced::Result::Ok(())
     } else {
         iced::daemon(

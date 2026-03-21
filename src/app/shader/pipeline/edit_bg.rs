@@ -1,10 +1,18 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::wgpu;
+use sugar::hashmap;
 
 use crate::app::{
-    edit_object::{custom_object::CustomObjectFromShader, ui_point::UIPoint},
+    edit_object::{
+        custom_object::{CustomObjectFromShader, param::chanel::ChanelType},
+        ui_point::UIPoint,
+    },
     selection::Selection,
+    shader::pipeline::base_storage_buffers::{
+        BaseStorageBuffers,
+        base_storage_buffer::{BaseStorageBuffer, BaseStorageBufferData},
+    },
 };
 
 #[repr(C)]
@@ -14,20 +22,22 @@ pub struct BaseData {
     pub monitor_pos: Vec2,
 }
 
+#[derive(Hash, PartialEq)]
+pub enum BufferType {
+    Points,
+    CustomObjects,
+    Chanel(ChanelType),
+}
+
+impl Eq for BufferType {}
+
 pub struct EditBGData {
     pub bgl: wgpu::BindGroupLayout,
 
     pub base_data_buffer: wgpu::Buffer,
     pub selection_buffer: wgpu::Buffer,
 
-    pub point_buffer_size: usize,
-    pub point_buffer: wgpu::Buffer,
-
-    pub f32_channel_size: usize,
-    pub f32_channel: wgpu::Buffer,
-
-    pub custom_objects_size: usize,
-    pub custom_objects: wgpu::Buffer,
+    pub storage_buffers: BaseStorageBuffers<BufferType, BaseStorageBuffer>,
 }
 
 pub struct EditBG {
@@ -35,62 +45,50 @@ pub struct EditBG {
     pub data: EditBGData,
 }
 
+pub fn get_storage_buffers_data() -> BaseStorageBuffers<BufferType, BaseStorageBufferData> {
+    BaseStorageBuffers::new(
+        1,
+        2,
+        hashmap! {
+            BufferType::Points => BaseStorageBufferData::new(std::mem::size_of::<UIPoint>(), 2, "points", "UIPoint"),
+            BufferType::CustomObjects => BaseStorageBufferData::new(std::mem::size_of::<CustomObjectFromShader>(), 2, "custom_objects", "CustomObject"),
+            BufferType::Chanel(ChanelType::F32) => BaseStorageBufferData::new(std::mem::size_of::<f32>(), 1, "f32_channel", "f32"),
+        },
+    )
+}
+
 impl EditBG {
     pub fn new(device: &wgpu::Device, _queue: &wgpu::Queue, _format: wgpu::TextureFormat) -> Self {
+        let storage_buffers = get_storage_buffers_data().into_buff(device);
+
         let bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("edit_bgl"),
             entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
+                &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
                     },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
                     },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 4,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-            ],
+                ],
+                storage_buffers.get_bind_group_layout_entry().as_slice(),
+            ]
+            .concat(),
         });
 
         let base_data_buffer = device.create_buffer(&wgpu::BufferDescriptor {
@@ -107,26 +105,13 @@ impl EditBG {
             mapped_at_creation: false,
         });
 
-        let point_buffer = Self::get_points_buffer(device, 0);
-
-        let custom_objects = Self::get_custom_objects_buffer(device, 0);
-
-        let f32_channel = Self::get_f32_channel_buffer(device, 0);
-
         let data = EditBGData {
             bgl,
 
             base_data_buffer,
             selection_buffer,
 
-            point_buffer_size: 0,
-            point_buffer,
-
-            custom_objects_size: 0,
-            custom_objects,
-
-            f32_channel_size: 0,
-            f32_channel,
+            storage_buffers,
         };
 
         Self {
@@ -135,77 +120,8 @@ impl EditBG {
         }
     }
 
-    fn get_vec_buff_size(mut len: usize, size: usize, len_padding: usize) -> u64 {
-        if len == 0 {
-            len = 1
-        }
-        (std::mem::size_of::<u32>() * len_padding + len * size) as _
-    }
-
     pub fn reload_bg(&mut self, device: &wgpu::Device) {
         self.bg = Self::create_bg(device, &self.data);
-    }
-
-    pub fn set_points_buffer(&mut self, device: &wgpu::Device, size: usize) -> bool {
-        if size != self.data.point_buffer_size {
-            self.data.point_buffer_size = size;
-            self.data.point_buffer = Self::get_points_buffer(device, size);
-
-            true
-        } else {
-            false
-        }
-    }
-
-    fn get_points_buffer(device: &wgpu::Device, size: usize) -> wgpu::Buffer {
-        device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("point_buffer"),
-            size: Self::get_vec_buff_size(size, std::mem::size_of::<UIPoint>(), 2),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        })
-    }
-
-    pub fn set_custom_objects_buffer(&mut self, device: &wgpu::Device, size: usize) -> bool {
-        if size != self.data.custom_objects_size {
-            self.data.custom_objects_size = size;
-            self.data.custom_objects = Self::get_custom_objects_buffer(device, size);
-
-            true
-        } else {
-            false
-        }
-    }
-
-    fn get_custom_objects_buffer(device: &wgpu::Device, size: usize) -> wgpu::Buffer {
-        let len = Self::get_vec_buff_size(size, std::mem::size_of::<CustomObjectFromShader>(), 2);
-        device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("custom_objects"),
-            size: len,
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        })
-    }
-
-    pub fn set_f32_channel_buffer(&mut self, device: &wgpu::Device, size: usize) -> bool {
-        if size != self.data.f32_channel_size {
-            self.data.f32_channel_size = size;
-            self.data.f32_channel = Self::get_f32_channel_buffer(device, size);
-
-            true
-        } else {
-            false
-        }
-    }
-
-    fn get_f32_channel_buffer(device: &wgpu::Device, size: usize) -> wgpu::Buffer {
-        let len = Self::get_vec_buff_size(size, std::mem::size_of::<f32>(), 1);
-        device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("f32_channel"),
-            size: len,
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        })
     }
 
     fn create_bg(device: &wgpu::Device, edit_bg_data: &EditBGData) -> wgpu::BindGroup {
@@ -213,72 +129,22 @@ impl EditBG {
             label: Some("edit_bg"),
             layout: &edit_bg_data.bgl,
             entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: edit_bg_data.base_data_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: edit_bg_data.selection_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 2,
-                    resource: edit_bg_data.point_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 3,
-                    resource: edit_bg_data.custom_objects.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 4,
-                    resource: edit_bg_data.f32_channel.as_entire_binding(),
-                },
-            ],
+                &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: edit_bg_data.base_data_buffer.as_entire_binding(),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 1,
+                        resource: edit_bg_data.selection_buffer.as_entire_binding(),
+                    },
+                ],
+                edit_bg_data
+                    .storage_buffers
+                    .get_bind_group_entry()
+                    .as_slice(),
+            ]
+            .concat(),
         })
-    }
-
-    pub fn write_points_buffer(&self, queue: &wgpu::Queue, ui_points: &Vec<UIPoint>) {
-        queue.write_buffer(
-            &self.data.point_buffer,
-            0,
-            [
-                bytemuck::bytes_of(&(ui_points.len() as u32)),
-                &[0, 0, 0, 0],
-                bytemuck::cast_slice(ui_points),
-            ]
-            .concat()
-            .as_slice(),
-        );
-    }
-
-    pub fn write_custom_objects_buffer(
-        &self,
-        queue: &wgpu::Queue,
-        custom_objects: &Vec<CustomObjectFromShader>,
-    ) {
-        queue.write_buffer(
-            &self.data.custom_objects,
-            0,
-            [
-                bytemuck::bytes_of(&(custom_objects.len() as u32)),
-                &[0, 0, 0, 0],
-                bytemuck::cast_slice(custom_objects),
-            ]
-            .concat()
-            .as_slice(),
-        );
-    }
-
-    pub fn write_f32_channel_buffer(&self, queue: &wgpu::Queue, f32_channel: &Vec<f32>) {
-        queue.write_buffer(
-            &self.data.f32_channel,
-            0,
-            [
-                bytemuck::bytes_of(&(f32_channel.len() as u32)),
-                bytemuck::cast_slice(f32_channel),
-            ]
-            .concat()
-            .as_slice(),
-        );
     }
 }

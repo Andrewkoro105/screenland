@@ -9,7 +9,7 @@ use crate::app::{
     edit_object::ui_point::{UIPoint, UIPointElement},
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
     update,
-    edit_object::custom_object::param::Chanel
+    edit_object::custom_object::param::chanel::Chanel
 };
 
 #[derive(Clone)]

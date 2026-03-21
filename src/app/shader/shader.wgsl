@@ -22,11 +22,6 @@ struct UIPoint {
     size: f32,
 }
 
-struct Points {
-    size: u32,
-    points: array<UIPoint>,
-}
-
 struct ChannelIndex {
     f32_index: u32,
 }
@@ -34,16 +29,6 @@ struct ChannelIndex {
 struct CustomObject {
     custom_object_type: u32,
     channel_index: ChannelIndex
-}
-
-struct CustomObjects {
-    size: u32,
-    custom_objects: array<CustomObject>,
-}
-
-struct F32Chanel {
-    size: u32,
-    f32_channel: array<f32>
 }
 
 @group(0) @binding(0)
@@ -58,15 +43,7 @@ var<uniform> base_data: BaseData;
 @group(1) @binding(1)
 var<uniform> selection: Selection;
 
-@group(1) @binding(2)
-var<storage> points: Points;
-
-@group(1) @binding(3)
-var<storage> custom_objects: CustomObjects;
-
-@group(1) @binding(4)
-var<storage> f32_channel: F32Chanel;
-
+//{STORAGE_BUFFERS}
 
 @vertex
 fn vs_main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4<f32> {
@@ -110,9 +87,9 @@ fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32>
 }
 
 fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
-    for (var i = 0u; i < arrayLength(&points.points); i = i + 1u) {
-        let r = sqrt(pow((screen_pixel_pos.x - points.points[i].pos.x), 2.) + pow((screen_pixel_pos.y - points.points[i].pos.y), 2.));
-        if r < points.points[i].size {
+    for (var i = 0u; i < points.len; i = i + 1u) {
+        let r = sqrt(pow((screen_pixel_pos.x - points.data[i].pos.x), 2.) + pow((screen_pixel_pos.y - points.data[i].pos.y), 2.));
+        if r < points.data[i].size {
             return base_color;
         }
     }
@@ -121,8 +98,8 @@ fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
 
 fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     var result = input;
-    for(var i = 0u; i < custom_objects.size; i = i + 1u) {
-        switch (custom_objects.custom_objects[i].custom_object_type) {
+    for(var i = 0u; i < custom_objects.len; i = i + 1u) {
+        switch (custom_objects.data[i].custom_object_type) {
             //{DRAW_CUSTOM_OBJECTS}
             default: {}
         }

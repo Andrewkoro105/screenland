@@ -13,7 +13,10 @@ use crate::app::{
         self, EditObject, EditObjectSettings,
         custom_object::{
             icon::Icon,
-            param::{Chanel, ChannelIndex, Param, ShaderType},
+            param::{
+                Param, ShaderType,
+                chanel::{Chanel, ChannelIndex},
+            },
             points::{PointsData, PointsFormat, PointsMessage},
         },
         ui_point::UIPoint,
@@ -287,7 +290,10 @@ impl EditObject for CustomObject {
                 }
             }
         } else {
-            panic!("In CustomObject({}), a message for the wrong object was sent.", self.i)
+            panic!(
+                "In CustomObject({}), a message for the wrong object was sent.",
+                self.i
+            )
         }
     }
 

@@ -14,9 +14,6 @@ use crate::app::edit_object::EditObjectSettings;
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
-        print!("start: {}, end: {} | ", self.selection.start, self.selection.end);
-        println!("start_norm: {}, end_norm: {}", self.selection.normalize().start, self.selection.normalize().end);
-
         let window_data = self.windows_data.get(&id).unwrap();
         let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
         stack![

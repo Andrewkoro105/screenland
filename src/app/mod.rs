@@ -11,7 +11,7 @@ use crate::{
     app::{
         edit_object::{
             EditObject,
-            custom_object::{self, CustomObjectFromShader},
+            custom_object,
         },
         selection::Selection,
         settings::Settings,
@@ -50,7 +50,7 @@ pub struct Screenland {
     settings: Settings,
     objects: Vec<Box<dyn EditObject>>,
     shader_objects: Vec<edit_object::ShaderObjects>,
-    custom_objects_chenel: custom_object::param::Chanel,
+    custom_objects_chenel: custom_object::param::chanel::Chanel,
 }
 
 impl BootFn<Screenland, Message> for Settings {
@@ -102,7 +102,8 @@ impl Screenland {
         self.shader_objects.clear();
         self.shader_objects.reserve(self.objects.len());
         for object in &self.objects {
-            self.shader_objects.push(object.get_shader_object(&mut self.custom_objects_chenel));
+            self.shader_objects
+                .push(object.get_shader_object(&mut self.custom_objects_chenel));
         }
     }
 }

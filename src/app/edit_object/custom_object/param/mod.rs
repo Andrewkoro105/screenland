@@ -1,3 +1,5 @@
+pub mod chanel;
+
 use std::{collections::HashMap, hash::Hash};
 
 use bytemuck::{Pod, Zeroable};
@@ -37,17 +39,6 @@ impl Eq for ShaderType {}
 pub struct Param {
     name: String,
     pub shader_type: ShaderType,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
-pub struct ChannelIndex {
-    pub f32: u32,
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct Chanel {
-    f32: Vec<f32>,
 }
 
 impl Param {
@@ -102,25 +93,5 @@ impl ShaderType {
         match self {
             ShaderType::F32 { .. } => "f32".into(),
         }
-    }
-}
-
-impl Chanel {
-    pub fn get_index(&self) -> ChannelIndex {
-        ChannelIndex {
-            f32: self.f32.len() as _,
-        }
-    }
-
-    pub fn add_f32(&mut self, mut data: Vec<f32>) {
-        self.f32.append(&mut data);
-    }
-
-    pub fn set_f32(&mut self, chanel_index: ChannelIndex, index: usize, value: f32) {
-        self.f32[chanel_index.f32 as usize + index] = value;
-    }
-
-    pub fn get_f32(&self) -> &Vec<f32> {
-        &self.f32
     }
 }

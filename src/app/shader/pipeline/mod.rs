@@ -1,7 +1,11 @@
 use iced::{wgpu, widget::shader};
 
-use crate::app::shader::{get_shader, pipeline::{edit_bg::EditBG, screen_bg::ScreenBg}};
+use crate::app::shader::{
+    get_shader::get_shader,
+    pipeline::{edit_bg::EditBG, screen_bg::ScreenBg},
+};
 
+pub mod base_storage_buffers;
 pub mod edit_bg;
 pub mod screen_bg;
 
@@ -19,7 +23,9 @@ impl shader::Pipeline for Pipeline {
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("shader"),
-            source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(&get_shader())),
+            source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(&get_shader(Some(vec![
+                &edit_bg.data.storage_buffers,
+            ])))),
         });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
