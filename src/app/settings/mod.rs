@@ -48,6 +48,10 @@ pub struct Settings {
     pub cli_base_end: bool,
     pub base_end: Option<End>,
 
+    #[serde(skip)]
+    #[serde(default)]
+    pub output_shader_and_run: bool,
+
     pub edit_object_base_settings: EditObjectBaseSettings,
     #[serde(deserialize_with = "add_type_id_deserialize")]
     #[serde(serialize_with = "remove_type_id_serialize")]
@@ -71,6 +75,7 @@ impl Settings {
             cli_format: false,
             base_end: None,
             cli_base_end: false,
+            output_shader_and_run: false,
             edit_object_base_settings: EditObjectBaseSettings {
                 color: ColorInput {
                     r: NumInput::new(1.),
@@ -156,6 +161,8 @@ impl Settings {
             result.color_format = ColorFormat::from_str(&color_format).unwrap();
             result.cli_format = true;
         }
+
+        result.output_shader_and_run = args.output_shader_and_run;
 
         if let Some(end) = args.end {
             match end.as_str() {

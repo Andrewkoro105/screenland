@@ -118,6 +118,8 @@ Options:
           Generate config
   -o, --output-shader
           Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
+      --output-shader-and-run
+          Displays the shader with the current settings and run screenland
       --config <CONFIG>
           Path to config. By default: `~/.config/screenland/config.yaml`
       --format <FORMAT>

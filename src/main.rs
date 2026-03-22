@@ -25,6 +25,9 @@ pub struct Args {
     /// Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
     #[arg(short, long)]
     output_shader: bool,
+    /// Displays the shader with the current settings and run screenland
+    #[arg(long)]
+    output_shader_and_run: bool,
     /// Path to config. By default: `~/.config/screenland/config.yaml`
     #[arg(long)]
     config: Option<String>,
