@@ -50,7 +50,7 @@ pub struct Screenland {
     settings: Settings,
     objects: Vec<Box<dyn EditObject>>,
     shader_objects: Vec<edit_object::ShaderObjects>,
-    custom_objects_chenel: custom_object::param::chanel::Chanel,
+    custom_objects_chanel: custom_object::param::chanel::Chanel,
 }
 
 impl BootFn<Screenland, Message> for Settings {
@@ -82,7 +82,7 @@ impl BootFn<Screenland, Message> for Settings {
                 settings: self.clone(),
                 objects: vec![],
                 shader_objects: vec![],
-                custom_objects_chenel: Default::default(),
+                custom_objects_chanel: Default::default(),
             },
             windows_task,
         )
@@ -103,7 +103,7 @@ impl Screenland {
         self.shader_objects.reserve(self.objects.len());
         for object in &self.objects {
             self.shader_objects
-                .push(object.get_shader_object(&mut self.custom_objects_chenel));
+                .push(object.get_shader_object(&mut self.custom_objects_chanel));
         }
     }
 }

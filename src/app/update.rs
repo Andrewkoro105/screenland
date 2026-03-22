@@ -24,7 +24,7 @@ pub enum Message {
     EditObjectBaseSettings(edit_object_base_settings::Message),
     AddObject(edit_object::CreateObjects),
     UpdateEditObject((usize, edit_object::Message)),
-    CustomObjectsChenelUpdate { i: usize, index: usize, message: chanel::Message },
+    CustomObjectsChanelUpdate { i: usize, index: usize, message: chanel::Message },
     None,
 }
 
@@ -136,13 +136,13 @@ impl Screenland {
             Message::UpdateEditObject((i, message)) => {
                 self.objects[i].update(self.mouse_pos, message)
             }
-            Message::CustomObjectsChenelUpdate { i, index, message } => {
-                self.custom_objects_chenel.update(
+            Message::CustomObjectsChanelUpdate { i, index, message } => {
+                self.custom_objects_chanel.update(
                     message,
                     if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {
                         custom_shader_object.channel_index
                     } else {
-                        panic!("In Message::SetF32InCustomObjectsChenel, a message for the wrong object was sent.")
+                        panic!("In Message::CustomObjectsChanelUpdate, a message for the wrong object was sent.")
                     },
                     index,
                 );

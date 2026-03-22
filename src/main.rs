@@ -16,7 +16,7 @@ pub struct Args {
     /// Generate config for the supported system (hypr | hyprland)
     #[arg(short, long)]
     support_config: Option<String>,
-    /// The placement of the color channels in the screenshoе (rgba -> 0123, bgra -> 2103)
+    /// The placement of the color channels in the screenshot (rgba -> 0123, bgra -> 2103)
     #[arg(short, long)]
     color_format: Option<String>,
     /// Generate config

@@ -2,8 +2,6 @@ use bytemuck::NoUninit;
 use heck::ToPascalCase;
 use iced::wgpu;
 
-use crate::app::edit_object::ui_point::UIPoint;
-
 #[derive(Clone)]
 pub struct BaseStorageBufferData {
     type_size: usize,
@@ -59,7 +57,7 @@ impl BaseStorageBuffer {
         }
     }
 
-    pub fn get_bind_group_entry(&self, base_binding: u32) -> wgpu::BindGroupEntry {
+    pub fn get_bind_group_entry(&self, base_binding: u32) -> wgpu::BindGroupEntry<'_> {
         wgpu::BindGroupEntry {
             binding: base_binding + self.offset_binding,
             resource: self.buff.as_entire_binding(),

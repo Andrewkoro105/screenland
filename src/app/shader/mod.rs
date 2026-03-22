@@ -2,15 +2,11 @@ mod pipeline;
 
 use crate::app::Message;
 use crate::app::edit_object;
-use crate::app::edit_object::EditObjectSettings;
 use crate::app::edit_object::custom_object;
-use crate::app::edit_object::custom_object::CustomIndexedObjectSettings;
 use crate::app::edit_object::custom_object::param::chanel::ChanelType;
 use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::selection::Selection;
-use crate::app::settings::Settings;
 use crate::app::shader::pipeline::Pipeline;
-use crate::app::shader::pipeline::base_storage_buffers::GetShader;
 use crate::app::shader::pipeline::edit_bg::BaseData;
 use crate::app::shader::pipeline::edit_bg::BufferType;
 use glam::Vec2;
@@ -27,7 +23,7 @@ pub enum Command {
     Points(Vec<UIPoint>),
     UpdateEditObjects {
         shader_objects: Vec<edit_object::ShaderObjects>,
-        custom_objects_chenel: custom_object::param::chanel::Chanel,
+        custom_objects_chanel: custom_object::param::chanel::Chanel,
     },
 }
 
@@ -81,7 +77,7 @@ impl shader::Primitive for Primitive {
                 }
                 Command::UpdateEditObjects {
                     shader_objects,
-                    custom_objects_chenel,
+                    custom_objects_chanel,
                 } => {
                     let mut custom_objects = vec![];
                     for object in shader_objects {
@@ -93,18 +89,18 @@ impl shader::Primitive for Primitive {
                     }
 
                     let resize = {
-                        let seted_custom_objects_buffer = pipeline
+                        let edited_custom_objects_buffer = pipeline
                             .edit_bg
                             .data
                             .storage_buffers
                             .set_buffer(&BufferType::CustomObjects, device, custom_objects.len() as _);
-                        let seted_f32_channel_buffer =
+                        let edited_f32_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
                                 &BufferType::Chanel(ChanelType::F32),
                                 device,
-                                custom_objects_chenel.get_f32().len() as _,
+                                custom_objects_chanel.get_f32().len() as _,
                             );
-                        seted_custom_objects_buffer || seted_f32_channel_buffer
+                        edited_custom_objects_buffer || edited_f32_channel_buffer
                     };
 
                     if resize {
@@ -120,7 +116,7 @@ impl shader::Primitive for Primitive {
                         pipeline.edit_bg.data.storage_buffers.write(
                             &BufferType::Chanel(ChanelType::F32),
                             queue,
-                            custom_objects_chenel.get_f32(),
+                            custom_objects_chanel.get_f32(),
                         );
                     };
                     write();

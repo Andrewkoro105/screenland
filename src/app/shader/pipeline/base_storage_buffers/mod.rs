@@ -9,7 +9,7 @@ use crate::app::shader::pipeline::base_storage_buffers::base_storage_buffer::{
 
 pub mod base_storage_buffer;
 
-trait GetDates {
+pub trait GetDates {
     fn get_data(&self) -> Vec<(u32, &BaseStorageBufferData)>;
 }
 
@@ -34,7 +34,7 @@ impl<BufferType: Hash + PartialEq + Eq> BaseStorageBuffers<BufferType, BaseStora
             .collect()
     }
 
-    pub fn get_bind_group_entry(&self) -> Vec<BindGroupEntry> {
+    pub fn get_bind_group_entry(&self) -> Vec<BindGroupEntry<'_>> {
         self.get_vec()
             .into_iter()
             .map(|buff| buff.get_bind_group_entry(self.start_binding))

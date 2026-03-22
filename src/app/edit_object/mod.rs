@@ -6,7 +6,7 @@ use glam::Vec2;
 use iced::{Element, Task};
 use crate::app::{
     self, 
-    edit_object::{custom_object::param::chanel::{Chanel, ChannelIndex}, ui_point::{UIPoint, UIPointElement}},
+    edit_object::{custom_object::param::chanel::{Chanel}, ui_point::{UIPoint, UIPointElement}},
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
     update
 };

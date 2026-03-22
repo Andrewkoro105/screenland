@@ -22,14 +22,14 @@ impl Screenland {
                 commands: match &self.mode {
                     Mode::Base => vec![shader::Command::UpdateEditObjects {
                         shader_objects: self.shader_objects.clone(),
-                        custom_objects_chenel: self.custom_objects_chenel.clone(),
+                        custom_objects_chanel: self.custom_objects_chanel.clone(),
                     }],
                     Mode::Move(_) => vec![
                         shader::Command::Selection(self.selection),
                         shader::Command::Points(self.selection.get_ui_point()),
                         shader::Command::UpdateEditObjects {
                             shader_objects: self.shader_objects.clone(),
-                            custom_objects_chenel: self.custom_objects_chenel.clone(),
+                            custom_objects_chanel: self.custom_objects_chanel.clone(),
                         },
                     ],
                     Mode::Transparency => vec![

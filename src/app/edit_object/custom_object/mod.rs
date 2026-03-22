@@ -262,7 +262,7 @@ impl EditObject for CustomObject {
             match message {
                 Message::SetF32(index, value) => {
                     if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
-                        Task::done(app::Message::CustomObjectsChenelUpdate {
+                        Task::done(app::Message::CustomObjectsChanelUpdate {
                             i: self.i,
                             index,
                             message: chanel::Message::F32(num_input.update(&value)),
