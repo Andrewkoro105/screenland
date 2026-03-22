@@ -92,7 +92,7 @@ custom_objects:
     shader_type: (!F32)
       # Default value
       num_input: 1.0
-  # The body of the shader function. The function will be passed the following parameters: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all the parameters you request from the user. To view the entire shader, use `-o`, or better yet, `-o | bat -l wgsl`
+  # The body of the shader function. The function will be passed the following parameters: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all the parameters you request from the user and `edit_object_base_settings`. To view the entire shader, use `-o`, or better yet, `-o | bat -l wgsl`
   shader: <WGSL_CODE>
   # Point format for modifying an object (`Cube` - rectangular area). Not working yet!
   points_format: (Cube)
