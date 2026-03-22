@@ -67,7 +67,7 @@ impl Param {
         let shader_type_name = 
             self.shader_type.get_type_name();
         format!(
-            "{shader_type_name}_channel.{shader_type_name}_channel[channel_index.{shader_type_name}_index + {i}],",
+            "{shader_type_name}_channel.data[channel_index.{shader_type_name}_index + {i}],",
         )
     }
 

@@ -48,6 +48,8 @@ pub struct Screenland {
     mode: Mode,
     mouse_pos: Vec2,
     settings: Settings,
+
+    current_object: Option<usize>,
     objects: Vec<Box<dyn EditObject>>,
     shader_objects: Vec<edit_object::ShaderObjects>,
     custom_objects_chanel: custom_object::param::chanel::Chanel,
@@ -80,6 +82,7 @@ impl BootFn<Screenland, Message> for Settings {
                 mouse_pos: Default::default(),
                 auto_exit: true,
                 settings: self.clone(),
+                current_object: None,
                 objects: vec![],
                 shader_objects: vec![],
                 custom_objects_chanel: Default::default(),

@@ -28,7 +28,7 @@ pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
                 .enumerate()
                 .map(|(i, custom_object)| {
                     let name: String = custom_object.get_name();
-                    format!("case {i}: {{result = draw_{name}(result, screen_pixel_pos, get_data_{name}(custom_objects.custom_objects[i].channel_index));}}")
+                    format!("case {i}: {{result = draw_{name}(result, screen_pixel_pos, get_data_{name}(custom_objects.data[i].channel_index));}}")
                 })
                 .collect::<Vec<_>>()
                 .join("\t\t\t\n")

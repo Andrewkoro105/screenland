@@ -123,6 +123,7 @@ impl Screenland {
             Message::AddObject(create_objects) => {
                 match create_objects {
                     edit_object::CreateObjects::Custom(i) => {
+                        self.current_object = Some(self.objects.len());
                         self.objects
                             .push(Box::new(self.settings.custom_objects[i].get_object(
                                 self.objects.len(),

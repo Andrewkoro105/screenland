@@ -6,18 +6,25 @@ use serde::{Deserialize, Serialize};
 use serde_yaml::from_reader;
 use std::{
     fs::{self, OpenOptions},
-    path::PathBuf, str::FromStr,
+    path::PathBuf,
+    str::FromStr,
 };
 
 use crate::{
     Args,
     app::{
         edit_object::custom_object::{
-            CustomIndexedObjectSettings, CustomObjectSettings, add_type_id, add_type_id_deserialize, icon::Icon, param::{Param, ShaderType}, points::PointsFormat, remove_type_id_serialize
+            CustomIndexedObjectSettings, CustomObjectSettings, add_type_id,
+            add_type_id_deserialize,
+            icon::Icon,
+            param::{Param, ShaderType},
+            points::PointsFormat,
+            remove_type_id_serialize,
         },
         end::End,
         settings::edit_object_base_settings::{ColorInput, EditObjectBaseSettings},
-    }, screenshots::ColorFormat,
+    },
+    screenshots::ColorFormat,
 };
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -52,7 +59,12 @@ impl Settings {
         Self {
             config_path,
             cli_color_format: false,
-            color_format: ColorFormat { r: 0, g: 1, b: 2, a: 3 },
+            color_format: ColorFormat {
+                r: 0,
+                g: 1,
+                b: 2,
+                a: 3,
+            },
             path: PathBuf::from("./"),
             cli_path: false,
             format: String::from("screenshot_%Y-%m-%d_%H:%M:%S.png"),
@@ -72,13 +84,27 @@ impl Settings {
             custom_objects: add_type_id(vec![CustomObjectSettings::new(
                 "rectangle".into(),
                 Icon::Name("square".into()),
-                vec![Param::new(
-                    "ass".into(),
-                    ShaderType::F32 {
-                        num_input: NumInput::new(12.),
-                    },
-                )],
-                "return vec4(1., 1., 1., 1.);".into(),
+                vec![
+                    Param::new(
+                        "filter_r".into(),
+                        ShaderType::F32 {
+                            num_input: NumInput::new(1.),
+                        },
+                    ),
+                    Param::new(
+                        "filter_g".into(),
+                        ShaderType::F32 {
+                            num_input: NumInput::new(1.),
+                        },
+                    ),
+                    Param::new(
+                        "filter_b".into(),
+                        ShaderType::F32 {
+                            num_input: NumInput::new(1.),
+                        },
+                    ),
+                ],
+                "   return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);".into(),
                 Some(PointsFormat::Cube),
             )]),
         }

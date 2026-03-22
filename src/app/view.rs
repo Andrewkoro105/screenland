@@ -1,7 +1,7 @@
 use glam::Vec2;
 use iced::{
     Alignment, Border, Element, Length, Theme,
-    widget::{Row, Shader, button, container, row, stack, text_input},
+    widget::{Column, Row, Shader, button, container, row, stack, text_input},
     window,
 };
 
@@ -41,12 +41,33 @@ impl Screenland {
             .width(Length::Fill)
             .height(Length::Fill),
             if window_data.pos == (0, 0) && self.mode != Mode::Transparency {
-                self.view_up_menu()
+                stack![self.view_up_menu(), self.view_left_menu()]
+                    .height(Length::Fill)
+                    .width(Length::Fill)
             } else {
-                row![].into()
+                stack![]
             }
         ]
         .into()
+    }
+
+    fn view_left_menu(&self) -> Element<'_, Message> {
+        if let Some(current_object) = self.current_object {
+            container(
+                container(self.objects[current_object].get_menu())
+                    .width(Length::Fixed(200.))
+                    .padding(10)
+                    .style(Self::style_menu),
+            )
+            .padding(10)
+            .align_x(Alignment::Start)
+            .align_y(Alignment::Center)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .into()
+        } else {
+            "".into()
+        }
     }
 
     fn view_up_menu(&self) -> Element<'_, Message> {
@@ -127,24 +148,26 @@ impl Screenland {
                 .align_y(Alignment::Center),
             )
             .padding(10)
-            .style(|theme| {
-                let mut result =
-                    container::Catalog::style(theme, &<Theme as container::Catalog>::default());
-                result.background = Some(
-                    text_input::Catalog::style(
-                        theme,
-                        &<Theme as text_input::Catalog>::default(),
-                        text_input::Status::Active,
-                    )
-                    .background,
-                );
-                result.border = Border::default().rounded(5);
-                result
-            }),
+            .style(Self::style_menu),
         )
         .padding(10)
         .align_x(Alignment::Center)
         .width(Length::Fill)
         .into()
+    }
+
+    fn style_menu(theme: &Theme) -> container::Style {
+        let mut result =
+            container::Catalog::style(theme, &<Theme as container::Catalog>::default());
+        result.background = Some(
+            text_input::Catalog::style(
+                theme,
+                &<Theme as text_input::Catalog>::default(),
+                text_input::Status::Active,
+            )
+            .background,
+        );
+        result.border = Border::default().rounded(5);
+        result
     }
 }
