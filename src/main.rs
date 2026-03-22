@@ -9,7 +9,7 @@ use app::Screenland;
 use clap::Parser;
 use iced_aw::ICED_AW_FONT_BYTES;
 
-#[derive(Parser)]
+#[derive(Parser, Clone)]
 #[command(name = "Screenland")]
 #[command(about = "Screenland is a program for creating and editing screenshots", long_about = None)]
 pub struct Args {

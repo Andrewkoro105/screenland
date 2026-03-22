@@ -1,13 +1,16 @@
-use crate::app::{
+use clap::Parser;
+
+use crate::{Args, app::{
     edit_object::{EditObjectSettings, custom_object::CustomIndexedObjectSettings},
     settings::Settings,
     shader::pipeline::{base_storage_buffers::GetShader, edit_bg::get_storage_buffers_data},
-};
+}};
 
 pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
-    let custom_objects = Settings::load(None, None).custom_objects;
+    let args = Args::parse();
+    let custom_objects = Settings::load(Some(args.clone()), None).custom_objects;
     let new_storage_buffers = get_storage_buffers_data();
-    include_str!("shader.wgsl")
+    let result = include_str!("shader.wgsl")
         .to_string()
         .replace(
             "//{STORAGE_BUFFERS}",
@@ -40,5 +43,11 @@ pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
                 .map(CustomIndexedObjectSettings::get_shader)
                 .collect::<Vec<_>>()
                 .join("\n"),
-        )
+        );
+
+    if args.output_shader_and_run {
+        println!("```wgsl\n{result}\n```");
+    }
+
+    result
 }
