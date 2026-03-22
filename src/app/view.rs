@@ -106,7 +106,7 @@ impl Screenland {
                             .b
                             .view("", |a| {
                                 Message::EditObjectBaseSettings(
-                                    edit_object_base_settings::Message::SetColorG(a),
+                                    edit_object_base_settings::Message::SetColorB(a),
                                 )
                             })
                     )

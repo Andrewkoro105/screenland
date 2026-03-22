@@ -32,12 +32,13 @@ pub struct EditObjectBaseSettings {
     pub size: NumInput<f32, ConstF32<0>>,
 }
 
-#[repr(C, packed)]
-#[derive(Copy, Clone, Debug, Pod, Zeroable)]
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct EditObjectBaseSettingsFromShader {
     pub color: Vec4,
     pub size: f32,
-    _padding: Vec3,
+    _padding: [u8; 3 * 4],
 }
 
 impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
@@ -50,7 +51,7 @@ impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
                 value.color.a.get(),
             ),
             size: value.size.get(),
-            _padding: Vec3::new(0., 0., 0.)
+            _padding: [0; _]
         }
     }
 }

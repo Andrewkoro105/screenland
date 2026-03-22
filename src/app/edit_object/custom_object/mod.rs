@@ -4,6 +4,7 @@ pub mod points;
 use std::ops::Not;
 
 use bytemuck::{Pod, Zeroable};
+use glam::{Vec2, Vec3};
 use iced::{Task, widget::Column};
 use serde::{Deserialize, Serialize, Serializer};
 
@@ -60,8 +61,10 @@ pub struct CustomObject {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct CustomObjectFromShader {
+    pub edit_object_base_settings: EditObjectBaseSettingsFromShader,
     pub custom_object_type: u32,
     pub channel_index: ChannelIndex,
+    _padding: [u8; 8],
 }
 
 impl CustomObjectSettings {
@@ -173,21 +176,24 @@ impl EditObjectSettings for CustomIndexedObjectSettings {
             .iter()
             .map(Param::get_str_field)
             .collect::<Vec<_>>()
-            .join("\n\t");
+            .join("\n    ");
         let init_params = Param::indexing_params(&self.params)
             .iter()
             .map(|(i, param)| param.get_str_init_field(*i))
             .collect::<Vec<_>>()
-            .join("\n\t");
+            .join("\n    ");
 
         format!(
             r"
 struct Data_{name} {{
+    base_settings: EditObjectBaseSettings,
     {params}
 }}
 
-fn get_data_{name}(channel_index: ChannelIndex) -> Data_{name} {{
+fn get_data_{name}(objects: CustomObject) -> Data_{name} {{
+    let channel_index = objects.channel_index;
     return Data_{name} (
+        objects.base_settings,
         {init_params}
     );
 }}
@@ -314,6 +320,8 @@ impl EditObject for CustomObject {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
             channel_index: chanel.get_index(),
             custom_object_type: self.get_type_id(),
+            edit_object_base_settings: self.edit_object_base_settings,
+            ..Default::default()
         });
 
         chanel.add_f32(self.get_f32_data());

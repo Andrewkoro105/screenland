@@ -27,6 +27,7 @@ struct ChannelIndex {
 }
 
 struct CustomObject {
+    base_settings: EditObjectBaseSettings,
     custom_object_type: u32,
     channel_index: ChannelIndex
 }
@@ -99,7 +100,8 @@ fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
 fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     var result = input;
     for(var i = 0u; i < custom_objects.len; i = i + 1u) {
-        switch (custom_objects.data[i].custom_object_type) {
+        let object = custom_objects.data[i];
+        switch (object.custom_object_type) {
             //{DRAW_CUSTOM_OBJECTS}
             default: {}
         }
