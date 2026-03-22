@@ -54,14 +54,48 @@ The configuration file is written in YAML format and is located by default at `~
 The structure of config.yaml looks like this:
 
 ```yaml
-# path to config. Usually `~/.config/screenland/config.yaml`
+# Path to config. Usually `~/.config/screenland/config.yaml`
 config_path: <PATH>
-# path to the folder where screenshots will be saved
+# The placement of the color channels in the screenshot
+color_format:
+  r: <USIZE(0..3)>
+  g: <USIZE(0..3)>
+  b: <USIZE(0..3)>
+  a: <USIZE(0..3)>
+# Path to the folder where screenshots will be saved
 path: <PATH>
-# file name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+# File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
 format: <CHRONO_FORMAT>
-# complete the screenshot immediately after selection
-base_end: (null | Save | Copy)
+# Complete the screenshot immediately after selection
+base_end: (null; Save; Copy)
+# Default color and size settings for all objects
+edit_object_base_settings:
+  color:
+    r: <F32>
+    g: <F32>
+    b: <F32>
+    a: <F32>
+  size: <F32>
+# Custom objects that can either replace the entire screenshot or add something to it
+custom_objects:
+- 
+  # Object name; it must be unique among the added objects
+  name: <STRING>
+  # Button icon. You can specify an icon using the `iced_font_awesome` library via `Name` and `SolidName`, or specify a direct path to the image using `Path`
+  icon: !Name <STRING>
+  params:
+  # Parameters that the user can set and that will be passed to the shader
+  - 
+    # Parameter name
+    name: <STRING>
+    # Parameter type
+    shader_type: (!F32)
+      # Default value
+      num_input: 1.0
+  # The body of the shader function. The function will be passed the following parameters: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all the parameters you request from the user. To view the entire shader, use `-o`, or better yet, `-o | bat -l wgsl`
+  shader: <WGSL_CODE>
+  # Point format for modifying an object (`Cube` - rectangular area). Not working yet!
+  points_format: (Cube)
 
 ```
 
@@ -77,19 +111,21 @@ Usage: screenland [OPTIONS]
 
 Options:
   -s, --support-config <SUPPORT_CONFIG>
-          generate config for the supported system (hypr | hyprland)
+          Generate config for the supported system (hypr | hyprland)
+  -c, --color-format <COLOR_FORMAT>
+          The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
   -g, --generate-config
-          generate config
+          Generate config
   -o, --output-shader
-          outputs the shader with the current configuration
-  -c, --config <CONFIG>
-          path to config. By default: `~/.config/screenland/config.yaml`
-  -f, --format <FORMAT>
-          file name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-  -p, --path <PATH>
-          path to the folder where screenshots will be saved
+          Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
+      --config <CONFIG>
+          Path to config. By default: `~/.config/screenland/config.yaml`
+      --format <FORMAT>
+          File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+      --path <PATH>
+          Path to the folder where screenshots will be saved
   -e, --end <END>
-          complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+          Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
   -h, --help
           Print help
 ```
