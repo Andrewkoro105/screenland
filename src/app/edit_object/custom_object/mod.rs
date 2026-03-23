@@ -25,7 +25,7 @@ use crate::app::{
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     SetF32(usize, String),
     Point(PointsMessage),

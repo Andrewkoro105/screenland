@@ -9,10 +9,7 @@ mod view;
 
 use crate::{
     app::{
-        edit_object::{
-            EditObject,
-            custom_object,
-        },
+        edit_object::{EditObject, custom_object},
         selection::Selection,
         settings::Settings,
         update::Message,
@@ -25,12 +22,16 @@ use iced::{
     application::BootFn,
     window::{self, settings::PlatformSpecific},
 };
+use iced_layershell::reexport::{
+    Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings, OutputOption,
+};
+use serde::Deserialize;
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
 /// `Mode` indicates the basic state of the program that affects how objects are drawn and updated, as well as what data is sent to the shader.
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub enum Mode {
     /// Select the point to move, and if you click outside the points, switch to `Selection` mode.
     #[default]
@@ -60,18 +61,28 @@ impl BootFn<Screenland, Message> for Settings {
         let mut windows_task = Task::none();
         let mut windows_data = HashMap::new();
 
-        for monitor_data in get_outputs() {
-            let (id, window_task) = window::open(window::Settings {
-                fullscreen: true,
-                platform_specific: PlatformSpecific {
-                    application_id: "screenland".into(),
+        if self.disables_overlay {
+            for monitor_data in get_outputs() {
+                let (id, window_task) = window::open(window::Settings {
+                    fullscreen: true,
+                    platform_specific: PlatformSpecific {
+                        application_id: "screenland".into(),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            });
-            windows_task = windows_task.chain(window_task.discard());
+                });
+                windows_task = windows_task.chain(window_task.discard());
 
-            windows_data.insert(id, monitor_data);
+                windows_data.insert(id, monitor_data);
+            }
+        } else {
+            windows_data = get_outputs()
+                .into_iter()
+                .enumerate()
+                .map(|(i, monitor_data)| {
+                    (serde_yaml::from_str(&(i + 1).to_string()).unwrap(), monitor_data)
+                })
+                .collect();
         }
 
         (
@@ -98,7 +109,11 @@ impl Screenland {
     }
 
     pub fn title(&self, id: window::Id) -> String {
-        format!("screenland-{}", self.windows_data.get(&id).unwrap().name)
+        if self.settings.disables_overlay {
+            format!("screenland-{}", self.windows_data.get(&id).unwrap().name)
+        } else {
+            "screenland".to_string()
+        }
     }
 
     pub fn reload_shader_objects(&mut self) {

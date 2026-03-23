@@ -14,7 +14,7 @@ pub enum PointsData {
     Cube { start: Vec2, end: Vec2 },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum PointsMessage {
     Cube(cube::Message),
 }

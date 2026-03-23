@@ -1,6 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     F32(f32)
 }

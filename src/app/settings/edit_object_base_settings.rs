@@ -5,7 +5,7 @@ use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};
 use crate::app::update::Message as AppMessage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     SetSize(String),
     SetColor(Color),

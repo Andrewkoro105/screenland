@@ -68,6 +68,8 @@ path: <PATH>
 format: <CHRONO_FORMAT>
 # Complete the screenshot immediately after selection
 base_end: (null; Save; Copy)
+# Disables overlay mode
+disables_overlay: <BOOL>
 # Default color and size settings for all objects
 edit_object_base_settings:
   color:
@@ -104,7 +106,6 @@ A standard configuration file can be created using `screenland -g`.
 ## CLI
 
 ```
-❯ screenland --help
 Screenland is a program for creating and editing screenshots
 
 Usage: screenland [OPTIONS]
@@ -128,6 +129,8 @@ Options:
           Path to the folder where screenshots will be saved
   -e, --end <END>
           Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+      --disables-overlay
+          Disables overlay mode
   -h, --help
           Print help
 ```

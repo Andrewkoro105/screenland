@@ -7,7 +7,9 @@ use crate::{
 };
 use app::Screenland;
 use clap::Parser;
+use iced::application::BootFn;
 use iced_aw::ICED_AW_FONT_BYTES;
+use iced_layershell::{self, reexport::Anchor, settings::{LayerShellSettings, StartMode}};
 
 #[derive(Parser, Clone)]
 #[command(name = "Screenland")]
@@ -40,9 +42,12 @@ pub struct Args {
     /// Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
     #[arg(short, long)]
     end: Option<String>,
+    /// Disables overlay mode
+    #[arg(long)]
+    disables_overlay: bool,
 }
 
-fn main() -> iced::Result {
+fn main() -> Result<(), iced_layershell::Error> {
     let args = Args::parse();
     let arg_config = Settings::get_path(args.path.clone().map(Into::into));
 
@@ -72,23 +77,55 @@ windowrule = match:title Save As, float on
                 eprintln!("{sys} unsupported")
             }
         }
-        iced::Result::Ok(())
+        Ok(())
     } else if args.generate_config {
         Settings::new(arg_config).save();
-        iced::Result::Ok(())
+        Ok(())
     } else if args.output_shader {
         println!("{}", get_shader(None));
-        iced::Result::Ok(())
+        Ok(())
     } else {
-        iced::daemon(
-            Settings::load(Some(args), Some(arg_config)),
-            Screenland::update,
-            Screenland::view,
-        )
-        .title(Screenland::title)
-        .font(ICED_AW_FONT_BYTES)
-        .theme(Screenland::theme)
-        .subscription(Screenland::subscription)
-        .run()
+        let settings = Settings::load(Some(args), Some(arg_config));
+        if settings.disables_overlay {
+            iced::daemon(settings, Screenland::update, Screenland::view)
+                .title(Screenland::title)
+                .font(ICED_AW_FONT_BYTES)
+                .theme(Screenland::theme)
+                .subscription(Screenland::subscription)
+                .run()
+                .map_err(|err| match err {
+                    iced::Error::ExecutorCreationFailed(err) => {
+                        iced_layershell::Error::ExecutorCreationFailed(err)
+                    }
+                    iced::Error::WindowCreationFailed(err) => {
+                        iced_layershell::Error::WindowCreationFailed(err)
+                    }
+                    iced::Error::GraphicsCreationFailed(err) => {
+                        iced_layershell::Error::GraphicsCreationFailed(err)
+                    }
+                })
+        } else {
+            iced_layershell::daemon(
+                move || settings.boot(),
+                || "Screenland".to_string(),
+                Screenland::update,
+                Screenland::view,
+            )
+            .title(|app, id| Some(Screenland::title(app, id)))
+            .font(ICED_AW_FONT_BYTES)
+            .theme(Screenland::theme)
+            .subscription(Screenland::subscription)
+            .settings(iced_layershell::settings::Settings {
+                layer_settings: LayerShellSettings {
+                    size: Some((0, 0)),
+                    exclusive_zone: 0,
+                    anchor: Anchor::all(),
+                    start_mode: StartMode::AllScreens,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .run()
+        }
     }
 }

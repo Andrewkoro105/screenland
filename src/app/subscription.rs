@@ -9,12 +9,12 @@ use iced::{
     mouse, window,
 };
 
-use crate::app::{START_TIME, Screenland, end::End, update::Message};
+use crate::app::{START_TIME, Screenland, end::End, settings::Settings, update::Message};
 
 impl Screenland {
     pub fn subscription(&self) -> Subscription<Message> {
         Subscription::batch(vec![
-            event::listen_raw(move |event, status, id| Self::event_handler(id, status, event)),
+            event::listen_raw(|event, status, id| Self::event_handler(id, status, event)),
         ])
     }
 

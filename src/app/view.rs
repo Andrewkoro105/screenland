@@ -14,41 +14,44 @@ use crate::app::edit_object::EditObjectSettings;
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
-        let window_data = self.windows_data.get(&id).unwrap();
-        let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
-        stack![
-            Shader::new(shader::Program {
-                monitor_pos,
-                commands: match &self.mode {
-                    Mode::Base => vec![shader::Command::UpdateEditObjects {
-                        shader_objects: self.shader_objects.clone(),
-                        custom_objects_chanel: self.custom_objects_chanel.clone(),
-                    }],
-                    Mode::Move(_) => vec![
-                        shader::Command::Selection(self.selection),
-                        shader::Command::Points(self.selection.get_ui_point()),
-                        shader::Command::UpdateEditObjects {
+        if let Some(window_data) = self.windows_data.get(&id) {
+            let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
+            stack![
+                Shader::new(shader::Program {
+                    monitor_pos,
+                    commands: match &self.mode {
+                        Mode::Base => vec![shader::Command::UpdateEditObjects {
                             shader_objects: self.shader_objects.clone(),
                             custom_objects_chanel: self.custom_objects_chanel.clone(),
-                        },
-                    ],
-                    Mode::Transparency => vec![
-                        shader::Command::Selection(self.selection.add(100000.)),
-                        shader::Command::Points(vec![]),
-                    ],
-                },
-            })
-            .width(Length::Fill)
-            .height(Length::Fill),
-            if window_data.pos == (0, 0) && self.mode != Mode::Transparency {
-                stack![self.view_up_menu(), self.view_left_menu()]
-                    .height(Length::Fill)
-                    .width(Length::Fill)
-            } else {
-                stack![]
-            }
-        ]
-        .into()
+                        }],
+                        Mode::Move(_) => vec![
+                            shader::Command::Selection(self.selection),
+                            shader::Command::Points(self.selection.get_ui_point()),
+                            shader::Command::UpdateEditObjects {
+                                shader_objects: self.shader_objects.clone(),
+                                custom_objects_chanel: self.custom_objects_chanel.clone(),
+                            },
+                        ],
+                        Mode::Transparency => vec![
+                            shader::Command::Selection(self.selection.add(100000.)),
+                            shader::Command::Points(vec![]),
+                        ],
+                    },
+                })
+                .width(Length::Fill)
+                .height(Length::Fill),
+                if window_data.pos == (0, 0) && self.mode != Mode::Transparency {
+                    stack![self.view_up_menu(), self.view_left_menu()]
+                        .height(Length::Fill)
+                        .width(Length::Fill)
+                } else {
+                    stack![]
+                }
+            ]
+            .into()
+        } else {
+            row![].into()
+        }
     }
 
     fn view_left_menu(&self) -> Element<'_, Message> {

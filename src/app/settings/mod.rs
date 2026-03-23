@@ -50,6 +50,11 @@ pub struct Settings {
 
     #[serde(skip)]
     #[serde(default)]
+    pub cli_disables_overlay: bool,
+    pub disables_overlay: bool,
+
+    #[serde(skip)]
+    #[serde(default)]
     pub output_shader_and_run: bool,
 
     pub edit_object_base_settings: EditObjectBaseSettings,
@@ -76,6 +81,8 @@ impl Settings {
             base_end: None,
             cli_base_end: false,
             output_shader_and_run: false,
+            cli_disables_overlay: false,
+            disables_overlay: false,
             edit_object_base_settings: EditObjectBaseSettings {
                 color: ColorInput {
                     r: NumInput::new(1.),
@@ -162,6 +169,11 @@ impl Settings {
             result.cli_format = true;
         }
 
+        if args.disables_overlay {
+            result.disables_overlay = true;
+            result.cli_disables_overlay = true;
+        }
+
         result.output_shader_and_run = args.output_shader_and_run;
 
         if let Some(end) = args.end {
@@ -195,6 +207,9 @@ impl Settings {
         }
         if !save_data.cli_base_end {
             save_data.base_end = base_save_data.base_end;
+        }
+        if !save_data.cli_disables_overlay {
+            save_data.disables_overlay = base_save_data.disables_overlay;
         }
 
         if let Some(parent) = self.config_path.parent()

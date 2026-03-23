@@ -12,7 +12,7 @@ use crate::{
     screenshots::{ColorFormat, full_screenshot},
 };
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum End {
     Save,
     Copy,

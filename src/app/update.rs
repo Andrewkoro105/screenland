@@ -2,16 +2,21 @@ use std::{thread::sleep, time::Duration};
 
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
+use iced_layershell::to_layer_message;
 
-use crate::app::{
-    Mode, Screenland,
-    edit_object::{self, EditObjectSettings, custom_object::param::chanel},
-    end::End,
-    selection,
-    settings::edit_object_base_settings,
+use crate::{
+    app::{
+        Mode, Screenland,
+        edit_object::{self, EditObjectSettings, custom_object::param::chanel},
+        end::End,
+        selection,
+        settings::edit_object_base_settings,
+    },
+    screenshots::get_outputs,
 };
 
-#[derive(Clone)]
+#[to_layer_message(multi)]
+#[derive(Clone, Debug)]
 pub enum Message {
     Exit,
     AutoExit,
@@ -24,7 +29,11 @@ pub enum Message {
     EditObjectBaseSettings(edit_object_base_settings::Message),
     AddObject(edit_object::CreateObjects),
     UpdateEditObject((usize, edit_object::Message)),
-    CustomObjectsChanelUpdate { i: usize, index: usize, message: chanel::Message },
+    CustomObjectsChanelUpdate {
+        i: usize,
+        index: usize,
+        message: chanel::Message,
+    },
     None,
 }
 
@@ -150,6 +159,7 @@ impl Screenland {
                 Task::none()
             }
             Message::None => Task::none(),
+            _ => unreachable!(),
         }
     }
 }

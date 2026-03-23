@@ -11,12 +11,12 @@ use crate::app::{
     update
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     Custom(custom_object::Message)
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CreateObjects {
     Custom(usize)
 }
