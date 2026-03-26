@@ -18,7 +18,7 @@ use crate::app::{
             icon::Icon,
             param::{
                 Param, ShaderType,
-                chanel::{self, Chanel, ChannelIndex},
+                chanel::{self, AddMessage, Chanel, ChannelIndex},
             },
             points::{PointsData, PointsFormat, PointsMessage},
         },
@@ -61,13 +61,14 @@ pub struct CustomObject {
     points_data: Option<PointsData>,
     params: Vec<Param>,
 }
+
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct CustomObjectFromShader {
     pub edit_object_base_settings: EditObjectBaseSettingsFromShader,
     pub custom_object_type: u32,
     pub channel_index: ChannelIndex,
-    _padding: [u8; 8],
+    _padding: [u8; 4],
 }
 
 impl CustomObjectSettings {
@@ -335,8 +336,8 @@ impl EditObject for CustomObject {
             ..Default::default()
         });
 
-        chanel.add_f32(self.get_f32_data());
-        chanel.add_cube(self.get_cube_data());
+        chanel.add(AddMessage::F32(self.get_f32_data()));
+        chanel.add(AddMessage::Cube(self.get_cube_data()));
         result
     }
 }

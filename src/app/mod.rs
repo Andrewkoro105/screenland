@@ -123,5 +123,6 @@ impl Screenland {
             self.shader_objects
                 .push(object.get_shader_object(&mut self.custom_objects_chanel));
         }
+        println!("[=========]shader_objects:\n{:?}\n[====]\ncustom_objects_chanel:\n{:?}", self.shader_objects, self.custom_objects_chanel);
     }
 }

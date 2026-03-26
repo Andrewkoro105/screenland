@@ -8,6 +8,12 @@ pub enum Message {
     F32(f32),
 }
 
+#[derive(Clone, Debug)]
+pub enum AddMessage {
+    Cube(Vec<Cube>),
+    F32(Vec<f32>),
+}
+
 #[derive(Hash, PartialEq)]
 pub enum ChanelType {
     Cube,
@@ -19,6 +25,7 @@ impl Eq for ChanelType {}
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct ChannelIndex {
+    pub cube: u32,
     pub f32: u32,
 }
 
@@ -31,24 +38,16 @@ pub struct Chanel {
 impl Chanel {
     pub fn get_index(&self) -> ChannelIndex {
         ChannelIndex {
+            cube: self.cube.len() as _,
             f32: self.f32.len() as _,
         }
     }
 
-    pub fn add_f32(&mut self, mut data: Vec<f32>) {
-        self.f32.append(&mut data);
-    }
-
-    pub fn add_cube(&mut self, mut data: Vec<Cube>) {
-        self.cube.append(&mut data);
-    }
-
-    fn set_f32(&mut self, chanel_index: ChannelIndex, index: usize, value: f32) {
-        self.f32[chanel_index.f32 as usize + index] = value;
-    }
-
-    fn set_cube(&mut self, chanel_index: ChannelIndex, index: usize, value: Cube) {
-        self.cube[chanel_index.f32 as usize + index] = value;
+    pub fn add(&mut self, mut data: AddMessage) {
+        match &mut data {
+            AddMessage::Cube(data) => self.cube.append(data),
+            AddMessage::F32(data) => self.f32.append(data),
+        }
     }
 
     pub fn get_f32(&self) -> &Vec<f32> {
@@ -61,9 +60,9 @@ impl Chanel {
 
     pub fn update(&mut self, message: Message, chanel_index: ChannelIndex, index: usize) {
         match message {
-            Message::F32(value) => self.set_f32(chanel_index, index, value),
+            Message::F32(value) => self.f32[chanel_index.f32 as usize + index] = value,
 
-            Message::Cube(value) => self.set_cube(chanel_index, index, value),
+            Message::Cube(value) => self.cube[chanel_index.cube as usize + index] = value,
         }
     }
 }
