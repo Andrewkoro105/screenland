@@ -67,19 +67,30 @@ impl Screenland {
 
                 match &self.mode {
                     Mode::Base => Task::none(),
-                    Mode::Move(message) => self.update(Message::SelectionUpdate(message.clone())),
+                    Mode::Move(message) => Task::done(*message.clone()),
                     Mode::Transparency => Task::none(),
                 }
             }
             Message::TouchStart => match self.mode {
                 Mode::Base => {
-                    let select_message = self.selection.get_messages(&self.mouse_pos);
-                    if !select_message.is_empty() {
-                        self.mode = Mode::Move(select_message[0].clone());
+                    let object_messages = self
+                        .current_object
+                        .map(|current_object| {
+                            self.objects[current_object].get_messages(&self.mouse_pos)
+                        })
+                        .unwrap_or_default();
+                    if let Some(message) = object_messages.first() {
+                        self.mode = Mode::Move(Box::new(message.clone()));
                     } else {
-                        self.mode = Mode::Move(selection::Message::MoveEnd);
-                        self.selection.start = self.mouse_pos;
-                        self.selection.end = self.mouse_pos;
+                        let selection_messages = self
+                            .selection
+                            .get_messages(&self.mouse_pos)
+                            .into_iter()
+                            .map(|message| Message::SelectionUpdate(message))
+                            .collect::<Vec<_>>();
+                        if let Some(message) = selection_messages.first() {
+                            self.mode = Mode::Move(Box::new(message.clone()));
+                        }
                     }
                     Task::none()
                 }

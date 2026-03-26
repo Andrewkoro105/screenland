@@ -31,13 +31,13 @@ use std::{collections::HashMap, sync::OnceLock, time::Instant};
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
 /// `Mode` indicates the basic state of the program that affects how objects are drawn and updated, as well as what data is sent to the shader.
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone)]
 pub enum Mode {
     /// Select the point to move, and if you click outside the points, switch to `Selection` mode.
     #[default]
     Base,
     /// Mode for moving the specified point
-    Move(selection::Message),
+    Move(Box<Message>),
     /// Mode in which the interface is not visible
     Transparency,
 }

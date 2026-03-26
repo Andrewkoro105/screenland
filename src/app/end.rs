@@ -24,10 +24,10 @@ impl Screenland {
         let select = selection.normalize();
         crop(
             &mut screenshot,
-            select.start.x as _,
-            select.start.y as _,
-            (select.end.x - select.start.x) as _,
-            (select.end.y - select.start.y) as _,
+            select.cube.start.x as _,
+            select.cube.start.y as _,
+            (select.cube.end.x - select.cube.start.x) as _,
+            (select.cube.end.y - select.cube.start.y) as _,
         )
         .to_image()
     }

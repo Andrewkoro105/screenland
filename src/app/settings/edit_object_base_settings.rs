@@ -1,5 +1,5 @@
 use bytemuck::{Pod, Zeroable};
-use glam::{Vec3, Vec4};
+use glam::{Vec4};
 use iced::{Color, Task};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};

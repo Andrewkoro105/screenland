@@ -12,9 +12,14 @@ struct BaseData {
     monitor_pos: vec2<f32>,
 };
 
-struct Selection {
+struct Cube {
     start: vec2<f32>,
     end: vec2<f32>,
+    init: u32,
+}
+
+struct Selection {
+    cube: Cube
 }
 
 struct UIPoint {
@@ -23,6 +28,7 @@ struct UIPoint {
 }
 
 struct ChannelIndex {
+    cube_index: u32,
     f32_index: u32,
 }
 
@@ -69,19 +75,19 @@ fn fs_main(@builtin(position) pixel_pos: vec4<f32>) -> @location(0) vec4<f32> {
     return result;
 }
 
-fn in_selection(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
+fn in(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
     return end.x > screen_pixel_pos.x && screen_pixel_pos.x > start.x && end.y > screen_pixel_pos.y && screen_pixel_pos.y > start.y;
 }
 
 fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
-    let in_border = in_selection(
+    let in_border = in(
         screen_pixel_pos,
-        selection.start - vec2<f32>(select_border_size, select_border_size),
-        selection.end + vec2<f32>(select_border_size, select_border_size));
+        selection.cube.start - vec2<f32>(select_border_size, select_border_size),
+        selection.cube.end + vec2<f32>(select_border_size, select_border_size));
 
     if !in_border {
         return result * vec4(blackout, blackout, blackout, 1.);
-    } else if !in_selection(screen_pixel_pos, selection.start, selection.end) {
+    } else if !in(screen_pixel_pos, selection.cube.start, selection.cube.end) {
         return base_color;
     }
     return result;
@@ -89,9 +95,12 @@ fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32>
 
 fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     for (var i = 0u; i < points.len; i = i + 1u) {
-        let r = sqrt(pow((screen_pixel_pos.x - points.data[i].pos.x), 2.) + pow((screen_pixel_pos.y - points.data[i].pos.y), 2.));
-        if r < points.data[i].size {
-            return base_color;
+        let size = points.data[i].size;
+        if size != 0 {
+            let r = sqrt(pow((screen_pixel_pos.x - points.data[i].pos.x), 2.) + pow((screen_pixel_pos.y - points.data[i].pos.y), 2.));
+            if r < size {
+                return base_color;
+            }
         }
     }
     return result;

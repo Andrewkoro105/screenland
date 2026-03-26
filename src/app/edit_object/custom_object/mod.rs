@@ -1,3 +1,4 @@
+pub mod data_type;
 pub mod icon;
 pub mod param;
 pub mod points;
@@ -13,6 +14,7 @@ use crate::app::{
     edit_object::{
         self, EditObject, EditObjectSettings,
         custom_object::{
+            data_type::DataType,
             icon::Icon,
             param::{
                 Param, ShaderType,
@@ -21,6 +23,7 @@ use crate::app::{
             points::{PointsData, PointsFormat, PointsMessage},
         },
         ui_point::UIPoint,
+        ui_utils::cube::Cube,
     },
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
@@ -174,12 +177,18 @@ impl EditObjectSettings for CustomIndexedObjectSettings {
         let params = self
             .params
             .iter()
-            .map(Param::get_str_field)
+            .map(DataType::get_str_field)
+            .chain(self.points_format.as_ref().map(DataType::get_str_field))
             .collect::<Vec<_>>()
             .join("\n    ");
         let init_params = Param::indexing_params(&self.params)
             .iter()
             .map(|(i, param)| param.get_str_init_field(*i))
+            .chain(
+                self.points_format
+                    .as_ref()
+                    .map(|points_format| points_format.get_str_init_field(0)),
+            )
             .collect::<Vec<_>>()
             .join("\n    ");
 
@@ -240,9 +249,9 @@ impl EditObject for CustomObject {
             .unwrap_or(vec![])
     }
 
-    fn get_messages(&self, position: &glam::Vec2) -> Vec<app::Message> {
+    fn get_messages(&mut self, position: &glam::Vec2) -> Vec<app::Message> {
         self.points_data
-            .as_ref()
+            .as_mut()
             .map(|points_data| {
                 points_data
                     .get_messages(position)
@@ -282,15 +291,7 @@ impl EditObject for CustomObject {
                     self.points_data
                         .as_mut()
                         .map(move |points_data| {
-                            points_data
-                                .update(muse_position, points_message)
-                                .map(Message::Point)
-                                .map(move |message| {
-                                    app::Message::UpdateEditObject((
-                                        i.clone(),
-                                        edit_object::Message::Custom(message),
-                                    ))
-                                })
+                            points_data.update(i, muse_position, points_message)
                         })
                         .unwrap_or(Task::none())
                 }
@@ -316,6 +317,16 @@ impl EditObject for CustomObject {
             .collect()
     }
 
+    fn get_cube_data(&self) -> Vec<Cube> {
+        self.points_data
+            .as_ref()
+            .map(|points_data| match points_data {
+                PointsData::Cube(cube) => vec![cube.clone()],
+                _ => vec![],
+            })
+            .unwrap_or_default()
+    }
+
     fn get_shader_object(&self, chanel: &mut Chanel) -> edit_object::ShaderObjects {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
             channel_index: chanel.get_index(),
@@ -325,6 +336,7 @@ impl EditObject for CustomObject {
         });
 
         chanel.add_f32(self.get_f32_data());
+        chanel.add_cube(self.get_cube_data());
         result
     }
 }

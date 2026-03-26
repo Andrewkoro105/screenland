@@ -100,7 +100,13 @@ impl shader::Primitive for Primitive {
                                 device,
                                 custom_objects_chanel.get_f32().len() as _,
                             );
-                        edited_custom_objects_buffer || edited_f32_channel_buffer
+                        let edited_cube_channel_buffer =
+                            pipeline.edit_bg.data.storage_buffers.set_buffer(
+                                &BufferType::Chanel(ChanelType::Cube),
+                                device,
+                                custom_objects_chanel.get_cube().len() as _,
+                            );
+                        edited_custom_objects_buffer || edited_f32_channel_buffer || edited_cube_channel_buffer
                     };
 
                     if resize {
@@ -117,6 +123,11 @@ impl shader::Primitive for Primitive {
                             &BufferType::Chanel(ChanelType::F32),
                             queue,
                             custom_objects_chanel.get_f32(),
+                        );
+                        pipeline.edit_bg.data.storage_buffers.write(
+                            &BufferType::Chanel(ChanelType::Cube),
+                            queue,
+                            custom_objects_chanel.get_cube(),
                         );
                     };
                     write();

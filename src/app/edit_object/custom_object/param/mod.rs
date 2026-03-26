@@ -6,7 +6,7 @@ use iced::widget::{row, text};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};
 
-use crate::app::edit_object::custom_object::Message;
+use crate::app::edit_object::custom_object::{Message, data_type::DataType};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShaderType {
@@ -55,22 +55,6 @@ impl Param {
         }
     }
 
-    pub fn get_name(&self) -> String {
-        self.name.clone()
-    }
-
-    pub fn get_str_field(&self) -> String {
-        format!("{}: {},", self.name, self.shader_type.get_type_name())
-    }
-
-    pub fn get_str_init_field(&self, i: usize) -> String {
-        let shader_type_name = 
-            self.shader_type.get_type_name();
-        format!(
-            "{shader_type_name}_channel.data[channel_index.{shader_type_name}_index + {i}],",
-        )
-    }
-
     pub fn indexing_params(params: &Vec<Self>) -> Vec<(usize, Self)> {
         let mut params_map: HashMap<_, Vec<_>> = HashMap::new();
         let mut result = vec![];
@@ -87,9 +71,13 @@ impl Param {
     }
 }
 
-impl ShaderType {
-    pub fn get_type_name(&self) -> String {
-        match self {
+impl DataType for Param {
+    fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn get_type_name(&self) -> String {
+        match self.shader_type {
             ShaderType::F32 { .. } => "f32".into(),
         }
     }

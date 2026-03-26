@@ -14,6 +14,10 @@ use crate::app::edit_object::EditObjectSettings;
 
 impl Screenland {
     pub fn view(&self, id: window::Id) -> Element<'_, Message> {
+        let is_transparency = match self.mode {
+            Mode::Transparency => true,
+            _ => false,
+        };
         if let Some(window_data) = self.windows_data.get(&id) {
             let monitor_pos = Vec2::new(window_data.pos.0 as _, window_data.pos.1 as _);
             stack![
@@ -26,7 +30,17 @@ impl Screenland {
                         }],
                         Mode::Move(_) => vec![
                             shader::Command::Selection(self.selection),
-                            shader::Command::Points(self.selection.get_ui_point()),
+                            shader::Command::Points(
+                                [
+                                    self.selection.get_ui_point(),
+                                    self.objects
+                                        .iter()
+                                        .map(|object| object.get_ui_point())
+                                        .collect::<Vec<_>>()
+                                        .concat()
+                                ]
+                                .concat()
+                            ),
                             shader::Command::UpdateEditObjects {
                                 shader_objects: self.shader_objects.clone(),
                                 custom_objects_chanel: self.custom_objects_chanel.clone(),
@@ -40,7 +54,7 @@ impl Screenland {
                 })
                 .width(Length::Fill)
                 .height(Length::Fill),
-                if window_data.pos == (0, 0) && self.mode != Mode::Transparency {
+                if window_data.pos == (0, 0) && !is_transparency {
                     stack![self.view_up_menu(), self.view_left_menu()]
                         .height(Length::Fill)
                         .width(Length::Fill)

@@ -1,5 +1,15 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
+use iced::Task;
+
+pub trait PointsSystem<Message> {
+    fn view(&self) -> Vec<UIPointElement<Message>>;
+
+    fn get_message(&mut self, position: &Vec2) -> Vec<Message>;
+
+    fn update(&mut self, position: &Vec2, message: Message) -> Task<Message>;
+}
+
 
 #[derive(Clone)]
 pub struct UIPointElement<Message> {

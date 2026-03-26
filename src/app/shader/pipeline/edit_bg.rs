@@ -6,7 +6,7 @@ use sugar::hashmap;
 use crate::app::{
     edit_object::{
         custom_object::{CustomObjectFromShader, param::chanel::ChanelType},
-        ui_point::UIPoint,
+        ui_point::UIPoint, ui_utils::cube::Cube,
     },
     selection::Selection,
     shader::pipeline::base_storage_buffers::{
@@ -53,6 +53,7 @@ pub fn get_storage_buffers_data() -> BaseStorageBuffers<BufferType, BaseStorageB
             BufferType::Points => BaseStorageBufferData::new(std::mem::size_of::<UIPoint>(), 2, "points", "UIPoint"),
             BufferType::CustomObjects => BaseStorageBufferData::new(std::mem::size_of::<CustomObjectFromShader>(), 4, "custom_objects", "CustomObject"),
             BufferType::Chanel(ChanelType::F32) => BaseStorageBufferData::new(std::mem::size_of::<f32>(), 1, "f32_channel", "f32"),
+            BufferType::Chanel(ChanelType::Cube) => BaseStorageBufferData::new(std::mem::size_of::<Cube>(), 2, "cube_channel", "Cube"),
         },
     )
 }
