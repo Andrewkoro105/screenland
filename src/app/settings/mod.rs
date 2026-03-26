@@ -116,7 +116,12 @@ impl Settings {
                         },
                     ),
                 ],
-                "   return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);".into(),
+                r"
+    if in(pixel_pos, data.cube.start, data.cube.end) {
+        return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);
+    } else {
+        return pixel_color;
+    }".into(),
                 Some(PointsFormat::Cube),
             )]),
         }
