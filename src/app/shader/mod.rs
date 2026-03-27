@@ -5,6 +5,7 @@ use crate::app::edit_object;
 use crate::app::edit_object::custom_object;
 use crate::app::edit_object::custom_object::param::channel::ChanelType;
 use crate::app::edit_object::ui_point::UIPoint;
+use crate::app::edit_object::ui_utils::cube::Cube;
 use crate::app::selection::Selection;
 use crate::app::shader::pipeline::Pipeline;
 use crate::app::shader::pipeline::edit_bg::BaseData;
@@ -89,11 +90,12 @@ impl shader::Primitive for Primitive {
                     }
 
                     let resize = {
-                        let edited_custom_objects_buffer = pipeline
-                            .edit_bg
-                            .data
-                            .storage_buffers
-                            .set_buffer(&BufferType::CustomObjects, device, custom_objects.len() as _);
+                        let edited_custom_objects_buffer =
+                            pipeline.edit_bg.data.storage_buffers.set_buffer(
+                                &BufferType::CustomObjects,
+                                device,
+                                custom_objects.len() as _,
+                            );
                         let edited_f32_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
                                 &BufferType::Channel(ChanelType::F32),
@@ -106,7 +108,9 @@ impl shader::Primitive for Primitive {
                                 device,
                                 custom_objects_chanel.get_cube().len() as _,
                             );
-                        edited_custom_objects_buffer || edited_f32_channel_buffer || edited_cube_channel_buffer
+                        edited_custom_objects_buffer
+                            || edited_f32_channel_buffer
+                            || edited_cube_channel_buffer
                     };
 
                     if resize {
@@ -127,7 +131,11 @@ impl shader::Primitive for Primitive {
                         pipeline.edit_bg.data.storage_buffers.write(
                             &BufferType::Channel(ChanelType::Cube),
                             queue,
-                            custom_objects_chanel.get_cube(),
+                            &custom_objects_chanel
+                                .get_cube()
+                                .iter()
+                                .map(Cube::normalize)
+                                .collect::<Vec<_>>(),
                         );
                     };
                     write();
