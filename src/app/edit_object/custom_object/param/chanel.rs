@@ -1,6 +1,10 @@
 use bytemuck::{Pod, Zeroable};
+use strum_macros::EnumIter;
 
-use crate::app::edit_object::ui_utils::cube::Cube;
+use crate::app::{
+    edit_object::ui_utils::cube::Cube,
+    shader::pipeline::base_storage_buffers::base_storage_buffer::BaseStorageBufferData,
+};
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -14,8 +18,9 @@ pub enum AddMessage {
     F32(Vec<f32>),
 }
 
-#[derive(Hash, PartialEq)]
+#[derive(EnumIter, Default, Hash, PartialEq)]
 pub enum ChanelType {
+    #[default]
     Cube,
     F32,
 }
@@ -33,6 +38,19 @@ pub struct ChannelIndex {
 pub struct Chanel {
     cube: Vec<Cube>,
     f32: Vec<f32>,
+}
+
+impl ChanelType {
+    pub fn get_storage_buffers_data(&self) -> BaseStorageBufferData {
+        match self {
+            ChanelType::Cube => {
+                BaseStorageBufferData::new(std::mem::size_of::<Cube>(), 2, "cube_channel", "Cube")
+            }
+            ChanelType::F32 => {
+                BaseStorageBufferData::new(std::mem::size_of::<f32>(), 1, "f32_channel", "f32")
+            }
+        }
+    }
 }
 
 impl Chanel {

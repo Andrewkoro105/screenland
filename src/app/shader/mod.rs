@@ -1,4 +1,4 @@
-mod pipeline;
+pub mod pipeline;
 
 use crate::app::Message;
 use crate::app::edit_object;

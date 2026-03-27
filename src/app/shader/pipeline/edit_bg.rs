@@ -1,12 +1,13 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::wgpu;
-use sugar::hashmap;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 use crate::app::{
     edit_object::{
         custom_object::{CustomObjectFromShader, param::chanel::ChanelType},
-        ui_point::UIPoint, ui_utils::cube::Cube,
+        ui_point::UIPoint,
     },
     selection::Selection,
     shader::pipeline::base_storage_buffers::{
@@ -22,7 +23,7 @@ pub struct BaseData {
     pub monitor_pos: Vec2,
 }
 
-#[derive(Hash, PartialEq)]
+#[derive(Hash, PartialEq, EnumIter)]
 pub enum BufferType {
     Points,
     CustomObjects,
@@ -45,16 +46,45 @@ pub struct EditBG {
     pub data: EditBGData,
 }
 
+impl BufferType {
+    fn recursion_iter() -> impl Iterator<Item = BufferType> {
+        Self::iter()
+            .map(|buffer_type| {
+                if let BufferType::Chanel(_) = buffer_type {
+                    ChanelType::iter().map(Self::Chanel).collect()
+                } else {
+                    vec![buffer_type]
+                }
+            })
+            .flatten()
+    }
+
+    fn get_storage_buffers_data(&self) -> BaseStorageBufferData {
+        match self {
+            BufferType::Points => {
+                BaseStorageBufferData::new(std::mem::size_of::<UIPoint>(), 2, "points", "UIPoint")
+            }
+            BufferType::CustomObjects => BaseStorageBufferData::new(
+                std::mem::size_of::<CustomObjectFromShader>(),
+                4,
+                "custom_objects",
+                "CustomObject",
+            ),
+            BufferType::Chanel(chanel_type) => chanel_type.get_storage_buffers_data(),
+        }
+    }
+}
+
 pub fn get_storage_buffers_data() -> BaseStorageBuffers<BufferType, BaseStorageBufferData> {
     BaseStorageBuffers::new(
         1,
         2,
-        hashmap! {
-            BufferType::Points => BaseStorageBufferData::new(std::mem::size_of::<UIPoint>(), 2, "points", "UIPoint"),
-            BufferType::CustomObjects => BaseStorageBufferData::new(std::mem::size_of::<CustomObjectFromShader>(), 4, "custom_objects", "CustomObject"),
-            BufferType::Chanel(ChanelType::F32) => BaseStorageBufferData::new(std::mem::size_of::<f32>(), 1, "f32_channel", "f32"),
-            BufferType::Chanel(ChanelType::Cube) => BaseStorageBufferData::new(std::mem::size_of::<Cube>(), 2, "cube_channel", "Cube"),
-        },
+        BufferType::recursion_iter()
+            .map(|buffer_type| {
+                let storage_buffers_data = buffer_type.get_storage_buffers_data();
+                (buffer_type, storage_buffers_data)
+            })
+            .collect(),
     )
 }
 
