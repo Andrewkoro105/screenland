@@ -1,4 +1,4 @@
-pub mod chanel;
+pub mod channel;
 
 use std::{collections::HashMap, hash::Hash};
 

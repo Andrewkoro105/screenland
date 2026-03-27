@@ -6,6 +6,17 @@ use crate::app::{
     shader::pipeline::base_storage_buffers::base_storage_buffer::BaseStorageBufferData,
 };
 
+#[derive(EnumIter, Default, Hash, PartialEq)]
+pub enum ChanelType {
+    #[default]
+    Cube,
+    F32,
+}
+
+// trait Channel {
+//     const CHANEL_TYPE: ChanelType;
+// }
+
 #[derive(Clone, Debug)]
 pub enum Message {
     Cube(Cube),
@@ -18,13 +29,6 @@ pub enum AddMessage {
     F32(Vec<f32>),
 }
 
-#[derive(EnumIter, Default, Hash, PartialEq)]
-pub enum ChanelType {
-    #[default]
-    Cube,
-    F32,
-}
-
 impl Eq for ChanelType {}
 
 #[repr(C)]
@@ -35,7 +39,7 @@ pub struct ChannelIndex {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Chanel {
+pub struct Chanels {
     cube: Vec<Cube>,
     f32: Vec<f32>,
 }
@@ -53,7 +57,7 @@ impl ChanelType {
     }
 }
 
-impl Chanel {
+impl Chanels {
     pub fn get_index(&self) -> ChannelIndex {
         ChannelIndex {
             cube: self.cube.len() as _,

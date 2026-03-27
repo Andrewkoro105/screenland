@@ -3,7 +3,7 @@ pub mod pipeline;
 use crate::app::Message;
 use crate::app::edit_object;
 use crate::app::edit_object::custom_object;
-use crate::app::edit_object::custom_object::param::chanel::ChanelType;
+use crate::app::edit_object::custom_object::param::channel::ChanelType;
 use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::selection::Selection;
 use crate::app::shader::pipeline::Pipeline;
@@ -23,7 +23,7 @@ pub enum Command {
     Points(Vec<UIPoint>),
     UpdateEditObjects {
         shader_objects: Vec<edit_object::ShaderObjects>,
-        custom_objects_chanel: custom_object::param::chanel::Chanel,
+        custom_objects_chanel: custom_object::param::channel::Chanels,
     },
 }
 
@@ -96,13 +96,13 @@ impl shader::Primitive for Primitive {
                             .set_buffer(&BufferType::CustomObjects, device, custom_objects.len() as _);
                         let edited_f32_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Chanel(ChanelType::F32),
+                                &BufferType::Channel(ChanelType::F32),
                                 device,
                                 custom_objects_chanel.get_f32().len() as _,
                             );
                         let edited_cube_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Chanel(ChanelType::Cube),
+                                &BufferType::Channel(ChanelType::Cube),
                                 device,
                                 custom_objects_chanel.get_cube().len() as _,
                             );
@@ -120,12 +120,12 @@ impl shader::Primitive for Primitive {
                             &custom_objects,
                         );
                         pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Chanel(ChanelType::F32),
+                            &BufferType::Channel(ChanelType::F32),
                             queue,
                             custom_objects_chanel.get_f32(),
                         );
                         pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Chanel(ChanelType::Cube),
+                            &BufferType::Channel(ChanelType::Cube),
                             queue,
                             custom_objects_chanel.get_cube(),
                         );

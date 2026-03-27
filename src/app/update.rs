@@ -7,7 +7,7 @@ use iced_layershell::to_layer_message;
 use crate::{
     app::{
         Mode, Screenland,
-        edit_object::{self, EditObjectSettings, custom_object::param::chanel},
+        edit_object::{self, EditObjectSettings, custom_object::param::channel},
         end::End,
         selection,
         settings::edit_object_base_settings,
@@ -32,7 +32,7 @@ pub enum Message {
     CustomObjectsChanelUpdate {
         i: usize,
         index: usize,
-        message: chanel::Message,
+        message: channel::Message,
     },
     None,
 }

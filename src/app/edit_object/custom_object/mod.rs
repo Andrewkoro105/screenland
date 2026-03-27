@@ -18,7 +18,7 @@ use crate::app::{
             icon::Icon,
             param::{
                 Param, ShaderType,
-                chanel::{self, AddMessage, Chanel, ChannelIndex},
+                channel::{self, AddMessage, Chanels, ChannelIndex},
             },
             points::{PointsData, PointsFormat, PointsMessage},
         },
@@ -281,7 +281,7 @@ impl EditObject for CustomObject {
                         Task::done(app::Message::CustomObjectsChanelUpdate {
                             i: self.i,
                             index,
-                            message: chanel::Message::F32(num_input.update(&value)),
+                            message: channel::Message::F32(num_input.update(&value)),
                         })
                     } else {
                         panic!("")
@@ -328,16 +328,16 @@ impl EditObject for CustomObject {
             .unwrap_or_default()
     }
 
-    fn get_shader_object(&self, chanel: &mut Chanel) -> edit_object::ShaderObjects {
+    fn get_shader_object(&self, channel: &mut Chanels) -> edit_object::ShaderObjects {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
-            channel_index: chanel.get_index(),
+            channel_index: channel.get_index(),
             custom_object_type: self.get_type_id(),
             edit_object_base_settings: self.edit_object_base_settings,
             ..Default::default()
         });
 
-        chanel.add(AddMessage::F32(self.get_f32_data()));
-        chanel.add(AddMessage::Cube(self.get_cube_data()));
+        channel.add(AddMessage::F32(self.get_f32_data()));
+        channel.add(AddMessage::Cube(self.get_cube_data()));
         result
     }
 }

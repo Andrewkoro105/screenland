@@ -41,16 +41,16 @@ impl<BufferType: Hash + PartialEq + Eq> BaseStorageBuffers<BufferType, BaseStora
             .collect()
     }
 
-    pub fn set_buffer(&mut self, chanel: &BufferType, device: &wgpu::Device, len: u32) -> bool {
+    pub fn set_buffer(&mut self, channel: &BufferType, device: &wgpu::Device, len: u32) -> bool {
         self.buffers
-            .get_mut(chanel)
+            .get_mut(channel)
             .unwrap()
             .set_buffer(device, len)
     }
 
-    pub fn write<A: NoUninit>(&self, chanel: &BufferType, queue: &wgpu::Queue, data: &[A]) {
+    pub fn write<A: NoUninit>(&self, channel: &BufferType, queue: &wgpu::Queue, data: &[A]) {
         self.buffers
-            .get(chanel)
+            .get(channel)
             .unwrap()
             .write_buffer(queue, data);
     }

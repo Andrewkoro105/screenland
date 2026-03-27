@@ -6,7 +6,7 @@ use crate::app::{
     self,
     edit_object::{
         self,
-        custom_object::{data_type::DataType, param::chanel},
+        custom_object::{data_type::DataType, param::channel},
         ui_point::{PointsSystem, UIPoint},
         ui_utils::cube::{self, Cube},
     },
@@ -70,7 +70,7 @@ impl PointsData {
                 .chain(Task::done(app::Message::CustomObjectsChanelUpdate {
                     i,
                     index: 0,
-                    message: chanel::Message::Cube(cube.clone()),
+                    message: channel::Message::Cube(cube.clone()),
                 })),
         }
     }

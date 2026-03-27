@@ -6,7 +6,7 @@ use strum_macros::EnumIter;
 
 use crate::app::{
     edit_object::{
-        custom_object::{CustomObjectFromShader, param::chanel::ChanelType},
+        custom_object::{CustomObjectFromShader, param::channel::ChanelType},
         ui_point::UIPoint,
     },
     selection::Selection,
@@ -27,7 +27,7 @@ pub struct BaseData {
 pub enum BufferType {
     Points,
     CustomObjects,
-    Chanel(ChanelType),
+    Channel(ChanelType),
 }
 
 impl Eq for BufferType {}
@@ -50,8 +50,8 @@ impl BufferType {
     fn recursion_iter() -> impl Iterator<Item = BufferType> {
         Self::iter()
             .map(|buffer_type| {
-                if let BufferType::Chanel(_) = buffer_type {
-                    ChanelType::iter().map(Self::Chanel).collect()
+                if let BufferType::Channel(_) = buffer_type {
+                    ChanelType::iter().map(Self::Channel).collect()
                 } else {
                     vec![buffer_type]
                 }
@@ -70,7 +70,7 @@ impl BufferType {
                 "custom_objects",
                 "CustomObject",
             ),
-            BufferType::Chanel(chanel_type) => chanel_type.get_storage_buffers_data(),
+            BufferType::Channel(chanel_type) => chanel_type.get_storage_buffers_data(),
         }
     }
 }

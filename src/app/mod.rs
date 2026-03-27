@@ -53,7 +53,7 @@ pub struct Screenland {
     current_object: Option<usize>,
     objects: Vec<Box<dyn EditObject>>,
     shader_objects: Vec<edit_object::ShaderObjects>,
-    custom_objects_chanel: custom_object::param::chanel::Chanel,
+    custom_objects_chanel: custom_object::param::channel::Chanels,
 }
 
 impl BootFn<Screenland, Message> for Settings {
