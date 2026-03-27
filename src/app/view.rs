@@ -24,20 +24,31 @@ impl Screenland {
                 Shader::new(shader::Program {
                     monitor_pos,
                     commands: match &self.mode {
-                        Mode::Base => vec![shader::Command::UpdateEditObjects {
-                            shader_objects: self.shader_objects.clone(),
-                            custom_objects_chanel: self.custom_objects_chanel.clone(),
-                        }],
+                        Mode::Base => vec![
+                            shader::Command::Points(
+                                [
+                                    self.selection.get_ui_point(),
+                                    self.current_object
+                                        .map(|current_object| self.objects[current_object]
+                                            .get_ui_point())
+                                        .unwrap_or_default()
+                                ]
+                                .concat()
+                            ),
+                            shader::Command::UpdateEditObjects {
+                                shader_objects: self.shader_objects.clone(),
+                                custom_objects_chanel: self.custom_objects_chanel.clone(),
+                            }
+                        ],
                         Mode::Move(_) => vec![
                             shader::Command::Selection(self.selection),
                             shader::Command::Points(
                                 [
                                     self.selection.get_ui_point(),
-                                    self.objects
-                                        .iter()
-                                        .map(|object| object.get_ui_point())
-                                        .collect::<Vec<_>>()
-                                        .concat()
+                                    self.current_object
+                                        .map(|current_object| self.objects[current_object]
+                                            .get_ui_point())
+                                        .unwrap_or_default()
                                 ]
                                 .concat()
                             ),
