@@ -7,14 +7,14 @@ use crate::app::{
 };
 
 #[derive(EnumIter, Default, Hash, PartialEq)]
-pub enum ChanelType {
+pub enum ChannelType {
     #[default]
     Cube,
     F32,
 }
 
 // trait Channel {
-//     const CHANEL_TYPE: ChanelType;
+//     const CHANEL_TYPE: ChannelType;
 // }
 
 #[derive(Clone, Debug)]
@@ -29,7 +29,7 @@ pub enum AddMessage {
     F32(Vec<f32>),
 }
 
-impl Eq for ChanelType {}
+impl Eq for ChannelType {}
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
@@ -39,25 +39,25 @@ pub struct ChannelIndex {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Chanels {
+pub struct Channels {
     cube: Vec<Cube>,
     f32: Vec<f32>,
 }
 
-impl ChanelType {
+impl ChannelType {
     pub fn get_storage_buffers_data(&self) -> BaseStorageBufferData {
         match self {
-            ChanelType::Cube => {
+            ChannelType::Cube => {
                 BaseStorageBufferData::new(std::mem::size_of::<Cube>(), 2, "cube_channel", "Cube")
             }
-            ChanelType::F32 => {
+            ChannelType::F32 => {
                 BaseStorageBufferData::new(std::mem::size_of::<f32>(), 1, "f32_channel", "f32")
             }
         }
     }
 }
 
-impl Chanels {
+impl Channels {
     pub fn get_index(&self) -> ChannelIndex {
         ChannelIndex {
             cube: self.cube.len() as _,
@@ -80,11 +80,11 @@ impl Chanels {
         &self.cube
     }
 
-    pub fn update(&mut self, message: Message, chanel_index: ChannelIndex, index: usize) {
+    pub fn update(&mut self, message: Message, channel_index: ChannelIndex, index: usize) {
         match message {
-            Message::F32(value) => self.f32[chanel_index.f32 as usize + index] = value,
+            Message::F32(value) => self.f32[channel_index.f32 as usize + index] = value,
 
-            Message::Cube(value) => self.cube[chanel_index.cube as usize + index] = value,
+            Message::Cube(value) => self.cube[channel_index.cube as usize + index] = value,
         }
     }
 }

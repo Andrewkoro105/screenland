@@ -6,7 +6,7 @@ use glam::Vec2;
 use iced::{Element, Task};
 use crate::app::{
     self, 
-    edit_object::{custom_object::param::channel::Chanels, ui_point::{UIPoint, UIPointElement}, ui_utils::cube::Cube},
+    edit_object::{custom_object::param::channel::Channels, ui_point::{UIPoint, UIPointElement}, ui_utils::cube::Cube},
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
     update
 };
@@ -56,7 +56,7 @@ pub trait EditObject {
     
     fn get_cube_data(&self) -> Vec<Cube>;
 
-    fn get_shader_object(&self, channel: &mut Chanels) -> ShaderObjects;
+    fn get_shader_object(&self, channel: &mut Channels) -> ShaderObjects;
 }
 
 impl<Message> From<UIPointElement<Message>> for UIPoint {

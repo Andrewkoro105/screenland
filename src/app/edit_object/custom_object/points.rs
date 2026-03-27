@@ -67,7 +67,7 @@ impl PointsData {
                         edit_object::Message::Custom(message),
                     ))
                 })
-                .chain(Task::done(app::Message::CustomObjectsChanelUpdate {
+                .chain(Task::done(app::Message::CustomObjectsChannelUpdate {
                     i,
                     index: 0,
                     message: channel::Message::Cube(cube.clone()),

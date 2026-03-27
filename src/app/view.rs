@@ -37,7 +37,7 @@ impl Screenland {
                             ),
                             shader::Command::UpdateEditObjects {
                                 shader_objects: self.shader_objects.clone(),
-                                custom_objects_chanel: self.custom_objects_chanel.clone(),
+                                custom_objects_channel: self.custom_objects_channel.clone(),
                             }
                         ],
                         Mode::Move(_) => vec![
@@ -54,7 +54,7 @@ impl Screenland {
                             ),
                             shader::Command::UpdateEditObjects {
                                 shader_objects: self.shader_objects.clone(),
-                                custom_objects_chanel: self.custom_objects_chanel.clone(),
+                                custom_objects_channel: self.custom_objects_channel.clone(),
                             },
                         ],
                         Mode::Transparency => vec![

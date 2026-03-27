@@ -3,7 +3,7 @@ pub mod pipeline;
 use crate::app::Message;
 use crate::app::edit_object;
 use crate::app::edit_object::custom_object;
-use crate::app::edit_object::custom_object::param::channel::ChanelType;
+use crate::app::edit_object::custom_object::param::channel::ChannelType;
 use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::edit_object::ui_utils::cube::Cube;
 use crate::app::selection::Selection;
@@ -24,7 +24,7 @@ pub enum Command {
     Points(Vec<UIPoint>),
     UpdateEditObjects {
         shader_objects: Vec<edit_object::ShaderObjects>,
-        custom_objects_chanel: custom_object::param::channel::Chanels,
+        custom_objects_channel: custom_object::param::channel::Channels,
     },
 }
 
@@ -78,7 +78,7 @@ impl shader::Primitive for Primitive {
                 }
                 Command::UpdateEditObjects {
                     shader_objects,
-                    custom_objects_chanel,
+                    custom_objects_channel,
                 } => {
                     let mut custom_objects = vec![];
                     for object in shader_objects {
@@ -98,15 +98,15 @@ impl shader::Primitive for Primitive {
                             );
                         let edited_f32_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Channel(ChanelType::F32),
+                                &BufferType::Channel(ChannelType::F32),
                                 device,
-                                custom_objects_chanel.get_f32().len() as _,
+                                custom_objects_channel.get_f32().len() as _,
                             );
                         let edited_cube_channel_buffer =
                             pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Channel(ChanelType::Cube),
+                                &BufferType::Channel(ChannelType::Cube),
                                 device,
-                                custom_objects_chanel.get_cube().len() as _,
+                                custom_objects_channel.get_cube().len() as _,
                             );
                         edited_custom_objects_buffer
                             || edited_f32_channel_buffer
@@ -124,14 +124,14 @@ impl shader::Primitive for Primitive {
                             &custom_objects,
                         );
                         pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Channel(ChanelType::F32),
+                            &BufferType::Channel(ChannelType::F32),
                             queue,
-                            custom_objects_chanel.get_f32(),
+                            custom_objects_channel.get_f32(),
                         );
                         pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Channel(ChanelType::Cube),
+                            &BufferType::Channel(ChannelType::Cube),
                             queue,
-                            &custom_objects_chanel
+                            &custom_objects_channel
                                 .get_cube()
                                 .iter()
                                 .map(Cube::normalize)

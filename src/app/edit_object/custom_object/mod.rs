@@ -18,7 +18,7 @@ use crate::app::{
             icon::Icon,
             param::{
                 Param, ShaderType,
-                channel::{self, AddMessage, Chanels, ChannelIndex},
+                channel::{self, AddMessage, Channels, ChannelIndex},
             },
             points::{PointsData, PointsFormat, PointsMessage},
         },
@@ -278,7 +278,7 @@ impl EditObject for CustomObject {
             match message {
                 Message::SetF32(index, value) => {
                     if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
-                        Task::done(app::Message::CustomObjectsChanelUpdate {
+                        Task::done(app::Message::CustomObjectsChannelUpdate {
                             i: self.i,
                             index,
                             message: channel::Message::F32(num_input.update(&value)),
@@ -328,7 +328,7 @@ impl EditObject for CustomObject {
             .unwrap_or_default()
     }
 
-    fn get_shader_object(&self, channel: &mut Chanels) -> edit_object::ShaderObjects {
+    fn get_shader_object(&self, channel: &mut Channels) -> edit_object::ShaderObjects {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
             channel_index: channel.get_index(),
             custom_object_type: self.get_type_id(),
