@@ -1,7 +1,7 @@
 use glam::Vec2;
 use iced::{
     Alignment, Border, Element, Length, Theme,
-    widget::{Column, Row, Shader, button, container, row, stack, text_input},
+    widget::{Row, Shader, button, container, row, stack, text_input},
     window,
 };
 
@@ -80,22 +80,25 @@ impl Screenland {
     }
 
     fn view_left_menu(&self) -> Element<'_, Message> {
-        if let Some(current_object) = self.current_object {
-            container(
-                container(self.objects[current_object].get_menu())
-                    .width(Length::Fixed(200.))
+        self.current_object
+            .map(|current_object| {
+                self.objects[current_object].get_menu().map(|menu| {
+                    container(
+                        container(menu)
+                            .width(Length::Fixed(200.))
+                            .padding(10)
+                            .style(Self::style_menu),
+                    )
                     .padding(10)
-                    .style(Self::style_menu),
-            )
-            .padding(10)
-            .align_x(Alignment::Start)
-            .align_y(Alignment::Center)
-            .height(Length::Fill)
-            .width(Length::Fill)
-            .into()
-        } else {
-            "".into()
-        }
+                    .align_x(Alignment::Start)
+                    .align_y(Alignment::Center)
+                    .height(Length::Fill)
+                    .width(Length::Fill)
+                    .into()
+                })
+            })
+            .flatten()
+            .unwrap_or("".into())
     }
 
     fn view_up_menu(&self) -> Element<'_, Message> {
