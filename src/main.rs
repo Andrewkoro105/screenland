@@ -5,7 +5,6 @@ use std::{fs::{self, File}, time::{Duration, SystemTime}};
 
 use crate::{
     app::{settings::Settings, shader::get_shader::get_shader},
-    screenshots::get_outputs,
 };
 use app::Screenland;
 use chrono::Local;
@@ -26,9 +25,6 @@ use tracing_subscriber::{
 #[command(name = "Screenland")]
 #[command(about = "Screenland is a program for creating and editing screenshots", long_about = None)]
 pub struct Args {
-    /// Generate config for the supported system (hypr | hyprland)
-    #[arg(short, long)]
-    support_config: Option<String>,
     /// The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
     #[arg(short, long)]
     color_format: Option<String>,
@@ -109,34 +105,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         .with(file_layer)
         .init();
 
-    if let Some(sys) = args.support_config {
-        match sys.as_str() {
-            "hypr" | "hyprland" => {
-                println!(
-                    r"
-
-# screenland stings
-{}
-windowrule = match:class screenland, float on
-windowrule = match:class screenland, no_anim on
-windowrule = match:title Save As, float on
-",
-                    get_outputs()
-                        .iter()
-                        .map(|outputs| format!(
-                            "windowrule = match:title screenland-{}, monitor {}",
-                            outputs.name, outputs.name
-                        ))
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                );
-            }
-            _ => {
-                eprintln!("{sys} unsupported")
-            }
-        }
-        Ok(())
-    } else if args.generate_config {
+    if args.generate_config {
         Settings::new(arg_config, xdg_dirs).save();
         Ok(())
     } else if args.output_shader {

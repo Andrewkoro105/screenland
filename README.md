@@ -31,20 +31,6 @@ cargo install --path .
 
 The program will be installed in `$HOME/.cargo/bin/`, which should be taken into account when configuring keyboard shortcuts.
 
-## Features
-
-### Linux (Wayland)
-
-To run the program, you need to add settings to your compositor's configuration file to open “screenland-{monitor_name}” windows on the corresponding monitors.
-
-For supported compositors, this can be done with a single command
-
-#### hyprland
-
-```bash
-screenland -s hyprland >> ~/.config/hypr/hyprland.conf
-```
-
 # Settings
 
 ## Config
@@ -111,28 +97,17 @@ Screenland is a program for creating and editing screenshots
 Usage: screenland [OPTIONS]
 
 Options:
-  -s, --support-config <SUPPORT_CONFIG>
-          Generate config for the supported system (hypr | hyprland)
-  -c, --color-format <COLOR_FORMAT>
-          The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
-  -g, --generate-config
-          Generate config
-  -o, --output-shader
-          Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
-      --output-shader-and-run
-          Displays the shader with the current settings and run screenland
-      --config <CONFIG>
-          Path to config. By default: `~/.config/screenland/config.yaml`
-      --format <FORMAT>
-          File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-      --path <PATH>
-          Path to the folder where screenshots will be saved
-  -e, --end <END>
-          Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
-      --disables-overlay
-          Disables overlay mode
-  -h, --help
-          Print help
+  -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
+  -g, --generate-config              Generate config
+  -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
+      --output-shader-and-run        Displays the shader with the current settings and run screenland
+      --config <CONFIG>              Path to config. By default: `~/.config/screenland/config.yaml`
+      --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+      --path <PATH>                  Path to the folder where screenshots will be saved
+  -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+      --disables-overlay             Disables overlay mode
+      --input-log                    Input log
+  -h, --help                         Print help
 ```
 
 # Basic features:
