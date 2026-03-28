@@ -1,8 +1,7 @@
 pub mod channel;
 
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap, hash::Hash, mem};
 
-use bytemuck::NoUninit;
 use iced::widget::{row, text};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};
@@ -83,10 +82,7 @@ impl Hash for ShaderType {
 
 impl PartialEq for ShaderType {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::F32 { .. }, Self::F32 { .. }) => true,
-            _ => false,
-        }
+        mem::discriminant(self) == mem::discriminant(other)
     }
 }
 
