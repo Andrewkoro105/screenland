@@ -14,12 +14,13 @@ use crate::{
     Args,
     app::{
         edit_object::custom_object::{
-            CustomIndexedObjectSettings, CustomObjectSettings, add_type_id,
-            add_type_id_deserialize,
             icon::Icon,
             param::{Param, ShaderType},
             points::PointsFormat,
-            remove_type_id_serialize,
+            settings::{
+                CustomIndexedObjectSettings, CustomObjectSettings,
+                serde_help::{add_type_id, add_type_id_deserialize, remove_type_id_serialize},
+            },
         },
         end::End,
         settings::edit_object_base_settings::{ColorInput, EditObjectBaseSettings},

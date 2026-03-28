@@ -2,28 +2,24 @@ pub mod data_type;
 pub mod icon;
 pub mod param;
 pub mod points;
+pub mod settings;
 use std::ops::Not;
 
-use bytemuck::{Pod, Zeroable};
-use glam::{Vec2, Vec3};
 use iced::{Task, widget::Column};
-use serde::{Deserialize, Serialize, Serializer};
+use strum::EnumCount;
 
 use crate::app::{
     self,
     edit_object::{
-        self, EditObject, EditObjectSettings,
+        self, EditObject,
         custom_object::{
-            data_type::DataType,
-            icon::Icon,
             param::{
                 Param, ShaderType,
-                channel::{self, AddMessage, Channels, ChannelIndex},
+                channel::{self, ChannelIndex, ChannelType, Channels},
             },
-            points::{PointsData, PointsFormat, PointsMessage},
+            points::{PointsData, PointsMessage},
         },
         ui_point::UIPoint,
-        ui_utils::cube::Cube,
     },
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
@@ -32,25 +28,6 @@ use crate::app::{
 pub enum Message {
     SetF32(usize, String),
     Point(PointsMessage),
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct CustomObjectSettings {
-    name: String,
-    icon: Icon,
-    params: Vec<Param>,
-    shader: String,
-    points_format: Option<PointsFormat>,
-}
-
-#[derive(Clone)]
-pub struct CustomIndexedObjectSettings {
-    type_id: u32,
-    name: String,
-    icon: Icon,
-    params: Vec<Param>,
-    shader: String,
-    points_format: Option<PointsFormat>,
 }
 
 #[derive(Debug, Clone)]
@@ -63,170 +40,33 @@ pub struct CustomObject {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct CustomObjectFromShader {
     pub edit_object_base_settings: EditObjectBaseSettingsFromShader,
     pub custom_object_type: u32,
     pub channel_index: ChannelIndex,
-    _padding: [u8; 4],
 }
 
-impl CustomObjectSettings {
-    pub fn new(
-        name: String,
-        icon: Icon,
-        params: Vec<Param>,
-        shader: String,
-        points_format: Option<PointsFormat>,
-    ) -> Self {
-        Self {
-            name,
-            icon,
-            params,
-            shader,
-            points_format,
-        }
-    }
-}
+impl CustomObjectFromShader {
+    const PADDING_SIZE: usize = 4;
 
-impl CustomIndexedObjectSettings {
-    pub fn new(
-        type_id: u32,
-        name: String,
-        icon: Icon,
-        params: Vec<Param>,
-        shader: String,
-        points_format: Option<PointsFormat>,
-    ) -> Self {
-        Self {
-            type_id,
-            name,
-            icon,
-            params,
-            shader,
-            points_format,
-        }
-    }
-}
-
-pub fn add_type_id(value: Vec<CustomObjectSettings>) -> Vec<CustomIndexedObjectSettings> {
-    value
-        .into_iter()
-        .enumerate()
-        .map(|(i, object)| {
-            CustomIndexedObjectSettings::new(
-                i as _,
-                object.name,
-                object.icon,
-                object.params,
-                object.shader,
-                object.points_format,
-            )
-        })
-        .collect()
-}
-
-pub fn add_type_id_deserialize<'de, D>(
-    deserializer: D,
-) -> Result<Vec<CustomIndexedObjectSettings>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let intermediate = Vec::<CustomObjectSettings>::deserialize(deserializer)?;
-    Ok(add_type_id(intermediate))
-}
-
-pub fn remove_type_id(value: Vec<CustomIndexedObjectSettings>) -> Vec<CustomObjectSettings> {
-    value
-        .into_iter()
-        .map(|object| {
-            CustomObjectSettings::new(
-                object.name,
-                object.icon,
-                object.params,
-                object.shader,
-                object.points_format,
-            )
-        })
-        .collect()
-}
-
-pub fn remove_type_id_serialize<S>(
-    value: &Vec<CustomIndexedObjectSettings>,
-    serializer: S,
-) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    remove_type_id(value.clone()).serialize(serializer)
-}
-
-impl EditObjectSettings for CustomIndexedObjectSettings {
-    type Object = CustomObject;
-
-    fn get_icon(&self) -> iced::Element<'_, ()> {
-        self.icon.get_icon()
+    pub fn get_size() -> usize {
+        std::mem::size_of::<EditObjectBaseSettingsFromShader>()
+            + std::mem::size_of::<u32>()
+            + (ChannelType::COUNT * std::mem::size_of::<u32>())
+            + (std::mem::size_of::<u8>() * Self::PADDING_SIZE)
     }
 
-    fn get_name(&self) -> String {
-        self.name.clone()
-    }
-
-    fn get_shader(&self) -> String {
-        let name = &self.name;
-        let shader = &self.shader;
-        let params = self
-            .params
-            .iter()
-            .map(DataType::get_str_field)
-            .chain(self.points_format.as_ref().map(DataType::get_str_field))
-            .collect::<Vec<_>>()
-            .join("\n    ");
-        let init_params = Param::indexing_params(&self.params)
-            .iter()
-            .map(|(i, param)| param.get_str_init_field(*i))
-            .chain(
-                self.points_format
-                    .as_ref()
-                    .map(|points_format| points_format.get_str_init_field(0)),
-            )
-            .collect::<Vec<_>>()
-            .join("\n    ");
-
-        format!(
-            r"
-struct Data_{name} {{
-    base_settings: EditObjectBaseSettings,
-    {params}
-}}
-
-fn get_data_{name}(objects: CustomObject) -> Data_{name} {{
-    let channel_index = objects.channel_index;
-    return Data_{name} (
-        objects.base_settings,
-        {init_params}
-    );
-}}
-        
-fn draw_{name}(pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) -> vec4<f32> {{
-{shader}
-}}
-"
-        )
-    }
-
-    fn get_object(
-        &self,
-        i: usize,
-        edit_object_base_settings: &EditObjectBaseSettingsFromShader,
-    ) -> CustomObject {
-        CustomObject {
-            type_id: self.type_id,
-            i,
-            edit_object_base_settings: *edit_object_base_settings,
-            points_data: self.points_format.clone().map(Into::into),
-            params: self.params.clone(),
-        }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let result = [
+            bytemuck::bytes_of(&self.edit_object_base_settings).to_vec(),
+            bytemuck::bytes_of(&self.custom_object_type).to_vec(),
+            self.channel_index.to_bytes(),
+            vec![0; Self::PADDING_SIZE],
+        ]
+        .concat();
+        //println!("[CustomObjectFromShader::to_bytes] {result:?}");
+        result
     }
 }
 
@@ -280,8 +120,9 @@ impl EditObject for CustomObject {
                     if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
                         Task::done(app::Message::CustomObjectsChannelUpdate {
                             i: self.i,
-                            index,
-                            message: channel::Message::F32(num_input.update(&value)),
+                            index: index,
+                            channel_type: channel::ChannelType::F32,
+                            data: bytemuck::bytes_of(&num_input.update(&value)).to_vec(),
                         })
                     } else {
                         panic!("")
@@ -305,39 +146,28 @@ impl EditObject for CustomObject {
         }
     }
 
-    fn get_f32_data(&self) -> Vec<f32> {
-        self.params
-            .iter()
-            .filter_map(|param| {
-                if let ShaderType::F32 { num_input } = &param.shader_type {
-                    Some(num_input.get())
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    fn get_cube_data(&self) -> Vec<Cube> {
-        self.points_data
-            .as_ref()
-            .map(|points_data| match points_data {
-                PointsData::Cube(cube) => vec![cube.clone()],
-                _ => vec![],
-            })
-            .unwrap_or_default()
-    }
-
     fn get_shader_object(&self, channel: &mut Channels) -> edit_object::ShaderObjects {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
             channel_index: channel.get_index(),
             custom_object_type: self.get_type_id(),
             edit_object_base_settings: self.edit_object_base_settings,
-            ..Default::default()
         });
 
-        channel.add(AddMessage::F32(self.get_f32_data()));
-        channel.add(AddMessage::Cube(self.get_cube_data()));
+        self.params
+            .iter()
+            .map(|param| {
+                (
+                    ChannelType::from(param.shader_type.clone()),
+                    param.shader_type.get_data(),
+                )
+            })
+            .chain(
+                self.points_data
+                    .as_ref()
+                    .map(|points_data| (points_data.get_channel_type(), points_data.get_data())),
+            )
+            .for_each(|(channel_type, data)| channel.add(channel_type, data));
+        println!("[reload] index: {:?}", channel.get_index());
         result
     }
 }

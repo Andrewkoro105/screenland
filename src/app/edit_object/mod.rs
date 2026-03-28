@@ -52,10 +52,6 @@ pub trait EditObject {
 
     fn update(&mut self, muse_position: Vec2, message: Message) -> Task<app::Message>;
 
-    fn get_f32_data(&self) -> Vec<f32>;
-    
-    fn get_cube_data(&self) -> Vec<Cube>;
-
     fn get_shader_object(&self, channel: &mut Channels) -> ShaderObjects;
 }
 

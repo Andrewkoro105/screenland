@@ -32,7 +32,8 @@ pub enum Message {
     CustomObjectsChannelUpdate {
         i: usize,
         index: usize,
-        message: channel::Message,
+        channel_type: channel::ChannelType,
+        data: Vec<u8>,
     },
     None,
 }
@@ -157,15 +158,16 @@ impl Screenland {
             Message::UpdateEditObject((i, message)) => {
                 self.objects[i].update(self.mouse_pos, message)
             }
-            Message::CustomObjectsChannelUpdate { i, index, message } => {
+            Message::CustomObjectsChannelUpdate { i, index, channel_type, data } => {
                 self.custom_objects_channel.update(
-                    message,
+                    &channel_type,
                     if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {
-                        custom_shader_object.channel_index
+                        &custom_shader_object.channel_index
                     } else {
                         panic!("In Message::CustomObjectsChannelUpdate, a message for the wrong object was sent.")
                     },
                     index,
+                    data,
                 );
                 Task::none()
             }

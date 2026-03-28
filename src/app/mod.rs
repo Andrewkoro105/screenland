@@ -119,6 +119,7 @@ impl Screenland {
     pub fn reload_shader_objects(&mut self) {
         self.shader_objects.clear();
         self.shader_objects.reserve(self.objects.len());
+        self.custom_objects_channel.clear();
         for object in &self.objects {
             self.shader_objects
                 .push(object.get_shader_object(&mut self.custom_objects_channel));

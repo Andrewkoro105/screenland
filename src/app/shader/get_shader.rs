@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::{Args, app::{
-    edit_object::{EditObjectSettings, custom_object::CustomIndexedObjectSettings},
+    edit_object::{EditObjectSettings, custom_object::settings::CustomIndexedObjectSettings},
     settings::Settings,
     shader::pipeline::{base_storage_buffers::GetShader, edit_bg::get_storage_buffers_data},
 }};

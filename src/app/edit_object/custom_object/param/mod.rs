@@ -2,11 +2,12 @@ pub mod channel;
 
 use std::{collections::HashMap, hash::Hash};
 
+use bytemuck::NoUninit;
 use iced::widget::{row, text};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};
 
-use crate::app::edit_object::custom_object::{Message, data_type::DataType};
+use crate::app::edit_object::custom_object::{Message, data_type::DataType, param::channel::ChannelType};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShaderType {
@@ -14,25 +15,6 @@ pub enum ShaderType {
         num_input: NumInput<f32, ConstF32<0>>,
     },
 }
-
-impl Hash for ShaderType {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            ShaderType::F32 { .. } => 0.hash(state),
-        }
-    }
-}
-
-impl PartialEq for ShaderType {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::F32 { .. }, Self::F32 { .. }) => true,
-            _ => false,
-        }
-    }
-}
-
-impl Eq for ShaderType {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Param {
@@ -79,6 +61,41 @@ impl DataType for Param {
     fn get_type_name(&self) -> String {
         match self.shader_type {
             ShaderType::F32 { .. } => "f32".into(),
+        }
+    }
+}
+
+impl ShaderType {
+    pub fn get_data(&self) -> Vec<u8> {
+        match self {
+            ShaderType::F32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
+        }
+    }
+}
+
+impl Hash for ShaderType {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            ShaderType::F32 { .. } => 0.hash(state),
+        }
+    }
+}
+
+impl PartialEq for ShaderType {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::F32 { .. }, Self::F32 { .. }) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for ShaderType {}
+
+impl From<ShaderType> for ChannelType {
+    fn from(value: ShaderType) -> Self {
+        match value {
+            ShaderType::F32 { .. } => ChannelType::F32,
         }
     }
 }

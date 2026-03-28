@@ -1,8 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::wgpu;
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::app::{
     edit_object::{
@@ -65,7 +64,7 @@ impl BufferType {
                 BaseStorageBufferData::new(std::mem::size_of::<UIPoint>(), 2, "points", "UIPoint")
             }
             BufferType::CustomObjects => BaseStorageBufferData::new(
-                std::mem::size_of::<CustomObjectFromShader>(),
+                CustomObjectFromShader::get_size(),
                 4,
                 "custom_objects",
                 "CustomObject",

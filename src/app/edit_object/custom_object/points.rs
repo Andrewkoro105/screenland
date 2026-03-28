@@ -6,7 +6,7 @@ use crate::app::{
     self,
     edit_object::{
         self,
-        custom_object::{data_type::DataType, param::channel},
+        custom_object::{data_type::DataType, param::channel::{self, ChannelType}},
         ui_point::{PointsSystem, UIPoint},
         ui_utils::cube::{self, Cube},
     },
@@ -70,7 +70,8 @@ impl PointsData {
                 .chain(Task::done(app::Message::CustomObjectsChannelUpdate {
                     i,
                     index: 0,
-                    message: channel::Message::Cube(cube.clone()),
+                    channel_type: channel::ChannelType::Cube,
+                    data: bytemuck::bytes_of(&cube.normalize()).to_vec(),
                 })),
         }
     }
@@ -93,6 +94,18 @@ impl PointsData {
                 .into_iter()
                 .map(PointsMessage::Cube)
                 .collect(),
+        }
+    }
+
+    pub fn get_channel_type(&self) -> ChannelType {
+        match self {
+            PointsData::Cube(_) => ChannelType::Cube,
+        }
+    }
+
+    pub fn get_data(&self) -> Vec<u8> {
+        match self {
+            PointsData::Cube(cube) => bytemuck::bytes_of(&cube.normalize()).to_vec(),
         }
     }
 }

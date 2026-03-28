@@ -24,6 +24,5 @@ sugar = "0.2.0"
 heck = "0.5"
 iced_helper = {git = "https://github.com/Andrewkoro105/iced_helper.git"}
 iced_layershell = "0.16.0"
-strum = "0.28"
-strum_macros = "0.28"
+strum = { version = "0.28", features = ["derive"] }
 #iced_helper = {path = "../iced_helper"}

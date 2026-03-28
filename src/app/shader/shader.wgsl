@@ -112,7 +112,7 @@ fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f3
         let object = custom_objects.data[i];
         switch (object.custom_object_type) {
             //{DRAW_CUSTOM_OBJECTS}
-            default: {}
+            default: {return vec4(1., 1., 1., 1.);}
         }
     }
     return result;

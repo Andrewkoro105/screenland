@@ -3,6 +3,7 @@ pub mod pipeline;
 use crate::app::Message;
 use crate::app::edit_object;
 use crate::app::edit_object::custom_object;
+use crate::app::edit_object::custom_object::CustomObjectFromShader;
 use crate::app::edit_object::custom_object::param::channel::ChannelType;
 use crate::app::edit_object::ui_point::UIPoint;
 use crate::app::edit_object::ui_utils::cube::Cube;
@@ -14,6 +15,7 @@ use glam::Vec2;
 use iced::Rectangle;
 use iced::wgpu;
 use iced::widget::shader;
+use strum::IntoEnumIterator;
 
 pub mod get_shader;
 
@@ -84,7 +86,7 @@ impl shader::Primitive for Primitive {
                     for object in shader_objects {
                         match object {
                             edit_object::ShaderObjects::Custom(custom_object_from_shader) => {
-                                custom_objects.push(*custom_object_from_shader);
+                                custom_objects.push(custom_object_from_shader.clone());
                             }
                         }
                     }
@@ -96,21 +98,19 @@ impl shader::Primitive for Primitive {
                                 device,
                                 custom_objects.len() as _,
                             );
-                        let edited_f32_channel_buffer =
-                            pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Channel(ChannelType::F32),
-                                device,
-                                custom_objects_channel.get_f32().len() as _,
-                            );
-                        let edited_cube_channel_buffer =
-                            pipeline.edit_bg.data.storage_buffers.set_buffer(
-                                &BufferType::Channel(ChannelType::Cube),
-                                device,
-                                custom_objects_channel.get_cube().len() as _,
-                            );
-                        edited_custom_objects_buffer
-                            || edited_f32_channel_buffer
-                            || edited_cube_channel_buffer
+
+                        let mut edited_channel_buffers = false;
+                        for channel_type in ChannelType::iter() {
+                            let edited_channel_buffer =
+                                pipeline.edit_bg.data.storage_buffers.set_buffer(
+                                    &BufferType::Channel(channel_type.clone()),
+                                    device,
+                                    custom_objects_channel.get(&channel_type).len() as _,
+                                );
+                            edited_channel_buffers =
+                                edited_channel_buffers || edited_channel_buffer;
+                        }
+                        edited_custom_objects_buffer || edited_channel_buffers
                     };
 
                     if resize {
@@ -121,22 +121,19 @@ impl shader::Primitive for Primitive {
                         pipeline.edit_bg.data.storage_buffers.write(
                             &BufferType::CustomObjects,
                             queue,
-                            &custom_objects,
-                        );
-                        pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Channel(ChannelType::F32),
-                            queue,
-                            custom_objects_channel.get_f32(),
-                        );
-                        pipeline.edit_bg.data.storage_buffers.write(
-                            &BufferType::Channel(ChannelType::Cube),
-                            queue,
-                            &custom_objects_channel
-                                .get_cube()
+                            &custom_objects
                                 .iter()
-                                .map(Cube::normalize)
+                                .flat_map(CustomObjectFromShader::to_bytes)
                                 .collect::<Vec<_>>(),
                         );
+
+                        for channel_type in ChannelType::iter() {
+                            pipeline.edit_bg.data.storage_buffers.write(
+                                &BufferType::Channel(channel_type.clone()),
+                                queue,
+                                custom_objects_channel.get(&channel_type),
+                            );
+                        }
                     };
                     write();
                 }
