@@ -84,10 +84,8 @@ impl Channels {
     pub fn add(&mut self, channel_type: ChannelType, mut data: Vec<u8>) {
         if data.len() % channel_type.get_size() == 0 {
             if let Some(channel) = self.channels.get_mut(&channel_type) {
-                println!("[add::append] {channel_type:?}: {}", data.len());
                 channel.append(&mut data);
             } else {
-                println!("[add::insert] {channel_type:?}: {}", data.len());
                 self.channels.insert(channel_type, data);
             }
         } else {
@@ -113,13 +111,6 @@ impl Channels {
         index: usize,
         data: Vec<u8>,
     ) {
-        if ChannelType::Cube != *channel_type {
-            println!("[update] start");
-            println!(
-                "[update] channel_type: {channel_type:?}, channel_index: {channel_index:?}, index: {index}, data_len: {}",
-                data.len()
-            );
-        }
         let i = (channel_index
             .channels
             .get(&channel_type)
@@ -131,14 +122,6 @@ impl Channels {
             "The {:?} channel does not yet exist.",
             channel_type
         ));
-
-        if ChannelType::Cube != *channel_type {
-            println!("[update] old_data: {channel:?} ({})", channel.len());
-            println!("[update] range: {:?}", i..(i + channel_type.get_size()));
-        }
         channel.splice(i..(i + channel_type.get_size()), data);
-        if ChannelType::Cube != *channel_type {
-            println!("[update] new_data: {channel:?} ({})", channel.len());
-        }
     }
 }

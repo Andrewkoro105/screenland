@@ -65,7 +65,6 @@ impl CustomObjectFromShader {
             vec![0; Self::PADDING_SIZE],
         ]
         .concat();
-        //println!("[CustomObjectFromShader::to_bytes] {result:?}");
         result
     }
 }
@@ -167,7 +166,6 @@ impl EditObject for CustomObject {
                     .map(|points_data| (points_data.get_channel_type(), points_data.get_data())),
             )
             .for_each(|(channel_type, data)| channel.add(channel_type, data));
-        println!("[reload] index: {:?}", channel.get_index());
         result
     }
 }

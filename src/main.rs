@@ -85,6 +85,7 @@ windowrule = match:title Save As, float on
         println!("{}", get_shader(None));
         Ok(())
     } else {
+        
         let settings = Settings::load(Some(args), Some(arg_config));
         if settings.disables_overlay {
             iced::daemon(settings, Screenland::update, Screenland::view)
