@@ -1,7 +1,7 @@
 use crate::app::edit_object::{
     self,
     ui_point::{PointsSystem, UIPoint},
-    ui_utils::cube::{self, Cube},
+    ui_utils::cube::Cube,
 };
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;

@@ -8,7 +8,7 @@ use crate::{Args, app::{
 
 pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
     let args = Args::parse();
-    let custom_objects = Settings::load(Some(args.clone()), None).custom_objects;
+    let custom_objects = Settings::load(Some(args.clone()), None, None).custom_objects;
     let new_storage_buffers = get_storage_buffers_data();
     let result = include_str!("shader.wgsl")
         .to_string()

@@ -1,6 +1,5 @@
 pub mod edit_object_base_settings;
 use clap::Parser;
-use directories::UserDirs;
 use iced_helper::ui_elements::num_input::NumInput;
 use serde::{Deserialize, Serialize};
 use serde_yaml::from_reader;
@@ -9,6 +8,7 @@ use std::{
     path::PathBuf,
     str::FromStr,
 };
+use xdg::BaseDirectories;
 
 use crate::{
     Args,
@@ -30,7 +30,13 @@ use crate::{
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Settings {
+    #[serde(skip)]
+    #[serde(default = "Settings::get_default_path")]
     config_path: PathBuf,
+
+    #[serde(skip)]
+    #[serde(default = "Settings::get_xdg_dir")]
+    xdg_dirs: BaseDirectories,
 
     #[serde(skip)]
     #[serde(default)]
@@ -65,9 +71,10 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn new(config_path: PathBuf) -> Self {
+    pub fn new(config_path: PathBuf, xdg_dirs: BaseDirectories) -> Self {
         Self {
             config_path,
+            xdg_dirs,
             cli_color_format: false,
             color_format: ColorFormat {
                 r: 0,
@@ -128,22 +135,36 @@ impl Settings {
         }
     }
 
-    pub fn get_path(path: Option<PathBuf>) -> PathBuf {
-        path.unwrap_or(if let Some(user_dirs) = UserDirs::new() {
-            user_dirs.home_dir().join(".config/screenland/config.yaml")
-        } else {
-            PathBuf::from("./config.yaml")
-        })
+    pub fn get_xdg_dir() -> BaseDirectories {
+        xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))
     }
 
-    pub fn load(args: Option<Args>, arg_config: Option<PathBuf>) -> Self {
+    fn get_default_path() -> PathBuf {
+        Self::get_path(None)
+    }
+
+    pub fn get_path(xdg_dirs: Option<&BaseDirectories>) -> PathBuf {
+        xdg_dirs
+        .map(|xdg_dirs| xdg_dirs.create_config_directory(""))
+            .unwrap_or_else(|| Self::get_xdg_dir().create_config_directory(""))
+            .unwrap_or(".".into())
+            .join("config.yaml")
+    }
+
+    pub fn load(
+        args: Option<Args>,
+        config_path: Option<PathBuf>,
+        xdg_dirs: Option<BaseDirectories>,
+    ) -> Self {
         let args = args.unwrap_or(Args::parse());
-        let arg_config =
-            arg_config.unwrap_or(Settings::get_path(args.path.clone().map(Into::into)));
+        let xdg_dirs = xdg_dirs.unwrap_or_else(Self::get_xdg_dir);
+        let config_path = config_path.unwrap_or(Self::get_path(
+            Some(&xdg_dirs),
+        ));
 
         let mut result = fs::OpenOptions::new()
             .read(true)
-            .open(&arg_config)
+            .open(&config_path)
             .map(|file| {
                 let result = from_reader::<_, Settings>(file);
                 if let Err(err) = &result {
@@ -158,7 +179,7 @@ impl Settings {
             })
             .ok()
             .flatten()
-            .unwrap_or_else(|| Settings::new(arg_config));
+            .unwrap_or_else(|| Settings::new(config_path, xdg_dirs));
 
         if let Some(path) = args.path {
             result.path = PathBuf::from(path);
@@ -201,7 +222,7 @@ impl Settings {
 
     pub fn save(&self) {
         let mut save_data = self.clone();
-        let base_save_data = Self::new(self.config_path.clone());
+        let base_save_data = Self::new(self.config_path.clone(), self.xdg_dirs.clone());
         if !save_data.cli_color_format {
             save_data.color_format = base_save_data.color_format;
         }

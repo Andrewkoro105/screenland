@@ -11,7 +11,7 @@ pub struct Screen {
 
 impl Screen {
     pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, _format: wgpu::TextureFormat) -> Self {
-        let image = full_screenshot(&Settings::load(None, None).color_format);
+        let image = full_screenshot(&Settings::load(None, None, None).color_format);
 
         let (width, height) = image.dimensions();
 

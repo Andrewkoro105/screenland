@@ -1,15 +1,26 @@
 pub mod app;
 pub mod screenshots;
 
+use std::{fs::{self, File}, time::{Duration, SystemTime}};
+
 use crate::{
     app::{settings::Settings, shader::get_shader::get_shader},
     screenshots::get_outputs,
 };
 use app::Screenland;
+use chrono::Local;
 use clap::Parser;
 use iced::application::BootFn;
 use iced_aw::ICED_AW_FONT_BYTES;
-use iced_layershell::{self, reexport::Anchor, settings::{LayerShellSettings, StartMode}};
+use iced_layershell::{
+    self,
+    reexport::Anchor,
+    settings::{LayerShellSettings, StartMode},
+};
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::{
+    Layer, filter::Targets, fmt, layer::SubscriberExt, util::SubscriberInitExt,
+};
 
 #[derive(Parser, Clone)]
 #[command(name = "Screenland")]
@@ -45,11 +56,58 @@ pub struct Args {
     /// Disables overlay mode
     #[arg(long)]
     disables_overlay: bool,
+    /// Input log
+    #[arg(long)]
+    input_log: bool,
 }
 
 fn main() -> Result<(), iced_layershell::Error> {
+    let xdg_dirs = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
     let args = Args::parse();
-    let arg_config = Settings::get_path(args.path.clone().map(Into::into));
+    let arg_config = args
+        .path
+        .clone()
+        .map(Into::into)
+        .unwrap_or_else(|| Settings::get_path(Some(&xdg_dirs)));
+
+    let logs_dir = xdg_dirs
+            .create_state_directory("logs")
+            .unwrap_or(".".into());
+    let now = SystemTime::now();
+    let max_age = Duration::from_hours(2 * 24);
+
+    for entry in fs::read_dir(&logs_dir).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        let metadata = fs::metadata(&path).unwrap();
+        let modified = metadata.modified().unwrap();
+        if let Ok(elapsed) = now.duration_since(modified) {
+            if elapsed > max_age {
+                fs::remove_file(&path).unwrap();
+            }
+        }
+    }
+
+    let file = File::create(
+        logs_dir
+            .join(Local::now().format("%F_%T.log").to_string()),
+    )
+    .unwrap();
+    let targets = Targets::new()
+        .with_default(LevelFilter::INFO)
+        .with_target(env!("CARGO_PKG_NAME"), LevelFilter::DEBUG);
+
+    let console_layer = fmt::Layer::new()
+        .with_writer(std::io::stdout)
+        .with_filter(targets.clone());
+    let file_layer = fmt::Layer::new()
+        .with_writer(file)
+        .with_filter(targets.clone());
+
+    tracing_subscriber::registry()
+        .with(args.input_log.then_some(console_layer))
+        .with(file_layer)
+        .init();
 
     if let Some(sys) = args.support_config {
         match sys.as_str() {
@@ -79,14 +137,13 @@ windowrule = match:title Save As, float on
         }
         Ok(())
     } else if args.generate_config {
-        Settings::new(arg_config).save();
+        Settings::new(arg_config, xdg_dirs).save();
         Ok(())
     } else if args.output_shader {
         println!("{}", get_shader(None));
         Ok(())
     } else {
-        
-        let settings = Settings::load(Some(args), Some(arg_config));
+        let settings = Settings::load(Some(args), Some(arg_config), Some(xdg_dirs));
         if settings.disables_overlay {
             iced::daemon(settings, Screenland::update, Screenland::view)
                 .title(Screenland::title)
