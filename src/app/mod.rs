@@ -22,10 +22,6 @@ use iced::{
     application::BootFn,
     window::{self, settings::PlatformSpecific},
 };
-use iced_layershell::reexport::{
-    Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings, OutputOption,
-};
-use serde::Deserialize;
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();

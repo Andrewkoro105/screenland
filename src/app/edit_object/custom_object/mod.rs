@@ -3,7 +3,11 @@ pub mod icon;
 pub mod param;
 pub mod points;
 pub mod settings;
-use std::ops::Not;
+use std::{
+    collections::HashMap,
+    mem::{self, Discriminant},
+    ops::Not,
+};
 
 use iced::{Task, widget::Column};
 use strum::EnumCount;
@@ -26,7 +30,7 @@ use crate::app::{
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetF32(usize, String),
+    SetParam(usize, param::Message),
     Point(PointsMessage),
 }
 
@@ -73,9 +77,14 @@ impl EditObject for CustomObject {
     fn get_menu(&self) -> Option<iced::Element<'_, app::Message>> {
         self.params.is_empty().not().then_some(
             Column::from_iter(self.params.iter().enumerate().map(|(i, param)| {
-                Param::get_menu(param, i).map(|message| {
-                    app::Message::UpdateEditObject((self.i, edit_object::Message::Custom(message)))
-                })
+                Param::get_menu(param)
+                    .map(move |message| Message::SetParam(i, message))
+                    .map(|message| {
+                        app::Message::UpdateEditObject((
+                            self.i,
+                            edit_object::Message::Custom(message),
+                        ))
+                    })
             }))
             .spacing(5)
             .into(),
@@ -115,17 +124,22 @@ impl EditObject for CustomObject {
     ) -> iced::Task<app::Message> {
         if let edit_object::Message::Custom(message) = message {
             match message {
-                Message::SetF32(index, value) => {
-                    if let ShaderType::F32 { num_input } = &mut self.params[index].shader_type {
-                        Task::done(app::Message::CustomObjectsChannelUpdate {
-                            i: self.i,
-                            index: index,
-                            channel_type: channel::ChannelType::F32,
-                            data: bytemuck::bytes_of(&num_input.update(&value)).to_vec(),
-                        })
-                    } else {
-                        panic!("")
+                Message::SetParam(index, message) => {
+                    let current_discriminant = mem::discriminant(&self.params[index].shader_type);
+                    let mut shader_index = 0;
+                    for param in &self.params[0..index] {
+                        if mem::discriminant(&param.shader_type) == current_discriminant {
+                            shader_index += 1;
+                        }
                     }
+                
+                    self.params[index].shader_type.update(message);
+                    Task::done(app::Message::CustomObjectsChannelUpdate {
+                            i: self.i,
+                            index: shader_index,
+                            channel_type: self.params[index].shader_type.clone().into(),
+                            data: self.params[index].shader_type.get_data(),
+                        })
                 }
                 Message::Point(points_message) => {
                     let i = self.i;

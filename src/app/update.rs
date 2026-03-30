@@ -12,7 +12,6 @@ use crate::{
         selection,
         settings::edit_object_base_settings,
     },
-    screenshots::get_outputs,
 };
 
 #[to_layer_message(multi)]

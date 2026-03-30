@@ -6,7 +6,6 @@ use crate::app::edit_object::custom_object;
 use crate::app::edit_object::custom_object::CustomObjectFromShader;
 use crate::app::edit_object::custom_object::param::channel::ChannelType;
 use crate::app::edit_object::ui_point::UIPoint;
-use crate::app::edit_object::ui_utils::cube::Cube;
 use crate::app::selection::Selection;
 use crate::app::shader::pipeline::Pipeline;
 use crate::app::shader::pipeline::edit_bg::BaseData;

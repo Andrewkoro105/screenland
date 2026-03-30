@@ -9,7 +9,7 @@ use iced::{
     mouse, window,
 };
 
-use crate::app::{START_TIME, Screenland, end::End, settings::Settings, update::Message};
+use crate::app::{START_TIME, Screenland, end::End, update::Message};
 
 impl Screenland {
     pub fn subscription(&self) -> Subscription<Message> {

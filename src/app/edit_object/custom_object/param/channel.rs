@@ -11,6 +11,7 @@ pub enum ChannelType {
     #[default]
     Cube,
     F32,
+    U32
 }
 
 impl Eq for ChannelType {}
@@ -31,6 +32,7 @@ impl ChannelType {
         match self {
             ChannelType::Cube => self.get_storage_buffer_data(2, "cube_channel", "Cube"),
             ChannelType::F32 => self.get_storage_buffer_data(1, "f32_channel", "f32"),
+            ChannelType::U32 => self.get_storage_buffer_data(1, "u32_channel", "u32"),
         }
     }
 
@@ -47,6 +49,7 @@ impl ChannelType {
         match self {
             ChannelType::Cube => std::mem::size_of::<Cube>(),
             ChannelType::F32 => std::mem::size_of::<f32>(),
+            ChannelType::U32 => std::mem::size_of::<u32>(),
         }
     }
 }

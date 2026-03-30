@@ -30,6 +30,7 @@ struct UIPoint {
 struct ChannelIndex {
     cube_index: u32,
     f32_index: u32,
+    u32_index: u32,
 }
 
 struct CustomObject {
