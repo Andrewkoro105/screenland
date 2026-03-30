@@ -5,9 +5,9 @@ use iced::Task;
 pub trait PointsSystem<Message> {
     fn view(&self) -> Vec<UIPointElement<Message>>;
 
-    fn get_message(&mut self, position: &Vec2) -> Vec<Message>;
+    fn get_message(&mut self, position: &Vec2) -> Option<Message>;
 
-    fn update(&mut self, position: &Vec2, message: Message) -> Task<Message>;
+    fn update(&mut self, position: &Vec2, message: Option<Message>) -> Task<Message>;
 }
 
 

@@ -4,14 +4,15 @@ use glam::Vec2;
 use iced::{Point, Task, exit, window};
 use iced_layershell::to_layer_message;
 
-use crate::{
-    app::{
-        Mode, Screenland,
-        edit_object::{self, EditObjectSettings, custom_object::param::channel},
-        end::End,
-        selection,
-        settings::edit_object_base_settings,
+use crate::app::{
+    Mode, Screenland,
+    edit_object::{
+        self, EditObjectSettings,
+        custom_object::{self, param::channel},
     },
+    end::End,
+    selection,
+    settings::edit_object_base_settings,
 };
 
 #[to_layer_message(multi)]
@@ -24,7 +25,7 @@ pub enum Message {
     TouchStart,
     TouchEnd,
     End(End),
-    SelectionUpdate(selection::Message),
+    SelectionUpdate(Option<selection::Message>),
     EditObjectBaseSettings(edit_object_base_settings::Message),
     AddObject(edit_object::CreateObjects),
     UpdateEditObject((usize, edit_object::Message)),
@@ -79,16 +80,14 @@ impl Screenland {
                             self.objects[current_object].get_messages(&self.mouse_pos)
                         })
                         .unwrap_or_default();
-                    if let Some(message) = object_messages.first() {
+                    if let Some(message) = object_messages {
                         self.mode = Mode::Move(Box::new(message.clone()));
                     } else {
                         let selection_messages = self
                             .selection
                             .get_messages(&self.mouse_pos)
-                            .into_iter()
-                            .map(|message| Message::SelectionUpdate(message))
-                            .collect::<Vec<_>>();
-                        if let Some(message) = selection_messages.first() {
+                            .map(|message| Message::SelectionUpdate(Some(message)));
+                        if let Some(message) = selection_messages {
                             self.mode = Mode::Move(Box::new(message.clone()));
                         }
                     }
@@ -101,7 +100,18 @@ impl Screenland {
                 Mode::Base => Task::none(),
                 Mode::Move(_) => {
                     self.mode = Mode::Base;
-                    Task::none()
+                    Task::done(Message::SelectionUpdate(None)).chain(
+                        self.current_object
+                            .map(|current_object| {
+                                Task::done(Message::UpdateEditObject((
+                                    current_object,
+                                    edit_object::Message::Custom(custom_object::Message::Point(
+                                        None,
+                                    )),
+                                )))
+                            })
+                            .unwrap_or(Task::none()),
+                    )
                 }
                 Mode::Transparency => Task::none(),
             },
@@ -134,6 +144,7 @@ impl Screenland {
             Message::SelectionUpdate(message) => self
                 .selection
                 .update(self.mouse_pos, message)
+                .map(Some)
                 .map(Message::SelectionUpdate),
             Message::EditObjectBaseSettings(message) => {
                 let task = self.settings.edit_object_base_settings.update(message);
@@ -157,13 +168,18 @@ impl Screenland {
             Message::UpdateEditObject((i, message)) => {
                 self.objects[i].update(self.mouse_pos, message)
             }
-            Message::CustomObjectsChannelUpdate { i, index, channel_type, data } => {
+            Message::CustomObjectsChannelUpdate {
+                i,
+                index,
+                channel_type,
+                data,
+            } => {
                 self.custom_objects_channel.update(
                     &channel_type,
                     if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {
                         &custom_shader_object.channel_index
                     } else {
-                        panic!("In Message::CustomObjectsChannelUpdate, a message for the wrong object was sent.")
+                        unreachable!("In Message::CustomObjectsChannelUpdate, a message for the wrong object was sent.")
                     },
                     index,
                     data,

@@ -27,7 +27,7 @@ use crate::app::{
 #[derive(Clone, Debug)]
 pub enum Message {
     SetParam(usize, param::Message),
-    Point(PointsMessage),
+    Point(Option<PointsMessage>),
 }
 
 #[derive(Debug, Clone)]
@@ -94,13 +94,13 @@ impl EditObject for CustomObject {
             .unwrap_or(vec![])
     }
 
-    fn get_messages(&mut self, position: &glam::Vec2) -> Vec<app::Message> {
+    fn get_messages(&mut self, position: &glam::Vec2) -> Option<app::Message> {
         self.points_data
             .as_mut()
             .map(|points_data| {
                 points_data
                     .get_messages(position)
-                    .into_iter()
+                    .map(Some)
                     .map(Message::Point)
                     .map(|message| {
                         app::Message::UpdateEditObject((
@@ -108,9 +108,8 @@ impl EditObject for CustomObject {
                             edit_object::Message::Custom(message),
                         ))
                     })
-                    .collect()
             })
-            .unwrap_or(vec![])
+            .unwrap_or_default()
     }
 
     fn update(
@@ -148,7 +147,7 @@ impl EditObject for CustomObject {
                 }
             }
         } else {
-            panic!(
+            unreachable!(
                 "In CustomObject({}), a message for the wrong object was sent.",
                 self.i
             )

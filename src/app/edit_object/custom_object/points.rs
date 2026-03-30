@@ -54,12 +54,13 @@ impl PointsData {
         &mut self,
         i: usize,
         mouse_pos: Vec2,
-        message: PointsMessage,
+        message: Option<PointsMessage>,
     ) -> Task<app::Message> {
         match self {
             PointsData::Cube(cube) => cube
-                .update(&mouse_pos, message.get_cube().unwrap())
+                .update(&mouse_pos, message.map(PointsMessage::get_cube).flatten())
                 .map(PointsMessage::Cube)
+                .map(Some)
                 .map(super::Message::Point)
                 .map(move |message| {
                     app::Message::UpdateEditObject((
@@ -87,13 +88,11 @@ impl PointsData {
         }
     }
 
-    pub fn get_messages(&mut self, position: &Vec2) -> Vec<PointsMessage> {
+    pub fn get_messages(&mut self, position: &Vec2) -> Option<PointsMessage> {
         match self {
             PointsData::Cube(cube) => cube
                 .get_message(position)
-                .into_iter()
-                .map(PointsMessage::Cube)
-                .collect(),
+                .map(PointsMessage::Cube),
         }
     }
 
@@ -111,9 +110,9 @@ impl PointsData {
 }
 
 impl PointsMessage {
-    pub fn get_cube(&self) -> Option<cube::Message> {
+    pub fn get_cube(self) -> Option<cube::Message> {
         if let PointsMessage::Cube(message) = self {
-            Some(message.clone())
+            Some(message)
         } else {
             None
         }

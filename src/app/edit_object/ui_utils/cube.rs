@@ -6,6 +6,7 @@ use crate::app::edit_object::ui_point::{PointsSystem, UIPoint, UIPointElement};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Message {
+    Move,
     MoveStart,
     MoveStartX,
     MoveStartY,
@@ -21,8 +22,9 @@ pub enum Message {
 pub struct Cube {
     pub start: Vec2,
     pub end: Vec2,
+    pub start_touch: Vec2,
+    pub touched: u32,
     pub init: u32,
-    _padding: [u8; 4],
 }
 
 impl PointsSystem<Message> for Cube {
@@ -102,46 +104,62 @@ impl PointsSystem<Message> for Cube {
         ]
     }
 
-    fn get_message(&mut self, position: &Vec2) -> Vec<Message> {
+    fn get_message(&mut self, position: &Vec2) -> Option<Message> {
         if self.init == 0 {
             self.init = 1;
             self.start = *position;
             self.end = *position;
-            vec![Message::MoveEnd]
+            Some(Message::MoveEnd)
         } else {
             self.view()
                 .into_iter()
                 .filter(|element| element.point.in_point(position))
                 .map(|element| element.message)
-                .collect()
+                .next()
+                .or_else(|| self.in_cube(position).then_some(Message::Move))
         }
     }
 
-    fn update(&mut self, position: &Vec2, message: Message) -> Task<Message> {
+    fn update(&mut self, position: &Vec2, message: Option<Message>) -> Task<Message> {
         match message {
-            Message::MoveStart => {
+            None => {
+                self.touched = 0;
+            }
+            Some(Message::Move) => {
+                if self.touched == 1 {
+                    let dist = *position - (self.start_touch + self.start);
+                    self.start += dist;
+                    self.end += dist;
+                } else if self.touched == 0 {
+                    self.touched = 1;
+                    self.start_touch = *position - self.start;
+                } else {
+                    unreachable!("`Cube::touched` cannot be equal to {}", self.touched)
+                }
+            }
+            Some(Message::MoveStart) => {
                 self.start = *position;
             }
-            Message::MoveStartX => {
+            Some(Message::MoveStartX) => {
                 self.start.x = position.x;
             }
-            Message::MoveStartY => {
+            Some(Message::MoveStartY) => {
                 self.start.y = position.y;
             }
-            Message::MoveEnd => {
+            Some(Message::MoveEnd) => {
                 self.end = *position;
             }
-            Message::MoveEndX => {
+            Some(Message::MoveEndX) => {
                 self.end.x = position.x;
             }
-            Message::MoveEndY => {
+            Some(Message::MoveEndY) => {
                 self.end.y = position.y;
             }
-            Message::MoveStartXEndY => {
+            Some(Message::MoveStartXEndY) => {
                 self.start.x = position.x;
                 self.end.y = position.y;
             }
-            Message::MoveStartYEndX => {
+            Some(Message::MoveStartYEndX) => {
                 self.start.y = position.y;
                 self.end.x = position.x;
             }

@@ -110,7 +110,7 @@ impl ShaderType {
                     if let Message::SetF32(value) = message {
                         value
                     } else {
-                        panic!("The `Message::SetF32` call is not for `ShaderType::F32`")
+                        unreachable!("The `Message::SetF32` call is not for `ShaderType::F32`")
                     }
                     .as_str(),
                 );
@@ -120,7 +120,7 @@ impl ShaderType {
                     if let Message::SetU32(value) = message {
                         value
                     } else {
-                        panic!("The `Message::SetU32` call is not for `ShaderType::U32`")
+                        unreachable!("The `Message::SetU32` call is not for `ShaderType::U32`")
                     }
                     .as_str(),
                 );

@@ -48,7 +48,7 @@ pub trait EditObject {
 
     fn get_ui_point(&self) -> Vec<UIPoint>;
 
-    fn get_messages(&mut self, position: &Vec2) -> Vec<app::Message>;
+    fn get_messages(&mut self, position: &Vec2) -> Option<app::Message>;
 
     fn update(&mut self, muse_position: Vec2, message: Message) -> Task<app::Message>;
 

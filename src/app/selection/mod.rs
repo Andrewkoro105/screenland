@@ -42,13 +42,13 @@ impl Selection {
             .collect()
     }
 
-    pub fn update(&mut self, mouse_pos: Vec2, message: Message) -> Task<Message> {
+    pub fn update(&mut self, mouse_pos: Vec2, message: Option<Message>) -> Task<Message> {
         self.cube.update(&mouse_pos, message)
     }
 
-    pub fn get_messages(&mut self, position: &Vec2) -> Vec<Message> {
+    pub fn get_messages(&mut self, position: &Vec2) -> Option<Message> {
         let messages = self.cube.get_message(position);
-        if messages.is_empty() {
+        if messages.is_none() {
             self.cube.init = 0;
             self.cube.get_message(position)
         } else {

@@ -15,6 +15,8 @@ struct BaseData {
 struct Cube {
     start: vec2<f32>,
     end: vec2<f32>,
+    start_touch: vec2<f32>,
+    touched: u32,
     init: u32,
 }
 
