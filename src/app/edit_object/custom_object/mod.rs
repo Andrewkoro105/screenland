@@ -3,11 +3,7 @@ pub mod icon;
 pub mod param;
 pub mod points;
 pub mod settings;
-use std::{
-    collections::HashMap,
-    mem::{self, Discriminant},
-    ops::Not,
-};
+use std::{mem, ops::Not};
 
 use iced::{Task, widget::Column};
 use strum::EnumCount;
@@ -18,8 +14,8 @@ use crate::app::{
         self, EditObject,
         custom_object::{
             param::{
-                Param, ShaderType,
-                channel::{self, ChannelIndex, ChannelType, Channels},
+                Param,
+                channel::{ChannelIndex, ChannelType, Channels},
             },
             points::{PointsData, PointsMessage},
         },
@@ -132,14 +128,14 @@ impl EditObject for CustomObject {
                             shader_index += 1;
                         }
                     }
-                
+
                     self.params[index].shader_type.update(message);
                     Task::done(app::Message::CustomObjectsChannelUpdate {
-                            i: self.i,
-                            index: shader_index,
-                            channel_type: self.params[index].shader_type.clone().into(),
-                            data: self.params[index].shader_type.get_data(),
-                        })
+                        i: self.i,
+                        index: shader_index,
+                        channel_type: self.params[index].shader_type.clone().into(),
+                        data: self.params[index].shader_type.get_data(),
+                    })
                 }
                 Message::Point(points_message) => {
                     let i = self.i;

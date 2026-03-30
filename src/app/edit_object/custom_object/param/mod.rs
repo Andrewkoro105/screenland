@@ -12,7 +12,7 @@ use iced_helper::ui_elements::{
 use serde::{Deserialize, Serialize};
 
 use crate::app::edit_object::custom_object::{
-    self, data_type::DataType, param::channel::ChannelType, settings,
+    data_type::DataType, param::channel::ChannelType
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

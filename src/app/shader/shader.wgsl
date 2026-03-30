@@ -27,11 +27,7 @@ struct UIPoint {
     size: f32,
 }
 
-struct ChannelIndex {
-    cube_index: u32,
-    f32_index: u32,
-    u32_index: u32,
-}
+//{ChannelIndex}
 
 struct CustomObject {
     base_settings: EditObjectBaseSettings,

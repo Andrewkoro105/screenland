@@ -4,14 +4,14 @@ use crate::app::{
     edit_object::ui_utils::cube::Cube,
     shader::pipeline::base_storage_buffers::base_storage_buffer::BaseStorageBufferData,
 };
-use strum::{EnumCount, EnumIter, IntoEnumIterator};
+use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-#[derive(EnumIter, EnumCount, Clone, Debug, Default, Hash, PartialEq)]
+#[derive(EnumIter, Display, EnumCount, Clone, Debug, Default, Hash, PartialEq)]
 pub enum ChannelType {
     #[default]
     Cube,
     F32,
-    U32
+    U32,
 }
 
 impl Eq for ChannelType {}
@@ -61,6 +61,18 @@ impl ChannelIndex {
             .flatten()
             .cloned()
             .collect()
+    }
+
+    pub fn get_shader() -> String {
+        [
+            "struct ChannelIndex {".to_string(),
+            ChannelType::iter()
+                .map(|channel_type| format!("{}_index: u32,", channel_type.to_string().to_lowercase()))
+                .collect::<Vec<_>>()
+                .join("\n"),
+            "}".to_string(),
+        ]
+        .join("\n")
     }
 }
 

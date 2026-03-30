@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::{Args, app::{
-    edit_object::{EditObjectSettings, custom_object::settings::CustomIndexedObjectSettings},
+    edit_object::{EditObjectSettings, custom_object::{param::channel::ChannelIndex, settings::CustomIndexedObjectSettings}},
     settings::Settings,
     shader::pipeline::{base_storage_buffers::GetShader, edit_bg::get_storage_buffers_data},
 }};
@@ -12,6 +12,10 @@ pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
     let new_storage_buffers = get_storage_buffers_data();
     let result = include_str!("shader.wgsl")
         .to_string()
+        .replace(
+            "//{ChannelIndex}",
+            &ChannelIndex::get_shader()
+        )
         .replace(
             "//{STORAGE_BUFFERS}",
             &[
