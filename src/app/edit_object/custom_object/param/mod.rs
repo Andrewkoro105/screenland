@@ -6,7 +6,7 @@ use iced_helper::ui_elements::{
     ParamSettings,
     num_input::{
         NumInput,
-        base_value::{ConstF32, ConstU32},
+        base_value::{ConstF32, ConstI32, ConstU32},
     },
 };
 use serde::{Deserialize, Serialize};
@@ -23,12 +23,16 @@ pub enum ShaderType {
     U32 {
         num_input: NumInput<u32, ConstU32<0>>,
     },
+    I32 {
+        num_input: NumInput<i32, ConstI32<0>>,
+    },
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     SetF32(String),
     SetU32(String),
+    SetI32(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,6 +56,10 @@ impl Param {
             ShaderType::U32 { num_input } => param_settings.create_param(
                 format!("{}: ", self.name),
                 num_input.view("", move |str| Message::SetU32(str)),
+            ),
+            ShaderType::I32 { num_input } => param_settings.create_param(
+                format!("{}: ", self.name),
+                num_input.view("", move |str| Message::SetI32(str)),
             ),
         }
     }
@@ -81,6 +89,7 @@ impl DataType for Param {
         match self.shader_type {
             ShaderType::F32 { .. } => "f32".into(),
             ShaderType::U32 { .. } => "u32".into(),
+            ShaderType::I32 { .. } => "i32".into(),
         }
     }
 }
@@ -90,6 +99,7 @@ impl ShaderType {
         match self {
             ShaderType::F32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
             ShaderType::U32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
+            ShaderType::I32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
         }
     }
 
@@ -111,6 +121,16 @@ impl ShaderType {
                         value
                     } else {
                         panic!("The `Message::SetU32` call is not for `ShaderType::U32`")
+                    }
+                    .as_str(),
+                );
+            },
+            ShaderType::I32 { num_input } => {
+                num_input.update(
+                    if let Message::SetI32(value) = message {
+                        value
+                    } else {
+                        panic!("The `Message::SetI32` call is not for `ShaderType::I32`")
                     }
                     .as_str(),
                 );
@@ -138,6 +158,7 @@ impl From<ShaderType> for ChannelType {
         match value {
             ShaderType::F32 { .. } => ChannelType::F32,
             ShaderType::U32 { .. } => ChannelType::U32,
+            ShaderType::I32 { .. } => ChannelType::I32,
         }
     }
 }

@@ -77,7 +77,7 @@ custom_objects:
     # Parameter name
     name: <STRING>
     # Parameter type
-    shader_type: (!F32 | !U32)
+    shader_type: (!F32 | !U32 | !I32)
       # Default value
       num_input: 1.0
   # The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
