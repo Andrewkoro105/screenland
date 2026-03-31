@@ -44,6 +44,8 @@ pub trait EditObjectSettings {
 }
 
 pub trait EditObject {
+    fn set_index(&mut self, i: usize);
+
     fn get_menu(&self) -> Option<Element<'_, app::Message>>;
 
     fn get_ui_point(&self) -> Vec<UIPoint>;

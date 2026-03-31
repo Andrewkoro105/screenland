@@ -16,6 +16,7 @@ use crate::{
     },
     screenshots::{MonitorData, get_outputs},
 };
+use chrono::Duration;
 use glam::Vec2;
 use iced::{
     Task,
@@ -23,6 +24,7 @@ use iced::{
     window::{self, settings::PlatformSpecific},
 };
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
+use tracing::debug;
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
@@ -44,6 +46,7 @@ pub struct Screenland {
     selection: Selection,
     mode: Mode,
     mouse_pos: Vec2,
+    mouse_touch_time: Instant,
     settings: Settings,
 
     current_object: Option<usize>,
@@ -76,7 +79,10 @@ impl BootFn<Screenland, Message> for Settings {
                 .into_iter()
                 .enumerate()
                 .map(|(i, monitor_data)| {
-                    (serde_yaml::from_str(&(i + 1).to_string()).unwrap(), monitor_data)
+                    (
+                        serde_yaml::from_str(&(i + 1).to_string()).unwrap(),
+                        monitor_data,
+                    )
                 })
                 .collect();
         }
@@ -87,6 +93,7 @@ impl BootFn<Screenland, Message> for Settings {
                 selection: Default::default(),
                 mode: Default::default(),
                 mouse_pos: Default::default(),
+                mouse_touch_time: Instant::now(),
                 auto_exit: true,
                 settings: self.clone(),
                 current_object: None,
@@ -109,6 +116,20 @@ impl Screenland {
             format!("screenland-{}", self.windows_data.get(&id).unwrap().name)
         } else {
             "screenland".to_string()
+        }
+    }
+
+    pub fn get_object_in_which_mouse(&self) -> Option<usize> {
+        self.objects
+            .iter()
+            .enumerate()
+            .rev()
+            .find_map(|(i, object)| object.in_object(self.mouse_pos).then_some(i))
+    }
+
+    pub fn reload_objects(&mut self) {
+        for (i, object) in self.objects.iter_mut().enumerate() {
+            object.set_index(i);
         }
     }
 

@@ -1,8 +1,12 @@
-use std::{thread::sleep, time::Duration};
+use std::{
+    thread::sleep,
+    time::{Duration, Instant},
+};
 
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
 use iced_layershell::to_layer_message;
+use tracing::debug;
 
 use crate::app::{
     Mode, Screenland,
@@ -72,40 +76,55 @@ impl Screenland {
                     Mode::Transparency => Task::none(),
                 }
             }
-            Message::TouchStart => match self.mode {
-                Mode::Base => {
-                    let object_messages = self
-                        .current_object
-                        .map(|current_object| {
-                            self.objects[current_object].get_messages(&self.mouse_pos)
-                        })
-                        .unwrap_or_default();
+            Message::TouchStart => {
+                let double_click = self.mouse_touch_time.elapsed() < Duration::from_millis(500);
+                self.mouse_touch_time = Instant::now();
 
-                    let new_current_object = self
-                        .objects
-                        .iter()
-                        .enumerate()
-                        .rev()
-                        .find_map(|(i, object)| object.in_object(self.mouse_pos).then_some(i));
-
-                    if let Some(message) = object_messages {
-                        self.mode = Mode::Move(Box::new(message.clone()));
-                    } else if let Some(new_current_object) = new_current_object{
-                        self.current_object = Some(new_current_object);
-                    } else {
-                        let selection_messages = self
-                            .selection
-                            .get_messages(&self.mouse_pos)
-                            .map(|message| Message::SelectionUpdate(Some(message)));
-                        if let Some(message) = selection_messages {
-                            self.mode = Mode::Move(Box::new(message.clone()));
+                if double_click {
+                    match self.mode {
+                        Mode::Base => {
+                            if let Some(new_current_object) = self.get_object_in_which_mouse() {
+                                let object = self.objects.remove(new_current_object);
+                                self.objects.push(object);
+                                self.current_object = Some(self.objects.len() - 1);
+                                self.reload_objects();
+                                self.reload_shader_objects();
+                            }
+                            Task::none()
                         }
+                        Mode::Move(_) => Task::none(),
+                        Mode::Transparency => Task::none(),
                     }
-                    Task::none()
+                } else {
+                    match self.mode {
+                        Mode::Base => {
+                            let object_messages = self
+                                .current_object
+                                .map(|current_object| {
+                                    self.objects[current_object].get_messages(&self.mouse_pos)
+                                })
+                                .unwrap_or_default();
+
+                            if let Some(message) = object_messages {
+                                self.mode = Mode::Move(Box::new(message.clone()));
+                            } else if let Some(new_current_object) = self.get_object_in_which_mouse() {
+                                self.current_object = Some(new_current_object);
+                            } else {
+                                let selection_messages = self
+                                    .selection
+                                    .get_messages(&self.mouse_pos)
+                                    .map(|message| Message::SelectionUpdate(Some(message)));
+                                if let Some(message) = selection_messages {
+                                    self.mode = Mode::Move(Box::new(message.clone()));
+                                }
+                            }
+                            Task::none()
+                        }
+                        Mode::Move(_) => Task::none(),
+                        Mode::Transparency => Task::none(),
+                    }
                 }
-                Mode::Move(_) => Task::none(),
-                Mode::Transparency => Task::none(),
-            },
+            }
             Message::TouchEnd => match self.mode {
                 Mode::Base => Task::none(),
                 Mode::Move(_) => {

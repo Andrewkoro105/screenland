@@ -71,6 +71,10 @@ impl CustomObjectFromShader {
 }
 
 impl EditObject for CustomObject {
+    fn set_index(&mut self, i: usize) {
+        self.i = i;
+    }
+
     fn get_menu(&self) -> Option<iced::Element<'_, app::Message>> {
         self.params.is_empty().not().then_some(
             Column::from_iter(self.params.iter().enumerate().map(|(i, param)| {
