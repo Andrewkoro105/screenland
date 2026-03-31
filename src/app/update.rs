@@ -6,7 +6,6 @@ use std::{
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
 use iced_layershell::to_layer_message;
-use tracing::debug;
 
 use crate::app::{
     Mode, Screenland,
@@ -107,7 +106,9 @@ impl Screenland {
 
                             if let Some(message) = object_messages {
                                 self.mode = Mode::Move(Box::new(message.clone()));
-                            } else if let Some(new_current_object) = self.get_object_in_which_mouse() {
+                            } else if let Some(new_current_object) =
+                                self.get_object_in_which_mouse()
+                            {
                                 self.current_object = Some(new_current_object);
                             } else {
                                 let selection_messages = self
@@ -203,6 +204,14 @@ impl Screenland {
                 channel_type,
                 data,
             } => {
+                if data.len() != channel_type.get_size() {
+                    panic!(
+                        "The `Message::CustomObjectsChannelUpdate` contains {} bytes, which exceeds the size of the `{:?}` type. The type in this channel is {} bytes in size",
+                        data.len(),
+                        channel_type,
+                        channel_type.get_size(),
+                    )
+                }
                 self.custom_objects_channel.update(
                     &channel_type,
                     if let edit_object::ShaderObjects::Custom(custom_shader_object) = &self.shader_objects[i] {

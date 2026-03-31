@@ -16,7 +16,6 @@ use crate::{
     },
     screenshots::{MonitorData, get_outputs},
 };
-use chrono::Duration;
 use glam::Vec2;
 use iced::{
     Task,
@@ -24,7 +23,6 @@ use iced::{
     window::{self, settings::PlatformSpecific},
 };
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
-use tracing::debug;
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 

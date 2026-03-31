@@ -58,7 +58,7 @@ impl shader::Primitive for Primitive {
                 Command::Selection(selection) => queue.write_buffer(
                     &pipeline.edit_bg.data.selection_buffer,
                     0,
-                    bytemuck::bytes_of(&selection.normalize()),
+                    &selection.get_data(),
                 ),
                 Command::Points(ui_points) => {
                     let edited = pipeline.edit_bg.data.storage_buffers.set_buffer(

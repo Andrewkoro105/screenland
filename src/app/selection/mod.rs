@@ -1,7 +1,7 @@
 use crate::app::edit_object::{
     self,
     ui_point::{PointsSystem, UIPoint},
-    ui_utils::cube::Cube,
+    ui_utils::cube::{self, Cube},
 };
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
@@ -34,9 +34,7 @@ impl Selection {
     }
 
     pub fn get_ui_point(&self) -> Vec<UIPoint> {
-        self.normalize()
-            .cube
-            .view()
+        <Cube as PointsSystem<cube::Message>>::view(&self.cube)
             .into_iter()
             .map(Into::into)
             .collect()
@@ -54,5 +52,14 @@ impl Selection {
         } else {
             messages
         }
+    }
+
+    pub fn get_data(&self) -> Vec<u8> {
+        <Cube as PointsSystem<cube::Message>>::get_data(&self.cube)
+            .into_iter()
+            .map(|(_, a)| a)
+            .collect::<Vec<_>>()
+            .concat()
+            .concat()
     }
 }

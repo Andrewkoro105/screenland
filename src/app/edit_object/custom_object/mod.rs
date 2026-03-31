@@ -7,6 +7,7 @@ use std::{mem, ops::Not};
 
 use glam::Vec2;
 use iced::{Task, widget::Column};
+use std::fmt::Debug;
 use strum::EnumCount;
 
 use crate::app::{
@@ -18,9 +19,9 @@ use crate::app::{
                 Param,
                 channel::{ChannelIndex, ChannelType, Channels},
             },
-            points::{PointsData, PointsMessage},
+            points::{CustomObjectPointSystem, PointsMessage},
         },
-        ui_point::UIPoint,
+        ui_point::{PointsSystem, UIPoint},
     },
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
@@ -31,12 +32,12 @@ pub enum Message {
     Point(Option<PointsMessage>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct CustomObject {
     type_id: u32,
     i: usize,
     edit_object_base_settings: EditObjectBaseSettingsFromShader,
-    points_data: Option<PointsData>,
+    points_data: Option<Box<dyn CustomObjectPointSystem>>,
     params: Vec<Param>,
 }
 
@@ -95,7 +96,7 @@ impl EditObject for CustomObject {
     fn get_ui_point(&self) -> Vec<UIPoint> {
         self.points_data
             .as_ref()
-            .map(PointsData::get_ui_point)
+            .map(|points_data| points_data.get_ui_points())
             .unwrap_or(vec![])
     }
 
@@ -104,7 +105,8 @@ impl EditObject for CustomObject {
             .as_mut()
             .map(|points_data| {
                 points_data
-                    .get_messages(position)
+                    .as_mut()
+                    .get_message(position)
                     .map(Some)
                     .map(Message::Point)
                     .map(|message| {
@@ -146,7 +148,7 @@ impl EditObject for CustomObject {
                     self.points_data
                         .as_mut()
                         .map(move |points_data| {
-                            points_data.update(i, muse_position, points_message)
+                            points_data.custom_object_update(i, muse_position, points_message)
                         })
                         .unwrap_or(Task::none())
                 }
@@ -176,8 +178,9 @@ impl EditObject for CustomObject {
             })
             .chain(
                 self.points_data
-                    .as_ref()
-                    .map(|points_data| (points_data.get_channel_type(), points_data.get_data())),
+                    .iter()
+                    .flat_map(|points_data| points_data.get_data())
+                    .map(|(channel_type, data)| (channel_type, data.concat())),
             )
             .for_each(|(channel_type, data)| channel.add(channel_type, data));
         result
@@ -186,7 +189,7 @@ impl EditObject for CustomObject {
     fn in_object(&self, muse_position: Vec2) -> bool {
         self.points_data
             .as_ref()
-            .map(|points_data| points_data.in_object(muse_position))
+            .map(|points_data| points_data.in_object(&muse_position))
             .unwrap_or(false)
     }
 }

@@ -1,6 +1,11 @@
+use heck::ToSnakeCase;
+
 pub trait DataType {
-    fn get_name(&self) -> String;
     fn get_type_name(&self) -> String;
+
+    fn get_name(&self) -> String {
+        self.get_type_name().to_snake_case()
+    }
 
     fn get_str_field(&self) -> String {
         format!("{}: {},", self.get_name(), self.get_type_name())

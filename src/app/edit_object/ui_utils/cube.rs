@@ -2,9 +2,19 @@ use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::Task;
 
-use crate::app::edit_object::ui_point::{PointsSystem, UIPoint, UIPointElement};
+use crate::{
+    app::edit_object::{
+        custom_object::{
+            self,
+            param::channel::ChannelType,
+            points::{self},
+        },
+        ui_point::{PointsSystem, UIPoint, UIPointElement},
+    },
+    into_points_system,
+};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Message {
     Move,
     MoveStart,
@@ -26,6 +36,8 @@ pub struct Cube {
     pub touched: u32,
     pub init: u32,
 }
+
+into_points_system!(Cube, Message, custom_object::points::PointsMessage);
 
 impl PointsSystem<Message> for Cube {
     fn view(&self) -> Vec<UIPointElement<Message>> {
@@ -111,12 +123,15 @@ impl PointsSystem<Message> for Cube {
             self.end = *position;
             Some(Message::MoveEnd)
         } else {
-            self.view()
+            <Self as PointsSystem<Message>>::view(self)
                 .into_iter()
                 .filter(|element| element.point.in_point(position))
                 .map(|element| element.message)
                 .next()
-                .or_else(|| self.in_cube(position).then_some(Message::Move))
+                .or_else(|| {
+                    <Self as PointsSystem<Message>>::in_object(self, position)
+                        .then_some(Message::Move)
+                })
         }
     }
 
@@ -167,6 +182,21 @@ impl PointsSystem<Message> for Cube {
 
         Task::none()
     }
+
+    fn in_object(&self, point: &Vec2) -> bool {
+        let data = self.normalize();
+        data.start.x < point.x
+            && point.x < data.end.x
+            && data.start.y < point.y
+            && point.y < data.end.y
+    }
+
+    fn get_data(&self) -> Vec<(ChannelType, Vec<Vec<u8>>)> {
+        vec![(
+            ChannelType::Cube,
+            vec![bytemuck::bytes_of(&self.normalize()).to_vec()],
+        )]
+    }
 }
 
 impl Cube {
@@ -183,12 +213,22 @@ impl Cube {
             ..*self
         }
     }
+}
 
-    pub fn in_cube(&self, point: &Vec2) -> bool {
-        let data = self.normalize();
-        data.start.x < point.x
-            && point.x < data.end.x
-            && data.start.y < point.y
-            && point.y < data.end.y
+impl From<Message> for points::PointsMessage {
+    fn from(value: Message) -> Self {
+        points::PointsMessage::Cube(value)
+    }
+}
+
+impl TryFrom<points::PointsMessage> for Message {
+    type Error = ();
+
+    fn try_from(value: points::PointsMessage) -> Result<Self, Self::Error> {
+        if let points::PointsMessage::Cube(cube) = value {
+            Ok(cube)
+        } else {
+            Err(())
+        }
     }
 }
