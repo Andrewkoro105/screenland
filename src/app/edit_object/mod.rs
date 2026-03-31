@@ -53,6 +53,8 @@ pub trait EditObject {
     fn update(&mut self, muse_position: Vec2, message: Message) -> Task<app::Message>;
 
     fn get_shader_object(&self, channel: &mut Channels) -> ShaderObjects;
+
+    fn in_object(&self, muse_position: Vec2) -> bool;
 }
 
 impl<Message> From<UIPointElement<Message>> for UIPoint {

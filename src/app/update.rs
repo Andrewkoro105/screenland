@@ -80,8 +80,18 @@ impl Screenland {
                             self.objects[current_object].get_messages(&self.mouse_pos)
                         })
                         .unwrap_or_default();
+
+                    let new_current_object = self
+                        .objects
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find_map(|(i, object)| object.in_object(self.mouse_pos).then_some(i));
+
                     if let Some(message) = object_messages {
                         self.mode = Mode::Move(Box::new(message.clone()));
+                    } else if let Some(new_current_object) = new_current_object{
+                        self.current_object = Some(new_current_object);
                     } else {
                         let selection_messages = self
                             .selection

@@ -5,6 +5,7 @@ pub mod points;
 pub mod settings;
 use std::{mem, ops::Not};
 
+use glam::Vec2;
 use iced::{Task, widget::Column};
 use strum::EnumCount;
 
@@ -176,6 +177,13 @@ impl EditObject for CustomObject {
             )
             .for_each(|(channel_type, data)| channel.add(channel_type, data));
         result
+    }
+
+    fn in_object(&self, muse_position: Vec2) -> bool {
+        self.points_data
+            .as_ref()
+            .map(|points_data| points_data.in_object(muse_position))
+            .unwrap_or(false)
     }
 }
 

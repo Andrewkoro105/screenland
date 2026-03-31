@@ -107,6 +107,12 @@ impl PointsData {
             PointsData::Cube(cube) => bytemuck::bytes_of(&cube.normalize()).to_vec(),
         }
     }
+
+    pub fn in_object(&self, muse_position: Vec2) -> bool {
+        match self {
+            PointsData::Cube(cube) => cube.in_cube(&muse_position),
+        }
+    }
 }
 
 impl PointsMessage {
