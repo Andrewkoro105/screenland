@@ -1,11 +1,12 @@
 pub mod app;
 pub mod screenshots;
 
-use std::{fs::{self, File}, time::{Duration, SystemTime}};
-
-use crate::{
-    app::{settings::Settings, shader::get_shader::get_shader},
+use std::{
+    fs::{self, File},
+    time::{Duration, SystemTime},
 };
+
+use crate::app::{settings::Settings, shader::get_shader::get_shader};
 use app::Screenland;
 use chrono::Local;
 use clap::Parser;
@@ -67,8 +68,8 @@ fn main() -> Result<(), iced_layershell::Error> {
         .unwrap_or_else(|| Settings::get_path(Some(&xdg_dirs)));
 
     let logs_dir = xdg_dirs
-            .create_state_directory("logs")
-            .unwrap_or(".".into());
+        .create_state_directory("logs")
+        .unwrap_or(".".into());
     let now = SystemTime::now();
     let max_age = Duration::from_hours(2 * 24);
 
@@ -84,24 +85,32 @@ fn main() -> Result<(), iced_layershell::Error> {
         }
     }
 
-    let file = File::create(
-        logs_dir
-            .join(Local::now().format("%F_%T.log").to_string()),
-    )
-    .unwrap();
-    let targets = Targets::new()
-        .with_default(LevelFilter::INFO)
-        .with_target(env!("CARGO_PKG_NAME"), LevelFilter::DEBUG);
+    let file = File::create(logs_dir.join(Local::now().format("%F_%T.log").to_string())).unwrap();
 
-    let console_layer = fmt::Layer::new()
-        .with_writer(std::io::stdout)
-        .with_filter(targets.clone());
-    let file_layer = fmt::Layer::new()
-        .with_writer(file)
-        .with_filter(targets.clone());
+    let console_layer = fmt::Layer::new().with_writer(std::io::stdout).with_filter(
+        Targets::new()
+            .with_default(if args.input_log {
+                LevelFilter::INFO
+            } else {
+                LevelFilter::WARN
+            })
+            .with_target(
+                env!("CARGO_PKG_NAME"),
+                if args.input_log {
+                    LevelFilter::DEBUG
+                } else {
+                    LevelFilter::WARN
+                },
+            ),
+    );
+    let file_layer = fmt::Layer::new().with_writer(file).with_filter(
+        Targets::new()
+            .with_default(LevelFilter::INFO)
+            .with_target(env!("CARGO_PKG_NAME"), LevelFilter::DEBUG),
+    );
 
     tracing_subscriber::registry()
-        .with(args.input_log.then_some(console_layer))
+        .with(console_layer)
         .with(file_layer)
         .init();
 
