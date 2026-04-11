@@ -1,6 +1,7 @@
 use crate::app::edit_object::{
     self,
-    ui_point::{PointsSystem, UIPoint},
+    points_system::{PointsSystem, Reload},
+    ui_point::{UIMessages, UIPoint},
     ui_utils::cube::{self, Cube},
 };
 use bytemuck::{Pod, Zeroable};
@@ -40,11 +41,11 @@ impl Selection {
             .collect()
     }
 
-    pub fn update(&mut self, mouse_pos: Vec2, message: Option<Message>) -> Task<Message> {
+    pub fn update(&mut self, mouse_pos: Vec2, message: Option<Message>) -> Reload<Task<Message>> {
         self.cube.update(&mouse_pos, message)
     }
 
-    pub fn get_messages(&mut self, position: &Vec2) -> Option<Message> {
+    pub fn get_messages(&mut self, position: &Vec2) -> Option<Reload<UIMessages<Message>>> {
         let messages = self.cube.get_message(position);
         if messages.is_none() {
             self.cube.init = 0;

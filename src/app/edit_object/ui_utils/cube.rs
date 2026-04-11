@@ -9,7 +9,8 @@ use crate::{
             param::channel::ChannelType,
             points::{self},
         },
-        ui_point::{PointsSystem, UIPoint, UIPointElement},
+        points_system::{PointsSystem, Reload},
+        ui_point::{UIMessages, UIPoint, UIPointElement},
     },
     into_points_system,
 };
@@ -47,11 +48,17 @@ impl PointsSystem<Message> for Cube {
         vec![
             UIPointElement {
                 point: UIPoint::new(self.start, size),
-                message: Message::MoveStart,
+                messages: UIMessages {
+                    message: Message::MoveStart,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(self.end, size),
-                message: Message::MoveEnd,
+                messages: UIMessages {
+                    message: Message::MoveEnd,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -61,7 +68,10 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveStartXEndY,
+                messages: UIMessages {
+                    message: Message::MoveStartXEndY,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -71,7 +81,10 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveStartYEndX,
+                messages: UIMessages {
+                    message: Message::MoveStartYEndX,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -81,7 +94,10 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveStartX,
+                messages: UIMessages {
+                    message: Message::MoveStartX,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -91,7 +107,10 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveEndX,
+                messages: UIMessages {
+                    message: Message::MoveEndX,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -101,7 +120,10 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveStartY,
+                messages: UIMessages {
+                    message: Message::MoveStartY,
+                    start_messages: vec![],
+                },
             },
             UIPointElement {
                 point: UIPoint::new(
@@ -111,31 +133,31 @@ impl PointsSystem<Message> for Cube {
                     },
                     size,
                 ),
-                message: Message::MoveEndY,
+                messages: UIMessages {
+                    message: Message::MoveEndY,
+                    start_messages: vec![],
+                },
             },
         ]
     }
 
-    fn get_message(&mut self, position: &Vec2) -> Option<Message> {
+    fn get_message(&mut self, position: &Vec2) -> Option<Reload<UIMessages<Message>>> {
         if self.init == 0 {
             self.init = 1;
             self.start = *position;
             self.end = *position;
-            Some(Message::MoveEnd)
+            Some(Reload::new(false, UIMessages::from_message(Message::MoveEnd)))
         } else {
-            <Self as PointsSystem<Message>>::view(self)
-                .into_iter()
-                .filter(|element| element.point.in_point(position))
-                .map(|element| element.message)
-                .next()
+            <Self as PointsSystem<Message>>::get_message_view_points(self, position)
                 .or_else(|| {
                     <Self as PointsSystem<Message>>::in_object(self, position)
-                        .then_some(Message::Move)
+                        .then_some(UIMessages::from_message(Message::Move))
                 })
+                .map(|message| Reload::new(false, message))
         }
     }
 
-    fn update(&mut self, position: &Vec2, message: Option<Message>) -> Task<Message> {
+    fn update(&mut self, position: &Vec2, message: Option<Message>) -> Reload<Task<Message>> {
         match message {
             None => {
                 self.touched = 0;
@@ -180,7 +202,7 @@ impl PointsSystem<Message> for Cube {
             }
         }
 
-        Task::none()
+        Reload::none()
     }
 
     fn in_object(&self, point: &Vec2) -> bool {

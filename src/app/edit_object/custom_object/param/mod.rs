@@ -35,7 +35,7 @@ pub enum Message {
     SetI32(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Param {
     name: String,
     pub shader_type: ShaderType,
@@ -85,7 +85,7 @@ impl DataType for Param {
         self.name.clone()
     }
 
-    fn get_type_name(&self) -> String {
+    fn base_get_type_name(&self) -> String {
         match self.shader_type {
             ShaderType::F32 { .. } => "f32".into(),
             ShaderType::U32 { .. } => "u32".into(),

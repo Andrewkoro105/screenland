@@ -21,7 +21,7 @@ pub struct CustomObjectSettings {
     points_format: Option<PointsFormat>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct CustomIndexedObjectSettings {
     type_id: u32,
     name: String,

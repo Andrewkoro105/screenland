@@ -29,6 +29,11 @@ struct UIPoint {
     size: f32,
 }
 
+struct Iter {
+    current: u32,
+    size: u32,
+}
+
 //{ChannelIndex}
 
 struct CustomObject {
@@ -78,6 +83,15 @@ fn in(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
     return end.x > screen_pixel_pos.x && screen_pixel_pos.x > start.x && end.y > screen_pixel_pos.y && screen_pixel_pos.y > start.y;
 }
 
+fn distance_to_segment(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>) -> f32 {
+    let ab = b - a;
+    let ap = p - a;
+    let t = dot(ap, ab) / dot(ab, ab);
+    let t_clamped = clamp(t, 0.0, 1.0);
+    let closest = a + ab * t_clamped;
+    return distance(p, closest);
+}
+
 fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     let in_border = in(
         screen_pixel_pos,
@@ -105,13 +119,43 @@ fn ui_points(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     return result;
 }
 
+fn error(screen_pixel_pos: vec2<f32>) -> vec4<f32> {
+    let uv = screen_pixel_pos / vec2<f32>(textureDimensions(my_texture));
+
+    let thickness = 0.08;
+    let space = 0.1;
+
+    let left = 0.2;
+    let right_vert = 0.3;
+    
+    let top = 0.5;
+    let top_end = top + thickness;
+    let middle = top_end + space;
+    let middle_end = middle + thickness;
+    let bottom = middle_end + space;
+    let bottom_end = bottom + thickness;
+    
+    let right_horiz = 0.8;
+    
+    let vertical = (uv.x >= left && uv.x <= right_vert) && (uv.y >= top && uv.y <= bottom_end);
+    
+    let top_horiz = (uv.y >= top && uv.y <= top_end) && (uv.x >= left && uv.x <= right_horiz);
+    let middle_horiz = (uv.y >= middle && uv.y <= middle_end) && (uv.x >= left && uv.x <= right_horiz);
+    let bottom_horiz = (uv.y >= bottom && uv.y <= bottom_end) && (uv.x >= left && uv.x <= right_horiz);
+    
+    let is_e = vertical || top_horiz || middle_horiz || bottom_horiz;
+    
+    let color = select(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), is_e);
+    return vec4(color, 1.0);
+}
+
 fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     var result = input;
     for(var i = 0u; i < custom_objects.len; i = i + 1u) {
         let object = custom_objects.data[i];
         switch (object.custom_object_type) {
             //{DRAW_CUSTOM_OBJECTS}
-            default: {return vec4(1., 1., 1., 1.);}
+            default: {return error(screen_pixel_pos);}
         }
     }
     return result;

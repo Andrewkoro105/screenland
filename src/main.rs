@@ -59,7 +59,7 @@ pub struct Args {
 }
 
 fn main() -> Result<(), iced_layershell::Error> {
-    let xdg_dirs = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
+    let xdg_dirs = Settings::get_xdg_dir();
     let args = Args::parse();
     let arg_config = args
         .path

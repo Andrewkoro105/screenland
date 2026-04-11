@@ -6,8 +6,8 @@ use iced::wgpu;
 pub struct BaseStorageBufferData {
     type_size: usize,
     len_padding: usize,
-    name: &'static str,
-    type_name: &'static str,
+    name: String,
+    type_name: String,
 }
 
 pub struct BaseStorageBuffer {
@@ -21,14 +21,14 @@ impl BaseStorageBufferData {
     pub fn new(
         type_size: usize,
         len_padding: usize,
-        name: &'static str,
-        type_name: &'static str,
+        name: impl Into<String>,
+        type_name: impl Into<String>,
     ) -> Self {
         Self {
             type_size,
             len_padding,
-            name,
-            type_name,
+            name: name.into(),
+            type_name: type_name.into(),
         }
     }
 }
@@ -103,7 +103,7 @@ impl BaseStorageBuffer {
     fn get_buffer(
         device: &wgpu::Device,
         len: u32,
-        name: &'static str,
+        name: &String,
         type_size: usize,
         len_padding: usize,
     ) -> wgpu::Buffer {
@@ -125,7 +125,7 @@ impl BaseStorageBuffer {
 impl BaseStorageBufferData {
     pub(super) fn get_wgsl_type(&self) -> String {
         let pascal_case_name = self.name.to_pascal_case();
-        let type_name = self.type_name;
+        let type_name = &self.type_name;
         format!(
             r"
 struct {pascal_case_name} {{
@@ -137,7 +137,7 @@ struct {pascal_case_name} {{
     }
 
     pub(super) fn get_wgsl_var(&self, group: u32, binding: u32) -> String {
-        let snake_case_name = self.name;
+        let snake_case_name = &self.name;
         let pascal_case_name = self.name.to_pascal_case();
         format!(
             r"

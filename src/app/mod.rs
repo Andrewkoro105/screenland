@@ -23,6 +23,7 @@ use iced::{
     window::{self, settings::PlatformSpecific},
 };
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
+use tracing::debug;
 
 pub static START_TIME: OnceLock<Instant> = OnceLock::new();
 
@@ -125,7 +126,7 @@ impl Screenland {
             .find_map(|(i, object)| object.in_object(self.mouse_pos).then_some(i))
     }
 
-    pub fn reload_objects(&mut self) {
+    pub fn reindexing_objects(&mut self) {
         for (i, object) in self.objects.iter_mut().enumerate() {
             object.set_index(i);
         }
@@ -139,5 +140,14 @@ impl Screenland {
             self.shader_objects
                 .push(object.get_shader_object(&mut self.custom_objects_channel));
         }
+        debug!(
+            "\nreload_shader_objects:\n{}\ncustom_objects_channel:\n{:?}",
+            self.shader_objects
+                .iter()
+                .map(|a| format!("{a:?}"))
+                .collect::<Vec<_>>()
+                .join("\n"),
+            self.custom_objects_channel
+        );
     }
 }

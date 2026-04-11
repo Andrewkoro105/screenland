@@ -4,7 +4,7 @@ use iced::widget::image;
 use iced_font_awesome::{fa_icon, fa_icon_solid};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Icon {
     Name(String),
     SolidName(String),

@@ -1,9 +1,14 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display},
+};
 
 use crate::app::{
     edit_object::ui_utils::cube::Cube,
     shader::pipeline::base_storage_buffers::base_storage_buffer::BaseStorageBufferData,
 };
+use glam::Vec2;
+use heck::ToSnakeCase;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
 #[derive(EnumIter, Display, EnumCount, Clone, Debug, Default, Hash, PartialEq)]
@@ -13,6 +18,8 @@ pub enum ChannelType {
     F32,
     U32,
     I32,
+    BezierPointsLen,
+    BezierPoints,
 }
 
 impl Eq for ChannelType {}
@@ -22,7 +29,7 @@ pub struct ChannelIndex {
     channels: HashMap<ChannelType, u32>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct Channels {
     null_data: [u8; 0],
     channels: HashMap<ChannelType, Vec<u8>>,
@@ -31,20 +38,31 @@ pub struct Channels {
 impl ChannelType {
     pub fn get_storage_buffers_data(&self) -> BaseStorageBufferData {
         match self {
-            ChannelType::Cube => self.get_storage_buffer_data(2, "cube_channel", "Cube"),
-            ChannelType::F32 => self.get_storage_buffer_data(1, "f32_channel", "f32"),
-            ChannelType::U32 => self.get_storage_buffer_data(1, "u32_channel", "u32"),
-            ChannelType::I32 => self.get_storage_buffer_data(1, "i32_channel", "i32"),
+            ChannelType::Cube => self.get_storage_buffer_data(2, "cube", "Cube"),
+            ChannelType::F32 => self.get_storage_buffer_data(1, "f32", "f32"),
+            ChannelType::U32 => self.get_storage_buffer_data(1, "u32", "u32"),
+            ChannelType::I32 => self.get_storage_buffer_data(1, "i32", "i32"),
+            ChannelType::BezierPointsLen => {
+                self.get_storage_buffer_data(1, "bezier_points_len", "u32")
+            }
+            ChannelType::BezierPoints => {
+                self.get_storage_buffer_data(2, "bezier_points", "vec2<f32>")
+            }
         }
     }
 
     fn get_storage_buffer_data(
         &self,
         len_padding: usize,
-        name: &'static str,
-        type_name: &'static str,
+        name: impl Display,
+        type_name: impl Display,
     ) -> BaseStorageBufferData {
-        BaseStorageBufferData::new(self.get_size(), len_padding, name, type_name)
+        BaseStorageBufferData::new(
+            self.get_size(),
+            len_padding,
+            format!("{name}_channel").as_str(),
+            type_name.to_string(),
+        )
     }
 
     pub fn get_size(&self) -> usize {
@@ -53,6 +71,8 @@ impl ChannelType {
             ChannelType::F32 => std::mem::size_of::<f32>(),
             ChannelType::U32 => std::mem::size_of::<u32>(),
             ChannelType::I32 => std::mem::size_of::<i32>(),
+            ChannelType::BezierPointsLen => std::mem::size_of::<u32>(),
+            ChannelType::BezierPoints => std::mem::size_of::<Vec2>(),
         }
     }
 }
@@ -70,7 +90,9 @@ impl ChannelIndex {
         [
             "struct ChannelIndex {".to_string(),
             ChannelType::iter()
-                .map(|channel_type| format!("{}_index: u32,", channel_type.to_string().to_lowercase()))
+                .map(|channel_type| {
+                    format!("{}_index: u32,", channel_type.to_string().to_snake_case())
+                })
                 .collect::<Vec<_>>()
                 .join("\n"),
             "}".to_string(),
@@ -141,5 +163,25 @@ impl Channels {
             channel_type
         ));
         channel.splice(i..(i + channel_type.get_size()), data);
+    }
+}
+
+impl Debug for Channels {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let result_str = ChannelType::iter()
+            .map(|channel_type| {
+                format!(
+                    "{channel_type}: {:?}",
+                    self.channels
+                        .get(&channel_type)
+                        .unwrap_or(&vec![])
+                        .chunks(channel_type.get_size())
+                        .collect::<Vec<&[_]>>()
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        write!(f, "{}", result_str)
     }
 }

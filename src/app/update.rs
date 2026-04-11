@@ -6,6 +6,7 @@ use std::{
 use glam::Vec2;
 use iced::{Point, Task, exit, window};
 use iced_layershell::to_layer_message;
+use tracing::debug;
 
 use crate::app::{
     Mode, Screenland,
@@ -28,6 +29,8 @@ pub enum Message {
     TouchStart,
     TouchEnd,
     End(End),
+    ReloadShaderObjects,
+    ReindexingObjects,
     SelectionUpdate(Option<selection::Message>),
     EditObjectBaseSettings(edit_object_base_settings::Message),
     AddObject(edit_object::CreateObjects),
@@ -53,6 +56,7 @@ impl Screenland {
                 }
             }
             Message::SetMode(mode) => {
+                debug!("Set mode {mode:?}");
                 self.mode = mode;
                 Task::none()
             }
@@ -86,10 +90,10 @@ impl Screenland {
                                 let object = self.objects.remove(new_current_object);
                                 self.objects.push(object);
                                 self.current_object = Some(self.objects.len() - 1);
-                                self.reload_objects();
-                                self.reload_shader_objects();
+                                Task::done(Message::ReindexingObjects)
+                            } else {
+                                Task::none()
                             }
-                            Task::none()
                         }
                         Mode::Move(_) => Task::none(),
                         Mode::Transparency => Task::none(),
@@ -104,22 +108,36 @@ impl Screenland {
                                 })
                                 .unwrap_or_default();
 
-                            if let Some(message) = object_messages {
-                                self.mode = Mode::Move(Box::new(message.clone()));
+                            if let Some(reload) = object_messages {
+                                reload
+                                    .map(|ui_messages| {
+                                        ui_messages.get_task(|message| {
+                                            Message::SetMode(Mode::Move(Box::new(message)))
+                                        })
+                                    })
+                                    .get_task()
                             } else if let Some(new_current_object) =
                                 self.get_object_in_which_mouse()
                             {
                                 self.current_object = Some(new_current_object);
+                                Task::none()
                             } else {
-                                let selection_messages = self
-                                    .selection
-                                    .get_messages(&self.mouse_pos)
-                                    .map(|message| Message::SelectionUpdate(Some(message)));
-                                if let Some(message) = selection_messages {
-                                    self.mode = Mode::Move(Box::new(message.clone()));
+                                let selection_messages =
+                                    self.selection.get_messages(&self.mouse_pos);
+                                if let Some(reload) = selection_messages {
+                                    reload
+                                        .messages_map(Some)
+                                        .messages_map(Message::SelectionUpdate)
+                                        .map(|ui_messages| {
+                                            ui_messages.get_task(|message| {
+                                                Message::SetMode(Mode::Move(Box::new(message)))
+                                            })
+                                        })
+                                        .get_task()
+                                } else {
+                                    Task::none()
                                 }
                             }
-                            Task::none()
                         }
                         Mode::Move(_) => Task::none(),
                         Mode::Transparency => Task::none(),
@@ -171,11 +189,21 @@ impl Screenland {
                     .chain(exit()),
                 )
             }
-            Message::SelectionUpdate(message) => self
-                .selection
-                .update(self.mouse_pos, message)
-                .map(Some)
-                .map(Message::SelectionUpdate),
+            Message::ReloadShaderObjects => {
+                self.reload_shader_objects();
+                Task::none()
+            }
+            Message::ReindexingObjects => {
+                self.reindexing_objects();
+                Task::done(Message::ReloadShaderObjects)
+            }
+            Message::SelectionUpdate(message) => {
+                let reload = self.selection.update(self.mouse_pos, message);
+                reload
+                    .task_map(Some)
+                    .task_map(Message::SelectionUpdate)
+                    .get_task()
+            }
             Message::EditObjectBaseSettings(message) => {
                 let task = self.settings.edit_object_base_settings.update(message);
                 self.settings.save();
@@ -192,8 +220,7 @@ impl Screenland {
                             )))
                     }
                 }
-                self.reload_shader_objects();
-                Task::none()
+                Task::done(Message::ReloadShaderObjects)
             }
             Message::UpdateEditObject((i, message)) => {
                 self.objects[i].update(self.mouse_pos, message)

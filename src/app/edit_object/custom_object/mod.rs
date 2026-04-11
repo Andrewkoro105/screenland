@@ -21,7 +21,8 @@ use crate::app::{
             },
             points::{CustomObjectPointSystem, PointsMessage},
         },
-        ui_point::{PointsSystem, UIPoint},
+        points_system::Reload,
+        ui_point::{UIMessages, UIPoint},
     },
     settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
@@ -50,7 +51,7 @@ pub struct CustomObjectFromShader {
 }
 
 impl CustomObjectFromShader {
-    const PADDING_SIZE: usize = 12;
+    const PADDING_SIZE: usize = 4;
 
     pub fn get_size() -> usize {
         std::mem::size_of::<EditObjectBaseSettingsFromShader>()
@@ -60,14 +61,13 @@ impl CustomObjectFromShader {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let result = [
-            bytemuck::bytes_of(&self.edit_object_base_settings).to_vec(),
-            bytemuck::bytes_of(&self.custom_object_type).to_vec(),
-            self.channel_index.to_bytes(),
-            vec![0; Self::PADDING_SIZE],
+        [
+            bytemuck::bytes_of(&self.edit_object_base_settings),
+            bytemuck::bytes_of(&self.custom_object_type),
+            self.channel_index.to_bytes().as_slice(),
+            &[0; Self::PADDING_SIZE],
         ]
-        .concat();
-        result
+        .concat()
     }
 }
 
@@ -100,21 +100,19 @@ impl EditObject for CustomObject {
             .unwrap_or(vec![])
     }
 
-    fn get_messages(&mut self, position: &glam::Vec2) -> Option<app::Message> {
+    fn get_messages(&mut self, position: &glam::Vec2) -> Option<Reload<UIMessages<app::Message>>> {
         self.points_data
             .as_mut()
             .map(|points_data| {
-                points_data
-                    .as_mut()
-                    .get_message(position)
-                    .map(Some)
-                    .map(Message::Point)
-                    .map(|message| {
+                points_data.as_mut().get_message(position).map(|reload| {
+                    reload.messages_map(|data| {
+
                         app::Message::UpdateEditObject((
                             self.i,
-                            edit_object::Message::Custom(message),
+                            edit_object::Message::Custom(Message::Point(Some(data))),
                         ))
                     })
+                })
             })
             .unwrap_or_default()
     }
