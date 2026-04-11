@@ -124,7 +124,7 @@ impl PointsSystem<Message> for BezierPoints {
                     .points
                     .iter()
                     .map(|point| point.x)
-                    .min_by(|x1, x2| x1.total_cmp(&x2))
+                    .max_by(|x1, x2| x1.total_cmp(&x2))
                     .unwrap();
                 let min_y = self
                     .points
@@ -136,7 +136,7 @@ impl PointsSystem<Message> for BezierPoints {
                     .points
                     .iter()
                     .map(|point| point.y)
-                    .min_by(|y1, y2| y1.total_cmp(&y2))
+                    .max_by(|y1, y2| y1.total_cmp(&y2))
                     .unwrap();
                 min_x < point.x && point.x < max_x && min_y < point.y && point.y < max_y
             })
