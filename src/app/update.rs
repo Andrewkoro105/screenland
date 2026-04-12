@@ -207,6 +207,17 @@ impl Screenland {
             Message::EditObjectBaseSettings(message) => {
                 let task = self.settings.edit_object_base_settings.update(message);
                 self.settings.save();
+                if let Some(current_object) = self.current_object {
+                    self.objects[current_object]
+                        .set_base_settings(self.settings.edit_object_base_settings.clone().into());
+
+                    match &mut self.shader_objects[current_object] {
+                        edit_object::ShaderObjects::Custom(custom_object_from_shader) => {
+                            custom_object_from_shader.edit_object_base_settings =
+                                self.settings.edit_object_base_settings.clone().into()
+                        }
+                    }
+                }
                 task.map(Message::EditObjectBaseSettings)
             }
             Message::AddObject(create_objects) => {

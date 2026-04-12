@@ -24,7 +24,7 @@ use crate::app::{
         points_system::Reload,
         ui_point::{UIMessages, UIPoint},
     },
-    settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
+    settings::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
 };
 
 #[derive(Clone, Debug)]
@@ -37,7 +37,7 @@ pub enum Message {
 pub struct CustomObject {
     type_id: u32,
     i: usize,
-    edit_object_base_settings: EditObjectBaseSettingsFromShader,
+    base_settings: EditObjectBaseSettingsFromShader,
     points_data: Option<Box<dyn CustomObjectPointSystem>>,
     params: Vec<Param>,
 }
@@ -117,6 +117,10 @@ impl EditObject for CustomObject {
             .unwrap_or_default()
     }
 
+    fn set_base_settings(&mut self, base_settings: edit_object_base_settings::EditObjectBaseSettingsFromShader) {
+        self.base_settings = base_settings;
+    }
+
     fn update(
         &mut self,
         muse_position: glam::Vec2,
@@ -163,7 +167,7 @@ impl EditObject for CustomObject {
         let result = edit_object::ShaderObjects::Custom(CustomObjectFromShader {
             channel_index: channel.get_index(),
             custom_object_type: self.get_type_id(),
-            edit_object_base_settings: self.edit_object_base_settings,
+            edit_object_base_settings: self.base_settings,
         });
 
         self.params

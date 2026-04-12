@@ -151,7 +151,7 @@ fn draw_{name}(pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) 
         CustomObject {
             type_id: self.type_id,
             i,
-            edit_object_base_settings: *edit_object_base_settings,
+            base_settings: *edit_object_base_settings,
             points_data: self.points_format.clone().map(Into::into),
             params: self.params.clone(),
         }

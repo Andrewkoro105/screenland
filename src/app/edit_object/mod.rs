@@ -8,7 +8,7 @@ use iced::{Element, Task};
 use crate::app::{
     self, 
     edit_object::{custom_object::param::channel::Channels, points_system::Reload, ui_point::{UIMessages, UIPoint, UIPointElement}},
-    settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
+    settings::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
     update
 };
 
@@ -52,6 +52,8 @@ pub trait EditObject {
     fn get_ui_point(&self) -> Vec<UIPoint>;
 
     fn get_messages(&mut self, position: &Vec2) -> Option<Reload<UIMessages<app::Message>>>;
+
+    fn set_base_settings(&mut self, base_settings: edit_object_base_settings::EditObjectBaseSettingsFromShader);
 
     fn update(&mut self, muse_position: Vec2, message: Message) -> Task<app::Message>;
 
