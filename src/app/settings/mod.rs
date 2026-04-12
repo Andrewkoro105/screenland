@@ -105,26 +105,7 @@ impl Settings {
             custom_objects: add_type_id(vec![CustomObjectSettings::new(
                 "rectangle".into(),
                 Icon::Name("square".into()),
-                vec![
-                    Param::new(
-                        "filter_r".into(),
-                        ShaderType::F32 {
-                            num_input: NumInput::new(1.),
-                        },
-                    ),
-                    Param::new(
-                        "filter_g".into(),
-                        ShaderType::F32 {
-                            num_input: NumInput::new(1.),
-                        },
-                    ),
-                    Param::new(
-                        "filter_b".into(),
-                        ShaderType::F32 {
-                            num_input: NumInput::new(1.),
-                        },
-                    ),
-                ],
+                vec![],
                 hashmap! {},
                 LitString(r"
     if in(pixel_pos, data.cube.start, data.cube.end) {

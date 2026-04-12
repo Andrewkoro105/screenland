@@ -136,7 +136,7 @@ fn get_data_{name}(objects: CustomObject) -> Data_{name} {{
     );
 }}
         
-fn draw_{name}(pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) -> vec4<f32> {{
+fn draw_{name}(index: u32, pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) -> vec4<f32> {{
 {shader}
 }}
 "
@@ -155,5 +155,11 @@ fn draw_{name}(pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data_{name}) 
             points_data: self.points_format.clone().map(Into::into),
             params: self.params.clone(),
         }
+    }
+}
+
+impl CustomIndexedObjectSettings {
+    pub fn get_id(&self) -> u32 {
+        self.type_id
     }
 }

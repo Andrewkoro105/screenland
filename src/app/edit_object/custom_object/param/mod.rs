@@ -47,7 +47,7 @@ impl Param {
     }
 
     pub fn get_menu(&self) -> iced::Element<'_, Message> {
-        let param_settings = ParamSettings { name_size: 60 };
+        let param_settings = ParamSettings { name_size: 100 };
         match &self.shader_type {
             ShaderType::F32 { num_input } => param_settings.create_param(
                 format!("{}: ", self.name),

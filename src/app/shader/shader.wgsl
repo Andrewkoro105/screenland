@@ -72,26 +72,26 @@ fn fs_main(@builtin(position) pixel_pos: vec4<f32>) -> @location(0) vec4<f32> {
     let screen_pixel_pos = pixel_pos.xy + base_data.monitor_pos;
     let uv = screen_pixel_pos / vec2<f32>(textureDimensions(my_texture));
     var result = textureSample(my_texture, my_sampler, uv);
-    result = draw_custom_objects(result, screen_pixel_pos);
+    result = draw_custom_objects(result, screen_pixel_pos, custom_objects.len);
     result = selection_effect(result, screen_pixel_pos);
     result = ui_points(result, screen_pixel_pos);
 
     return result;
 }
 
-fn in(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
+fn in_cube(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
     return end.x > screen_pixel_pos.x && screen_pixel_pos.x > start.x && end.y > screen_pixel_pos.y && screen_pixel_pos.y > start.y;
 }
 
 fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
-    let in_border = in(
+    let in_border = in_cube(
         screen_pixel_pos,
         selection.cube.start - vec2<f32>(select_border_size, select_border_size),
         selection.cube.end + vec2<f32>(select_border_size, select_border_size));
 
     if !in_border {
         return result * vec4(blackout, blackout, blackout, 1.);
-    } else if !in(screen_pixel_pos, selection.cube.start, selection.cube.end) {
+    } else if !in_cube(screen_pixel_pos, selection.cube.start, selection.cube.end) {
         return base_color;
     }
     return result;
@@ -140,9 +140,9 @@ fn error(screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     return vec4(color, 1.0);
 }
 
-fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
+fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>, number: u32) -> vec4<f32> {
     var result = input;
-    for(var i = 0u; i < custom_objects.len; i = i + 1u) {
+    for(var i = 0u; i < number; i = i + 1u) {
         let object = custom_objects.data[i];
         switch (object.custom_object_type) {
             //{DRAW_CUSTOM_OBJECTS}
@@ -151,4 +151,7 @@ fn draw_custom_objects(input: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f3
     }
     return result;
 }
+
+//{DRAW_CUSTOM_OBJECTS_FOR_RECURSION}
+
 //{DRAW_CUSTOM_OBJECTS_FUNCTION}
