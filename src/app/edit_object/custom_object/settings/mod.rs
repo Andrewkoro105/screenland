@@ -1,6 +1,7 @@
 pub mod serde_help;
 
 use serde::{Deserialize, Serialize};
+use serde_saphyr::LitString;
 
 use crate::app::{
     edit_object::{
@@ -17,7 +18,7 @@ pub struct CustomObjectSettings {
     name: String,
     icon: Icon,
     params: Vec<Param>,
-    shader: String,
+    shader: LitString,
     points_format: Option<PointsFormat>,
 }
 
@@ -36,7 +37,7 @@ impl CustomObjectSettings {
         name: String,
         icon: Icon,
         params: Vec<Param>,
-        shader: String,
+        shader: LitString,
         points_format: Option<PointsFormat>,
     ) -> Self {
         Self {

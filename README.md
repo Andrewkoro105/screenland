@@ -70,20 +70,34 @@ custom_objects:
   # Object name; it must be unique among the added objects
   name: <STRING>
   # Button icon. You can specify an icon using the `iced_font_awesome` library via `Name` and `SolidName`, or specify a direct path to the image using `Path`
-  icon: !Name <STRING>
+  icon: 
+    Name: <STRING>
+    # or
+    SolidName: <STRING>
+    # or 
+    Path: <PATH>
   params:
   # Parameters that the user can set and that will be passed to the shader
   - 
     # Parameter name
     name: <STRING>
     # Parameter type
-    shader_type: (!F32 | !U32 | !I32)
-      # Default value
-      num_input: 1.0
+    shader_type: 
+      F32:
+        # Default value
+        num_input: 1.0
+      # or
+      U32: 
+        # Default value
+        num_input: 1.0
+      # or
+      I32: 
+        # Default value
+        num_input: 1.0
   # The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
   shader: <WGSL_CODE>
-  # Point format for modifying an object (`Cube` - rectangular area | BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
-  points_format: (Cube | BezierPoints)
+  # Point format for modifying an object (`Cube` - rectangular area ; BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
+  points_format: (Cube ; BezierPoints)
 
 ```
 

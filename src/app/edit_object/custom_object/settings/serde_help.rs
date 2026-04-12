@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize, Serializer};
+use serde_saphyr::LitString;
 
 use crate::app::edit_object::custom_object::settings::{
     CustomIndexedObjectSettings, CustomObjectSettings,
@@ -14,7 +15,7 @@ pub fn add_type_id(value: Vec<CustomObjectSettings>) -> Vec<CustomIndexedObjectS
                 object.name,
                 object.icon,
                 object.params,
-                object.shader,
+                object.shader.to_string(),
                 object.points_format,
             )
         })
@@ -39,7 +40,7 @@ pub fn remove_type_id(value: Vec<CustomIndexedObjectSettings>) -> Vec<CustomObje
                 object.name,
                 object.icon,
                 object.params,
-                object.shader,
+                LitString(object.shader),
                 object.points_format,
             )
         })

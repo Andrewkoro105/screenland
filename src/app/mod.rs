@@ -79,7 +79,7 @@ impl BootFn<Screenland, Message> for Settings {
                 .enumerate()
                 .map(|(i, monitor_data)| {
                     (
-                        serde_yaml::from_str(&(i + 1).to_string()).unwrap(),
+                        serde_saphyr::from_str(&(i + 1).to_string()).unwrap(),
                         monitor_data,
                     )
                 })

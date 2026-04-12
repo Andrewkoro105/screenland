@@ -2,7 +2,7 @@ pub mod edit_object_base_settings;
 use clap::Parser;
 use iced_helper::ui_elements::num_input::NumInput;
 use serde::{Deserialize, Serialize};
-use serde_yaml::from_reader;
+use serde_saphyr::LitString;
 use std::{
     fs::{self, OpenOptions},
     path::PathBuf,
@@ -124,12 +124,12 @@ impl Settings {
                         },
                     ),
                 ],
-                r"
+                LitString(r"
     if in(pixel_pos, data.cube.start, data.cube.end) {
         return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);
     } else {
         return pixel_color;
-    }".into(),
+    }".into()),
                 Some(PointsFormat::Cube),
             )]),
         }
@@ -166,7 +166,7 @@ impl Settings {
             .read(true)
             .open(&config_path)
             .map(|file| {
-                let result = from_reader::<_, Settings>(file);
+                let result = serde_saphyr::from_reader::<_, Settings>(file);
                 if let Err(err) = &result {
                     eprintln!("Configuration parsing error:\n{err}");
                 }
@@ -244,8 +244,8 @@ impl Settings {
         {
             fs::create_dir_all(parent).unwrap();
         }
-        serde_yaml::to_writer(
-            OpenOptions::new()
+        serde_saphyr::to_io_writer(
+            &mut OpenOptions::new()
                 .write(true)
                 .create(true)
                 .truncate(true)
