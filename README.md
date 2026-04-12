@@ -152,8 +152,11 @@ You can either select one area or hold down Shift to combine the desired areas (
 
 You can add objects to the screenshot that will change it
 
-- [ ]  Line
-- [ ]  Straight line (with the ability to curve and change the tip and line type)
+- [X]  Line
+
+  - [ ]  curve
+  - [ ]  tip type
+  - [ ]  line type
 - [ ]  Rectangle (with a choice of line and fill type)
 - [ ]  Circle (with a choice of line type and fill)
 - [ ]  Blur
