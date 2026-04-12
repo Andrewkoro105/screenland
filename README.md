@@ -94,11 +94,12 @@ custom_objects:
       I32: 
         # Default value
         num_input: 1.0
-  # The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
+  # List of functions for this object. This field accepts a `HashMap` whose keys are function names (the function name is prefixed with the object name and “_”), and whose values are the function's arguments and body.
+  functions: <MAP<STRING, STRING>>
+  # The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube; bezier_points)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
   shader: <WGSL_CODE>
-  # Point format for modifying an object (`Cube` - rectangular area ; BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
-  points_format: (Cube ; BezierPoints)
-
+  # Point format for modifying an object (`Cube` - rectangular area; BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
+  points_format: (Cube; BezierPoints)
 ```
 
 A standard configuration file can be created using `screenland -g`.

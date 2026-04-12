@@ -15,6 +15,7 @@ pub fn add_type_id(value: Vec<CustomObjectSettings>) -> Vec<CustomIndexedObjectS
                 object.name,
                 object.icon,
                 object.params,
+                object.functions.into_iter().map(|(a, b)| (a, b.to_string())).collect(),
                 object.shader.to_string(),
                 object.points_format,
             )
@@ -40,6 +41,7 @@ pub fn remove_type_id(value: Vec<CustomIndexedObjectSettings>) -> Vec<CustomObje
                 object.name,
                 object.icon,
                 object.params,
+                object.functions.into_iter().map(|(a, b)| (a, LitString(b))).collect(),
                 LitString(object.shader),
                 object.points_format,
             )

@@ -1,5 +1,7 @@
 pub mod serde_help;
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_saphyr::LitString;
 
@@ -17,17 +19,21 @@ use crate::app::{
 pub struct CustomObjectSettings {
     name: String,
     icon: Icon,
+    #[serde(default)]
     params: Vec<Param>,
+    #[serde(default)]
+    functions: HashMap<String, LitString>,
     shader: LitString,
     points_format: Option<PointsFormat>,
 }
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct CustomIndexedObjectSettings {
     type_id: u32,
     name: String,
     icon: Icon,
     params: Vec<Param>,
+    functions: HashMap<String, String>,
     shader: String,
     points_format: Option<PointsFormat>,
 }
@@ -37,6 +43,7 @@ impl CustomObjectSettings {
         name: String,
         icon: Icon,
         params: Vec<Param>,
+        functions: HashMap<String, LitString>,
         shader: LitString,
         points_format: Option<PointsFormat>,
     ) -> Self {
@@ -44,6 +51,7 @@ impl CustomObjectSettings {
             name,
             icon,
             params,
+            functions,
             shader,
             points_format,
         }
@@ -56,6 +64,7 @@ impl CustomIndexedObjectSettings {
         name: String,
         icon: Icon,
         params: Vec<Param>,
+        functions: HashMap<String, String>,
         shader: String,
         points_format: Option<PointsFormat>,
     ) -> Self {
@@ -64,6 +73,7 @@ impl CustomIndexedObjectSettings {
             name,
             icon,
             params,
+            functions,
             shader,
             points_format,
         }
@@ -102,8 +112,17 @@ impl EditObjectSettings for CustomIndexedObjectSettings {
             .collect::<Vec<_>>()
             .join("\n    ");
 
+        let functions = self
+            .functions
+            .iter()
+            .map(|(fun_name, fun)| format!("fn {name}_{fun_name}{fun}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+
         format!(
             r"
+{functions}
+
 struct Data_{name} {{
     base_settings: EditObjectBaseSettings,
     {params}

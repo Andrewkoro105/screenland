@@ -83,15 +83,6 @@ fn in(screen_pixel_pos: vec2<f32>, start: vec2<f32>, end: vec2<f32>) -> bool {
     return end.x > screen_pixel_pos.x && screen_pixel_pos.x > start.x && end.y > screen_pixel_pos.y && screen_pixel_pos.y > start.y;
 }
 
-fn distance_to_segment(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>) -> f32 {
-    let ab = b - a;
-    let ap = p - a;
-    let t = dot(ap, ab) / dot(ab, ab);
-    let t_clamped = clamp(t, 0.0, 1.0);
-    let closest = a + ab * t_clamped;
-    return distance(p, closest);
-}
-
 fn selection_effect(result: vec4<f32>, screen_pixel_pos: vec2<f32>) -> vec4<f32> {
     let in_border = in(
         screen_pixel_pos,

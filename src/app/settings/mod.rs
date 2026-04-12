@@ -3,6 +3,7 @@ use clap::Parser;
 use iced_helper::ui_elements::num_input::NumInput;
 use serde::{Deserialize, Serialize};
 use serde_saphyr::LitString;
+use sugar::hashmap;
 use std::{
     fs::{self, OpenOptions},
     path::PathBuf,
@@ -124,6 +125,7 @@ impl Settings {
                         },
                     ),
                 ],
+                hashmap! {},
                 LitString(r"
     if in(pixel_pos, data.cube.start, data.cube.end) {
         return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);
