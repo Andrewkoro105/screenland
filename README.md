@@ -154,12 +154,14 @@ You can add objects to the screenshot that will change it
 
 - [X]  Line
 
+  - [X]  straight
+  - [X]  broken
   - [ ]  curve
   - [ ]  tip type
   - [ ]  line type
-- [ ]  Rectangle (with a choice of line and fill type)
-- [ ]  Circle (with a choice of line type and fill)
-- [ ]  Blur
+- [X]  Rectangle (with a choice of line and fill type)
+- [X]  Circle (with a choice of line type and fill)
+- [X]  Blur
 - [ ]  Text
   
   Only the settings that are in the library for this will be implemented.

@@ -1020,12 +1020,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
-name = "cute"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45e700c2d1c3feea9b695e79b2dfeeb93040556a58c556fae23f71b1e6b449fd"
-
-[[package]]
 name = "darling"
 version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2759,12 +2753,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "min_max_macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "131a74fe105e2662ce9646e3a3af4c0eeb19bc0e5936852bf81341bfc415b9f2"
-
-[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4261,11 +4249,11 @@ dependencies = [
  "iced_helper",
  "iced_layershell",
  "image",
+ "maplit",
  "native-dialog 0.9.6",
  "serde",
  "serde-saphyr",
  "strum",
- "sugar",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -4649,18 +4637,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "sugar"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "616a397f08825a805c27d9a18afcd17d953aee58c1637d078cc1791e1e3e22c1"
-dependencies = [
- "cute",
- "maplit",
- "min_max_macros",
- "vec_box",
 ]
 
 [[package]]
@@ -5060,12 +5036,6 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
-
-[[package]]
-name = "vec_box"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5283fc94a1cd6b5199f707a4b4d7f885b9457d430d111c68a07d3e3d199fb2b"
 
 [[package]]
 name = "version_check"

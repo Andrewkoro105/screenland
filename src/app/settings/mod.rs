@@ -3,12 +3,10 @@ use clap::Parser;
 use iced_helper::ui_elements::num_input::NumInput;
 use serde::{Deserialize, Serialize};
 use serde_saphyr::LitString;
-use sugar::hashmap;
 use std::{
-    fs::{self, OpenOptions},
-    path::PathBuf,
-    str::FromStr,
+    collections::HashMap, fs::{self, OpenOptions}, path::PathBuf, str::FromStr
 };
+use maplit::hashmap;
 use xdg::BaseDirectories;
 
 use crate::{
@@ -102,19 +100,118 @@ impl Settings {
                 },
                 size: NumInput::new(6.),
             },
-            custom_objects: add_type_id(vec![CustomObjectSettings::new(
-                "rectangle".into(),
-                Icon::Name("square".into()),
-                vec![],
-                hashmap! {},
-                LitString(r"
-    if in(pixel_pos, data.cube.start, data.cube.end) {
-        return vec4(pixel_color.r * data.filter_r, pixel_color.g * data.filter_g, pixel_color.b * data.filter_b, pixel_color.a);
+            custom_objects: add_type_id(vec![
+                CustomObjectSettings::new(
+                    "rectangle".into(),
+                    Icon::Name("square".into()),
+                    vec![],
+                    hashmap! {},
+                    LitString(r"
+    if in_cube(pixel_pos, data.cube.start, data.cube.end) && !in_cube(pixel_pos, data.cube.start + data.base_settings.size, data.cube.end - data.base_settings.size) {
+        return vec4(mix(pixel_color.rgb, data.base_settings.color.rgb, data.base_settings.color.a), pixel_color.a);
     } else {
         return pixel_color;
     }".into()),
-                Some(PointsFormat::Cube),
-            )]),
+                    Some(PointsFormat::Cube),
+                ), 
+                CustomObjectSettings::new(
+                    "circle".into(),
+                    Icon::Name("circle".into()),
+                    vec![],
+                    hashmap! {
+                        "in".to_string() => LitString(r"
+      (pos: vec2<f32>, center: vec2<f32>, radius: vec2<f32>) -> bool {
+          //distance(pos, center) < 
+          return pow(pos.x - center.x, 2) / pow(radius.x, 2) + pow(pos.y - center.y, 2) / pow(radius.y, 2) < 1;
+      }".into()),
+                    },
+                    LitString(r"
+    let result_color = vec4(mix(pixel_color.rgb, data.base_settings.color.rgb, data.base_settings.color.a), pixel_color.a);
+    let radius = (data.cube.end - data.cube.start) / 2;
+    let center = data.cube.start + radius;
+    if circle_in(pixel_pos, center, radius) && !circle_in(pixel_pos, center, radius - data.base_settings.size) {
+        return result_color;
+    } else {
+        return pixel_color;
+    }".into()),
+                    Some(PointsFormat::Cube),
+                ),
+                CustomObjectSettings::new(
+                    "line".into(),
+                    Icon::SolidName("arrow-left".into()),
+                    vec![],
+                    hashmap! {
+                        "distance_to_segment".to_string() => LitString(r"
+      (p: vec2<f32>, a: vec2<f32>, b: vec2<f32>) -> f32 {
+          let ab = b - a;
+          let ap = p - a;
+          let t = dot(ap, ab) / dot(ab, ab);
+          let t_clamped = clamp(t, 0.0, 1.0);
+          let closest = a + ab * t_clamped;
+          return distance(p, closest);
+      }".into()),
+                    },
+                    LitString(r"
+    if data.bezier_points.size != 0 {
+        let result_color = vec4(mix(pixel_color.rgb, data.base_settings.color.rgb, data.base_settings.color.a), pixel_color.a);
+        let radius = data.base_settings.size / 2;
+        for(var i = data.bezier_points.current; i < data.bezier_points.current + data.bezier_points.size - 1; i = i + 1u) {
+            if distance(bezier_points_channel.data[i], pixel_pos) < radius {
+                return result_color;
+            }
+    
+            let thickness = radius;
+            let dist = line_distance_to_segment(
+                pixel_pos, 
+                bezier_points_channel.data[i],
+                bezier_points_channel.data[i + 1], 
+            );
+    
+            if dist < thickness {
+                return result_color;
+            }
+        }
+    
+        if distance(bezier_points_channel.data[data.bezier_points.current + data.bezier_points.size - 1], pixel_pos) < radius {
+            return result_color;
+        }
+    }
+    return pixel_color;".into()),
+                    Some(PointsFormat::BezierPoints),
+                ),
+                CustomObjectSettings::new(
+                    "blur".into(),
+                    Icon::SolidName("water".into()),
+                    vec![
+                        Param::new("blur_factor".to_string(), ShaderType::U32 { num_input: NumInput::new(10) })
+                    ],
+                    hashmap! {},
+                    LitString(r"
+    if in_cube(pixel_pos, data.cube.start, data.cube.end) {
+        var blur_factor = i32(data.blur_factor);
+        if blur_factor > 20 {
+            blur_factor = 20;
+        }
+        let texSize = vec2<f32>(textureDimensions(my_texture));
+        let uv = pixel_pos.xy / texSize;
+        let offset = vec2<f32>(1.0) / texSize;
+    
+        var blurColor = vec4<f32>(0.0);
+        for (var i = -blur_factor; i <= blur_factor; i++) {
+            for (var j = -blur_factor; j <= blur_factor; j++) {
+                let offset_pos = vec2<f32>(f32(i), f32(j));
+                let sampleUV = uv + offset_pos * offset;
+                blurColor += draw_custom_objects_for_blur(textureSample(my_texture, my_sampler, sampleUV), pixel_pos + offset_pos, index);
+            }
+        }
+        blurColor /= pow((f32(blur_factor) * 2) + 1, 2);
+        return blurColor;
+    } else {
+      return pixel_color;
+    }".into()),
+                    Some(PointsFormat::Cube),
+                ), 
+            ]),
         }
     }
 
@@ -128,7 +225,7 @@ impl Settings {
 
     pub fn get_path(xdg_dirs: Option<&BaseDirectories>) -> PathBuf {
         xdg_dirs
-        .map(|xdg_dirs| xdg_dirs.create_config_directory(""))
+            .map(|xdg_dirs| xdg_dirs.create_config_directory(""))
             .unwrap_or_else(|| Self::get_xdg_dir().create_config_directory(""))
             .unwrap_or(".".into())
             .join("config.yaml")
@@ -141,9 +238,7 @@ impl Settings {
     ) -> Self {
         let args = args.unwrap_or(Args::parse());
         let xdg_dirs = xdg_dirs.unwrap_or_else(Self::get_xdg_dir);
-        let config_path = config_path.unwrap_or(Self::get_path(
-            Some(&xdg_dirs),
-        ));
+        let config_path = config_path.unwrap_or(Self::get_path(Some(&xdg_dirs)));
 
         let mut result = fs::OpenOptions::new()
             .read(true)
