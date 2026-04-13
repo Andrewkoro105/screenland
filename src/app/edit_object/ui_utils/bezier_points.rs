@@ -62,7 +62,7 @@ impl PointsSystem<Message> for BezierPoints {
             self.points = vec![position.clone(), position.clone()];
             Some(Reload::new(
                 true,
-                UIMessages::from_message(Message::Move(1)),
+                UIMessages::from_message(Message::Move(0)),
             ))
         } else {
             <Self as PointsSystem<Message>>::get_message_view_points(self, position)
