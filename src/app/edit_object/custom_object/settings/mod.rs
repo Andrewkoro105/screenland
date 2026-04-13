@@ -83,7 +83,7 @@ impl CustomIndexedObjectSettings {
 impl EditObjectSettings for CustomIndexedObjectSettings {
     type Object = CustomObject;
 
-    fn get_icon(&self) -> iced::Element<'_, ()> {
+    fn get_icon<M>(&self) -> iced::Element<'_, M> {
         self.icon.get_icon()
     }
 

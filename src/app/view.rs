@@ -168,7 +168,7 @@ impl Screenland {
                     },
                     Row::from_iter(self.settings.custom_objects.iter().enumerate().map(
                         |(i, object)| {
-                            button(object.get_icon().map(|()| unreachable!()))
+                            button(object.get_icon())
                                 .on_press(Message::AddObject(CreateObjects::Custom(i)))
                                 .into()
                         }

@@ -51,7 +51,7 @@ pub struct CustomObjectFromShader {
 }
 
 impl CustomObjectFromShader {
-    const PADDING_SIZE: usize = 4;
+    const PADDING_SIZE: usize = 0;
 
     pub fn get_size() -> usize {
         std::mem::size_of::<EditObjectBaseSettingsFromShader>()

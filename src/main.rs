@@ -6,7 +6,11 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use crate::app::{settings::Settings, shader::get_shader::get_shader};
+use crate::app::{
+    edit_object::custom_object,
+    settings::Settings,
+    shader::{get_shader::get_shader, pipeline::edit_bg},
+};
 use app::Screenland;
 use chrono::Local;
 use clap::Parser;
@@ -17,6 +21,7 @@ use iced_layershell::{
     reexport::Anchor,
     settings::{LayerShellSettings, StartMode},
 };
+use strum::EnumCount;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
     Layer, filter::Targets, fmt, layer::SubscriberExt, util::SubscriberInitExt,
@@ -121,6 +126,24 @@ fn main() -> Result<(), iced_layershell::Error> {
         println!("{}", get_shader(None));
         Ok(())
     } else {
+        let max_storage_buffers_per_shader_stage =
+            (custom_object::param::channel::ChannelType::COUNT + (edit_bg::BufferType::COUNT - 1))
+                as u32;
+        let limits = Some(vec![
+            wgpu::Limits {
+                max_storage_buffers_per_shader_stage,
+                max_bind_groups: 2,
+                max_non_sampler_bindings: 2048,
+                ..Default::default()
+            },
+            wgpu::Limits {
+                max_storage_buffers_per_shader_stage,
+                max_bind_groups: 2,
+                max_non_sampler_bindings: 2048,
+                ..wgpu::Limits::downlevel_defaults()
+            },
+        ]);
+
         let settings = Settings::load(Some(args), Some(arg_config), Some(xdg_dirs));
         if settings.disables_overlay {
             iced::daemon(settings, Screenland::update, Screenland::view)
@@ -128,6 +151,10 @@ fn main() -> Result<(), iced_layershell::Error> {
                 .font(ICED_AW_FONT_BYTES)
                 .theme(Screenland::theme)
                 .subscription(Screenland::subscription)
+                .settings(iced::Settings {
+                    limits,
+                    ..Default::default()
+                })
                 .run()
                 .map_err(|err| match err {
                     iced::Error::ExecutorCreationFailed(err) => {
@@ -152,6 +179,7 @@ fn main() -> Result<(), iced_layershell::Error> {
             .theme(Screenland::theme)
             .subscription(Screenland::subscription)
             .settings(iced_layershell::settings::Settings {
+                limits,
                 layer_settings: LayerShellSettings {
                     size: Some((0, 0)),
                     exclusive_zone: 0,

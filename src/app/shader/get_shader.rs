@@ -44,7 +44,7 @@ pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
                     format!("case {i}: {{result = draw_{name}(i, result, screen_pixel_pos, get_data_{name}(object));}}")
                 })
                 .collect::<Vec<_>>()
-                .join("\t\t\t\n")
+                .join("\n\t\t\t")
         )
         .replace("//{DRAW_CUSTOM_OBJECTS_FOR_RECURSION}", 
             draw_custom_objects_for_recursion(&custom_objects).as_str()
@@ -79,22 +79,22 @@ fn draw_custom_objects_for_recursion(custom_objects: &Vec<CustomIndexedObjectSet
                 })
             })
             .collect::<Vec<_>>()
-            .join("\t\t\t\n");
+            .join("\n\t\t\t");
 
         format!(
             r"
-    fn draw_custom_objects_for_{name}(input: vec4<f32>, screen_pixel_pos: vec2<f32>, number: u32) -> vec4<f32> {{
-        var result = input;
-        for(var i = 0u; i < number; i = i + 1u) {{
-            let object = custom_objects.data[i];
-            switch (object.custom_object_type) {{
-                {draw_custom_objects}
-                case {id}: {{}}
-                default: {{return error(screen_pixel_pos);}}
-            }}
+fn draw_custom_objects_for_{name}(input: vec4<f32>, screen_pixel_pos: vec2<f32>, number: u32) -> vec4<f32> {{
+    var result = input;
+    for(var i = 0u; i < number; i = i + 1u) {{
+        let object = custom_objects.data[i];
+        switch (object.custom_object_type) {{
+            {draw_custom_objects}
+            case {id}: {{}}
+            default: {{return error(screen_pixel_pos);}}
         }}
-        return result;
     }}
+    return result;
+}}
         "
         )
     }).collect::<Vec<_>>().join("\n")

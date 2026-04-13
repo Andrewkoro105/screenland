@@ -2,6 +2,10 @@ pub mod channel;
 
 use std::{collections::HashMap, hash::Hash, mem};
 
+use iced::{
+    Theme,
+    widget::{Row, button},
+};
 use iced_helper::ui_elements::{
     ParamSettings,
     num_input::{
@@ -12,7 +16,7 @@ use iced_helper::ui_elements::{
 use serde::{Deserialize, Serialize};
 
 use crate::app::edit_object::custom_object::{
-    data_type::DataType, param::channel::ChannelType
+    data_type::DataType, icon::Icon, param::channel::ChannelType,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,6 +30,10 @@ pub enum ShaderType {
     I32 {
         num_input: NumInput<i32, ConstI32<0>>,
     },
+    Enum {
+        current: u32,
+        enums: HashMap<String, Icon>,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -33,6 +41,7 @@ pub enum Message {
     SetF32(String),
     SetU32(String),
     SetI32(String),
+    SetEnum(u32),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,20 +57,41 @@ impl Param {
 
     pub fn get_menu(&self) -> iced::Element<'_, Message> {
         let param_settings = ParamSettings { name_size: 100 };
-        match &self.shader_type {
-            ShaderType::F32 { num_input } => param_settings.create_param(
+        param_settings
+            .create_param(
                 format!("{}: ", self.name),
-                num_input.view("", move |str| Message::SetF32(str)),
-            ),
-            ShaderType::U32 { num_input } => param_settings.create_param(
-                format!("{}: ", self.name),
-                num_input.view("", move |str| Message::SetU32(str)),
-            ),
-            ShaderType::I32 { num_input } => param_settings.create_param(
-                format!("{}: ", self.name),
-                num_input.view("", move |str| Message::SetI32(str)),
-            ),
-        }
+                match &self.shader_type {
+                    ShaderType::F32 { num_input } => {
+                        num_input.view("", move |str| Message::SetF32(str))
+                    }
+                    ShaderType::U32 { num_input } => {
+                        num_input.view("", move |str| Message::SetU32(str))
+                    }
+                    ShaderType::I32 { num_input } => {
+                        num_input.view("", move |str| Message::SetI32(str))
+                    }
+                    ShaderType::Enum { current, enums } => {
+                        Row::from_iter(enums.iter().enumerate().map(|(i, (_, icon))| {
+                            button(icon.get_icon())
+                                .on_press(Message::SetEnum(i as _))
+                                .style(move |theme, _| {
+                                    button::Catalog::style(
+                                        theme,
+                                        &<Theme as button::Catalog>::default(),
+                                        if *current == i as u32 {
+                                            button::Status::Active
+                                        } else {
+                                            button::Status::Disabled
+                                        },
+                                    )
+                                })
+                                .into()
+                        }))
+                        .into()
+                    }
+                },
+            )
+            .into()
     }
 
     pub fn indexing_params(params: &Vec<Self>) -> Vec<(usize, Self)> {
@@ -90,6 +120,7 @@ impl DataType for Param {
             ShaderType::F32 { .. } => "f32".into(),
             ShaderType::U32 { .. } => "u32".into(),
             ShaderType::I32 { .. } => "i32".into(),
+            ShaderType::Enum { .. } => "Enum".into(),
         }
     }
 }
@@ -100,6 +131,7 @@ impl ShaderType {
             ShaderType::F32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
             ShaderType::U32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
             ShaderType::I32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
+            ShaderType::Enum { current, .. } => {bytemuck::bytes_of(current).to_vec()},
         }
     }
 
@@ -124,17 +156,24 @@ impl ShaderType {
                     }
                     .as_str(),
                 );
-            },
+            }
             ShaderType::I32 { num_input } => {
                 num_input.update(
                     if let Message::SetI32(value) = message {
                         value
                     } else {
-                        panic!("The `Message::SetI32` call is not for `ShaderType::I32`")
+                        unreachable!("The `Message::SetI32` call is not for `ShaderType::I32`")
                     }
                     .as_str(),
                 );
-            },
+            }
+            ShaderType::Enum { current, .. } => {
+                if let Message::SetEnum(value) = message {
+                    *current = value
+                } else {
+                    unreachable!("The `Message::SetEnum` call is not for `ShaderType::Enum`")
+                }
+            }
         }
     }
 }
@@ -159,6 +198,7 @@ impl From<ShaderType> for ChannelType {
             ShaderType::F32 { .. } => ChannelType::F32,
             ShaderType::U32 { .. } => ChannelType::U32,
             ShaderType::I32 { .. } => ChannelType::I32,
+            ShaderType::Enum { .. } => ChannelType::Enum,
         }
     }
 }

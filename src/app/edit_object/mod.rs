@@ -31,7 +31,7 @@ pub enum ShaderObjects {
 pub trait EditObjectSettings {
     type Object;
 
-    fn get_icon(&self) -> Element<'_, () >;
+    fn get_icon<M>(&self) -> Element<'_, M >;
 
     fn get_name(&self) -> String;
 

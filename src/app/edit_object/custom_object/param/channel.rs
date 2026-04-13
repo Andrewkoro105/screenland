@@ -20,6 +20,7 @@ pub enum ChannelType {
     I32,
     BezierPointsLen,
     BezierPoints,
+    Enum,
 }
 
 impl Eq for ChannelType {}
@@ -48,6 +49,7 @@ impl ChannelType {
             ChannelType::BezierPoints => {
                 self.get_storage_buffer_data(2, "bezier_points", "vec2<f32>")
             }
+            ChannelType::Enum => self.get_storage_buffer_data(1, "enum", "Enum"),
         }
     }
 
@@ -73,6 +75,7 @@ impl ChannelType {
             ChannelType::I32 => std::mem::size_of::<i32>(),
             ChannelType::BezierPointsLen => std::mem::size_of::<u32>(),
             ChannelType::BezierPoints => std::mem::size_of::<Vec2>(),
+            ChannelType::Enum => std::mem::size_of::<u32>(),
         }
     }
 }

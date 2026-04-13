@@ -34,6 +34,10 @@ struct Iter {
     size: u32,
 }
 
+struct Enum {
+    index: u32
+}
+
 //{ChannelIndex}
 
 struct CustomObject {

@@ -1,7 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::wgpu;
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{EnumCount, EnumIter, IntoEnumIterator};
 
 use crate::app::{
     edit_object::{
@@ -22,7 +22,7 @@ pub struct BaseData {
     pub monitor_pos: Vec2,
 }
 
-#[derive(Hash, PartialEq, EnumIter)]
+#[derive(Hash, PartialEq, EnumIter, EnumCount)]
 pub enum BufferType {
     Points,
     CustomObjects,

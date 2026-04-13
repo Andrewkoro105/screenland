@@ -1,4 +1,4 @@
-mod edit_object;
+pub mod edit_object;
 pub mod end;
 mod selection;
 pub mod settings;
