@@ -34,7 +34,7 @@ pub enum ShaderType {
         #[serde(skip)]
         #[serde(default)]
         current: u32,
-        enums: HashMap<String, Icon>,
+        enums: Vec<(String, Icon)>,
     },
 }
 
@@ -114,9 +114,9 @@ impl Param {
     pub fn get_supporting_system(&self, object_name: &str) -> String {
         match &self.shader_type {
             ShaderType::Enum { enums, .. } => enums
-                .keys()
+                .iter()
                 .enumerate()
-                .map(|(i, name)| format!("const {object_name}_{name} = {i};"))
+                .map(|(i, (name, _))| format!("const {object_name}_{name} = {i};"))
                 .collect::<Vec<_>>()
                 .join("\n"),
             _ => "".to_string(),
