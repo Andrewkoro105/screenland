@@ -31,6 +31,8 @@ pub enum ShaderType {
         num_input: NumInput<i32, ConstI32<0>>,
     },
     Enum {
+        #[serde(skip)]
+        #[serde(default)]
         current: u32,
         enums: HashMap<String, Icon>,
     },
@@ -108,6 +110,18 @@ impl Param {
         }
         result
     }
+
+    pub fn get_supporting_system(&self, object_name: &str) -> String {
+        match &self.shader_type {
+            ShaderType::Enum { enums, .. } => enums
+                .keys()
+                .enumerate()
+                .map(|(i, name)| format!("const {object_name}_{name} = {i};"))
+                .collect::<Vec<_>>()
+                .join("\n"),
+            _ => "".to_string(),
+        }
+    }
 }
 
 impl DataType for Param {
@@ -131,7 +145,7 @@ impl ShaderType {
             ShaderType::F32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
             ShaderType::U32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
             ShaderType::I32 { num_input } => bytemuck::bytes_of(&num_input.get()).to_vec(),
-            ShaderType::Enum { current, .. } => {bytemuck::bytes_of(current).to_vec()},
+            ShaderType::Enum { current, .. } => bytemuck::bytes_of(current).to_vec(),
         }
     }
 

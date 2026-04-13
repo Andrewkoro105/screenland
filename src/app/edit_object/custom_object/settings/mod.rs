@@ -100,7 +100,7 @@ impl EditObjectSettings for CustomIndexedObjectSettings {
             .map(DataType::get_str_field)
             .chain(self.points_format.as_ref().map(DataType::get_str_field))
             .collect::<Vec<_>>()
-            .join("\n    ");
+            .join("\n\t");
         let init_params = Param::indexing_params(&self.params)
             .iter()
             .map(|(i, param)| param.get_str_init_field(*i))
@@ -110,7 +110,13 @@ impl EditObjectSettings for CustomIndexedObjectSettings {
                     .map(|points_format| points_format.get_str_init_field(0)),
             )
             .collect::<Vec<_>>()
-            .join("\n    ");
+            .join("\n\t\t");
+
+        let supporting_param_system = &self.params
+            .iter()
+            .map(|param| param.get_supporting_system(&self.name))
+            .collect::<Vec<_>>()
+            .join("\n");
 
         let functions = self
             .functions
@@ -127,6 +133,8 @@ struct Data_{name} {{
     base_settings: EditObjectBaseSettings,
     {params}
 }}
+
+{supporting_param_system}
 
 fn get_data_{name}(objects: CustomObject) -> Data_{name} {{
     let channel_index = objects.channel_index;
