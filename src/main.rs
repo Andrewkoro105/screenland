@@ -38,7 +38,7 @@ pub struct Args {
     /// Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
     #[arg(short, long)]
     output_shader: bool,
-    /// Displays the shader with the current settings and run screenland
+    /// Displays the shader with the current settings and then runs screenland
     #[arg(long)]
     output_shader_and_run: bool,
     /// Path to config. By default: `~/.config/screenland/config.yaml`
@@ -53,10 +53,10 @@ pub struct Args {
     /// Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
     #[arg(short, long)]
     end: Option<String>,
-    /// Disables overlay mode
+    /// Disable overlay mode
     #[arg(long)]
     disables_overlay: bool,
-    /// Input log
+    /// Enable input logging
     #[arg(long)]
     input_log: bool,
 }

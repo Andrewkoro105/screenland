@@ -1,6 +1,6 @@
 # Screenland
 
-This is a program for creating and editing screenshots, as well as recording videos for Linux (Wayland) (support for Linux (X11), Windows, and Mac is planned for the future).
+This is a program for creating and editing screenshots, as well as video recording for Linux (Wayland) (support for Linux (X11), Windows, and Mac is planned for the future).
 
 # Installation
 
@@ -14,7 +14,7 @@ To compile the program, install the Rust compiler. This can be done with the fol
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-or you can learn how to do it on their website https://rust-lang.org/ru/tools/install/
+or follow the instructions on the official website https://rust-lang.org/ru/tools/install/
 
 ## Cloning, building, and installing
 
@@ -27,18 +27,18 @@ cd screenland
 cargo install --path .
 ```
 
-## Bind
+## Key bindings
 
 The program will be installed in `$HOME/.cargo/bin/`, which should be taken into account when configuring keyboard shortcuts.
 
 # Basic features:
 
 - [X]  Screenshot of an area
-- [ ]  Recording of an area
+- [ ]  Area video recording
 - [ ]  Magnifying glass
 - [X]  Manual selection of an area with the ability to change it before clicking the save button
-- [ ]  Interface for all configurations
-- [ ]  Ability to get configurations simply by link
+- [ ]  Configuration GUI
+- [ ]  Ability to import configurations via a link
 
 ## There are 3 modular systems:
 
@@ -60,11 +60,11 @@ You can add objects to the screenshot that will change it
 
 - [X]  Line
 
-  - [X]  straight
-  - [X]  broken
-  - [ ]  curve
-  - [X]  tip type
-  - [ ]  line type
+  - [X]  Straight
+  - [X]  Polyline
+  - [ ]  Curve
+  - [X]  Arrowhead type
+  - [ ]  Line type
 - [X]  Rectangle (with a choice of line and fill type)
 - [X]  Circle (with a choice of line type and fill)
 - [X]  Blur
@@ -79,14 +79,11 @@ You can add objects to the screenshot that will change it
   - [ ]  Background
   - [ ]  Line spacing
   - [ ]  Alignment
-- [ ]  Counter
+- [ ]  Numbering
 - [ ]  Image
-- [ ]  More objects added via config
+- [ ]  Additional objects added via configuration files
   
-  All new objects have a name and an importance parameter (placing them either in the main menu or in the additional menu)
-  Types:
-- [ ]  Picture/video
-- [ ]  Shader + shader settings interface configuration
+  All new objects have a name and an priority parameter (placing them either in the main menu or in the submenu)
 
 Color and size selection are global settings!
 
@@ -95,10 +92,8 @@ Color and size selection are global settings!
 - [X]  Save
 - [X]  Copy
 - [ ]  Pin
-- [ ]  Auto-download with link retrieval, services are added via settings
-- [ ]  Saving and transferring control of a file to a script
-
-
+- [ ]  Auto-upload and get a shareable link, services can be added via settings
+- [ ]  Save and pass file control to a script
 
 # Settings
 
@@ -113,13 +108,13 @@ Options:
   -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
   -g, --generate-config              Generate config
   -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
-      --output-shader-and-run        Displays the shader with the current settings and run screenland
+      --output-shader-and-run        Displays the shader with the current settings and then runs screenland
       --config <CONFIG>              Path to config. By default: `~/.config/screenland/config.yaml`
       --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
       --path <PATH>                  Path to the folder where screenshots will be saved
   -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
-      --disables-overlay             Disables overlay mode
-      --input-log                    Input log
+      --disables-overlay             Disable overlay mode
+      --input-log                    Enable input logging
   -h, --help                         Print help
 ```
 
@@ -159,7 +154,7 @@ path: <PATH>
 format: <CHRONO_FORMAT>
 # Complete the screenshot immediately after selection
 base_end: (null; Save; Copy)
-# Disables overlay mode and forces the screen capture application to open a full-screen window for each monitor
+# Disable overlay mode and forces the screen capture application to open a full-screen window for each monitor
 disables_overlay: <BOOL>
 # Default color and size settings for all objects
 edit_object_base_settings:
