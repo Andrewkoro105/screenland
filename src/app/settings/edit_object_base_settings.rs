@@ -1,9 +1,9 @@
+use crate::app::update::Message as AppMessage;
 use bytemuck::{Pod, Zeroable};
-use glam::{Vec4};
+use glam::Vec4;
 use iced::{Color, Task};
 use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
 use serde::{Deserialize, Serialize};
-use crate::app::update::Message as AppMessage;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -21,9 +21,6 @@ pub struct ColorInput {
     pub g: NumInput<f32, ConstF32<0>>,
     pub b: NumInput<f32, ConstF32<0>>,
     pub a: NumInput<f32, ConstF32<1>>,
-    #[serde(skip)]
-    #[serde(default)]
-    pub hide_color: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -31,7 +28,6 @@ pub struct EditObjectBaseSettings {
     pub color: ColorInput,
     pub size: NumInput<f32, ConstF32<0>>,
 }
-
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
@@ -51,7 +47,21 @@ impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
                 value.color.a.get(),
             ),
             size: value.size.get(),
-            _padding: [0; _]
+            _padding: [0; _],
+        }
+    }
+}
+
+impl From<EditObjectBaseSettingsFromShader> for EditObjectBaseSettings {
+    fn from(value: EditObjectBaseSettingsFromShader) -> Self {
+        Self {
+            color: ColorInput {
+                r: NumInput::new(value.color.x),
+                g: NumInput::new(value.color.y),
+                b: NumInput::new(value.color.z),
+                a: NumInput::new(value.color.w),
+            },
+            size: NumInput::new(value.size),
         }
     }
 }

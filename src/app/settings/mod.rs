@@ -96,7 +96,6 @@ impl Settings {
                     g: NumInput::new(0.),
                     b: NumInput::new(0.),
                     a: NumInput::new(1.),
-                    hide_color: false,
                 },
                 size: NumInput::new(6.),
             },

@@ -55,6 +55,8 @@ pub trait EditObject {
 
     fn set_base_settings(&mut self, base_settings: edit_object_base_settings::EditObjectBaseSettingsFromShader);
 
+    fn get_base_settings(&self) -> edit_object_base_settings::EditObjectBaseSettingsFromShader;
+
     fn update(&mut self, muse_position: Vec2, message: Message) -> Task<app::Message>;
 
     fn get_shader_object(&self, channel: &mut Channels) -> ShaderObjects;

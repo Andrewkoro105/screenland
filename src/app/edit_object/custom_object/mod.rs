@@ -121,6 +121,10 @@ impl EditObject for CustomObject {
         self.base_settings = base_settings;
     }
 
+    fn get_base_settings(&self) -> edit_object_base_settings::EditObjectBaseSettingsFromShader {
+        self.base_settings
+    }
+
     fn update(
         &mut self,
         muse_position: glam::Vec2,

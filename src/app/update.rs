@@ -120,6 +120,8 @@ impl Screenland {
                                 self.get_object_in_which_mouse()
                             {
                                 self.current_object = Some(new_current_object);
+                                self.settings.edit_object_base_settings =
+                                    self.objects[new_current_object].get_base_settings().into();
                                 Task::none()
                             } else {
                                 let selection_messages =
