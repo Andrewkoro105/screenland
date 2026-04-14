@@ -31,100 +31,6 @@ cargo install --path .
 
 The program will be installed in `$HOME/.cargo/bin/`, which should be taken into account when configuring keyboard shortcuts.
 
-# Settings
-
-## Config
-
-The configuration file is written in YAML format and is located by default at `~/.config/screenland/config.yaml` (it will not be there if the settings have not been changed).
-
-The structure of config.yaml looks like this:
-
-```yaml
-# Path to config. Usually `~/.config/screenland/config.yaml`
-config_path: <PATH>
-# The placement of the color channels in the screenshot
-color_format:
-  r: <USIZE(0..3)>
-  g: <USIZE(0..3)>
-  b: <USIZE(0..3)>
-  a: <USIZE(0..3)>
-# Path to the folder where screenshots will be saved
-path: <PATH>
-# File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-format: <CHRONO_FORMAT>
-# Complete the screenshot immediately after selection
-base_end: (null; Save; Copy)
-# Disables overlay mode
-disables_overlay: <BOOL>
-# Default color and size settings for all objects
-edit_object_base_settings:
-  color:
-    r: <F32>
-    g: <F32>
-    b: <F32>
-    a: <F32>
-  size: <F32>
-# Custom objects that can either replace the entire screenshot or add something to it
-custom_objects:
-- 
-  # Object name; it must be unique among the added objects
-  name: <STRING>
-  # Button icon. You can specify an icon using the `iced_font_awesome` library via `Name` and `SolidName`, or specify a direct path to the image using `Path`
-  icon: 
-    Name: <STRING>
-    # or
-    SolidName: <STRING>
-    # or 
-    Path: <PATH>
-  params:
-  # Parameters that the user can set and that will be passed to the shader
-  - 
-    # Parameter name
-    name: <STRING>
-    # Parameter type
-    shader_type: 
-      F32:
-        # Default value
-        num_input: 1.0
-      # or
-      U32: 
-        # Default value
-        num_input: 1.0
-      # or
-      I32: 
-        # Default value
-        num_input: 1.0
-  # List of functions for this object. This field accepts a `HashMap` whose keys are function names (the function name is prefixed with the object name and “_”), and whose values are the function's arguments and body.
-  functions: <MAP<STRING, STRING>>
-  # The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube; bezier_points)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
-  shader: <WGSL_CODE>
-  # Point format for modifying an object (`Cube` - rectangular area; BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
-  points_format: (Cube; BezierPoints)
-```
-
-A standard configuration file can be created using `screenland -g`.
-
-## CLI
-
-```
-Screenland is a program for creating and editing screenshots
-
-Usage: screenland [OPTIONS]
-
-Options:
-  -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
-  -g, --generate-config              Generate config
-  -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
-      --output-shader-and-run        Displays the shader with the current settings and run screenland
-      --config <CONFIG>              Path to config. By default: `~/.config/screenland/config.yaml`
-      --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-      --path <PATH>                  Path to the folder where screenshots will be saved
-  -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
-      --disables-overlay             Disables overlay mode
-      --input-log                    Input log
-  -h, --help                         Print help
-```
-
 # Basic features:
 
 - [X]  Screenshot of an area
@@ -157,7 +63,7 @@ You can add objects to the screenshot that will change it
   - [X]  straight
   - [X]  broken
   - [ ]  curve
-  - [ ]  tip type
+  - [X]  tip type
   - [ ]  line type
 - [X]  Rectangle (with a choice of line and fill type)
 - [X]  Circle (with a choice of line type and fill)
@@ -191,3 +97,136 @@ Color and size selection are global settings!
 - [ ]  Pin
 - [ ]  Auto-download with link retrieval, services are added via settings
 - [ ]  Saving and transferring control of a file to a script
+
+
+
+# Settings
+
+## CLI
+
+```
+Screenland is a program for creating and editing screenshots
+
+Usage: screenland [OPTIONS]
+
+Options:
+  -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
+  -g, --generate-config              Generate config
+  -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
+      --output-shader-and-run        Displays the shader with the current settings and run screenland
+      --config <CONFIG>              Path to config. By default: `~/.config/screenland/config.yaml`
+      --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+      --path <PATH>                  Path to the folder where screenshots will be saved
+  -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+      --disables-overlay             Disables overlay mode
+      --input-log                    Input log
+  -h, --help                         Print help
+```
+
+## Config
+
+All settings are located in the `$XDG_CONFIG_HOME/screenland` folder; this is usually `~/.config/screenland`, though this path can also be overridden via the command line.
+A standard configuration file can be created using `screenland -g`.
+The file structure in this directory is as follows:
+
+```
+screenland
+- config.yaml
+- custom_objects
+  - "name_object"
+    - object.yaml
+  - "name_object2"
+    - object.yaml
+  - "name_object3"
+    - object.yaml
+  ...
+```
+
+`config.yaml` is the main configuration file; it should have the following structure:
+
+```yaml
+# Path to config. Usually `~/.config/screenland/config.yaml`
+config_path: <PATH>
+# The placement of the color channels in the screenshot
+color_format:
+  r: <USIZE(0..3)>
+  g: <USIZE(0..3)>
+  b: <USIZE(0..3)>
+  a: <USIZE(0..3)>
+# Path to the folder where screenshots will be saved
+path: <PATH>
+# File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+format: <CHRONO_FORMAT>
+# Complete the screenshot immediately after selection
+base_end: (null; Save; Copy)
+# Disables overlay mode and forces the screen capture application to open a full-screen window for each monitor
+disables_overlay: <BOOL>
+# Default color and size settings for all objects
+edit_object_base_settings:
+  color:
+    r: <F32>
+    g: <F32>
+    b: <F32>
+    a: <F32>
+  size: <F32>
+```
+
+`object.yaml` files describe objects that can be added to a screenshot. The WGSL language is used to describe objects, and YAML is used to specify object settings.
+The structure of the `object.yaml` file is shown below (a description of the `<ICON>` type will follow):
+
+```yaml
+# Object name; it must be unique among the added objects
+name: <STRING>
+# Button icon. You can specify an icon using the `iced_font_awesome` library via `Name` and `SolidName`, or specify a direct path to the image using `Path`
+icon: 
+params:
+# Parameters that the user can set and that will be passed to the shader
+- 
+  # Parameter name
+  name: <STRING>
+  # Parameter type
+  shader_type: 
+    F32:
+      # Default value
+      num_input: <F32>
+    # or
+    U32: 
+      # Default value
+      num_input: <U32>
+    # or
+    I32: 
+      # Default value
+      num_input: <I32>
+    Enum:
+      enums:
+        - - variant_name
+          - <ICON>
+# List of functions for this object. This field accepts a `HashMap` whose keys are function names (the function name is prefixed with the object name and “_”), and whose values are the function's arguments and body.
+functions: <MAP<STRING, WGSL_CODE>>
+# The body of the shader function. The following parameters will be passed to the function: `pixel_color: vec4<f32>, pixel_pos: vec2<f32>, data: Data`. The `data` variable contains all parameters requested from the user, as well as `edit_object_base_settings` and `points_format(cube; bezier_points)`. To view the entire shader, use `-o` or, better yet, `-o | bat -l wgsl`
+shader: <WGSL_CODE>
+# Point format for modifying an object (`Cube` - rectangular area; BezierPoints - control points for the Bézier curve (not yet finalized and currently linear))
+points_format: (Cube; BezierPoints)
+```
+
+In the `<ICON>` tag, you can specify an icon using the `iced_font_awesome` library via the `Name` and `SolidName` parameters, or specify a direct path to the image using the `Path` parameter.
+Below is the format for how these options should be specified in YAML.
+
+```yaml
+Name: <STRING>
+# or
+SolidName: <STRING>
+# or 
+Path: <PATH>
+```
+
+To view the available icons from `iced_font_awesome`, you can use this script.
+
+```bash
+(
+    cd ~/Downloads || exit 1
+    git clone https://github.com/danielmbomfim/iced_font_awesome.git
+    cd iced_font_awesome
+    cargo run --example explorer
+)
+```
