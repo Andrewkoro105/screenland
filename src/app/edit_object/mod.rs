@@ -8,7 +8,7 @@ use iced::{Element, Task};
 use crate::app::{
     self, 
     edit_object::{custom_object::param::channel::Channels, points_system::Reload, ui_point::{UIMessages, UIPoint, UIPointElement}},
-    settings::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
+    stored_data::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
     update
 };
 

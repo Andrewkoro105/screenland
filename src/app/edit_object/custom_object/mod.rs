@@ -24,7 +24,7 @@ use crate::app::{
         points_system::Reload,
         ui_point::{UIMessages, UIPoint},
     },
-    settings::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
+    stored_data::edit_object_base_settings::{self, EditObjectBaseSettingsFromShader},
 };
 
 #[derive(Clone, Debug)]

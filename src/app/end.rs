@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 use crate::{
-    app::{Screenland, selection::Selection, settings::Settings},
+    app::{Screenland, selection::Selection, stored_data::{settings::Settings}},
     screenshots::{ColorFormat, full_screenshot},
 };
 

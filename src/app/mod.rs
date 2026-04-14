@@ -1,7 +1,7 @@
 pub mod edit_object;
 pub mod end;
 mod selection;
-pub mod settings;
+pub mod stored_data;
 pub mod shader;
 mod subscription;
 mod update;
@@ -11,7 +11,7 @@ use crate::{
     app::{
         edit_object::{EditObject, custom_object},
         selection::Selection,
-        settings::Settings,
+        stored_data::StoredData,
         update::Message,
     },
     screenshots::{MonitorData, get_outputs},
@@ -46,7 +46,7 @@ pub struct Screenland {
     mode: Mode,
     mouse_pos: Vec2,
     mouse_touch_time: Instant,
-    settings: Settings,
+    stored_data: StoredData,
 
     current_object: Option<usize>,
     objects: Vec<Box<dyn EditObject>>,
@@ -54,12 +54,12 @@ pub struct Screenland {
     custom_objects_channel: custom_object::param::channel::Channels,
 }
 
-impl BootFn<Screenland, Message> for Settings {
+impl BootFn<Screenland, Message> for StoredData {
     fn boot(&self) -> (Screenland, Task<Message>) {
         let mut windows_task = Task::none();
         let mut windows_data = HashMap::new();
 
-        if self.disables_overlay {
+        if self.settings.disables_overlay {
             for monitor_data in get_outputs() {
                 let (id, window_task) = window::open(window::Settings {
                     fullscreen: true,
@@ -94,7 +94,7 @@ impl BootFn<Screenland, Message> for Settings {
                 mouse_pos: Default::default(),
                 mouse_touch_time: Instant::now(),
                 auto_exit: true,
-                settings: self.clone(),
+                stored_data: self.clone(),
                 current_object: None,
                 objects: vec![],
                 shader_objects: vec![],
@@ -111,7 +111,7 @@ impl Screenland {
     }
 
     pub fn title(&self, id: window::Id) -> String {
-        if self.settings.disables_overlay {
+        if self.stored_data.settings.disables_overlay {
             format!("screenland-{}", self.windows_data.get(&id).unwrap().name)
         } else {
             "screenland".to_string()

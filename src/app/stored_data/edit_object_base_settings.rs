@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use crate::app::update::Message as AppMessage;
 use bytemuck::{Pod, Zeroable};
 use glam::Vec4;
@@ -35,6 +37,20 @@ pub struct EditObjectBaseSettingsFromShader {
     pub color: Vec4,
     pub size: f32,
     _padding: [u8; 3 * 4],
+}
+
+impl Default for EditObjectBaseSettings {
+    fn default() -> Self {
+        Self {
+            color: ColorInput {
+                r: NumInput::new(1.),
+                g: NumInput::new(0.),
+                b: NumInput::new(0.),
+                a: NumInput::new(1.),
+            },
+            size: NumInput::new(6.),
+        }
+    }
 }
 
 impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
@@ -97,6 +113,14 @@ impl EditObjectBaseSettings {
                 Task::none()
             }
         }
+    }
+
+    pub(super) fn load(path: &Path) -> Option<Self> {
+        super::base_load(path, "EditObjectBaseSettings")
+    }
+
+    pub(super) fn save(&self, path: &Path) {
+        super::base_save(self, path, "EditObjectBaseSettings");
     }
 }
 

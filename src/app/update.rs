@@ -16,7 +16,7 @@ use crate::app::{
     },
     end::End,
     selection,
-    settings::edit_object_base_settings,
+    stored_data::edit_object_base_settings,
 };
 
 #[to_layer_message(multi)]
@@ -120,7 +120,7 @@ impl Screenland {
                                 self.get_object_in_which_mouse()
                             {
                                 self.current_object = Some(new_current_object);
-                                self.settings.edit_object_base_settings =
+                                self.stored_data.edit_object_base_settings =
                                     self.objects[new_current_object].get_base_settings().into();
                                 Task::none()
                             } else {
@@ -169,7 +169,7 @@ impl Screenland {
                 self.auto_exit = false;
                 let selection = self.selection;
                 let windows_data = self.windows_data.clone();
-                let settings = self.settings.clone();
+                let settings = self.stored_data.settings.clone();
                 Task::done(Message::SetMode(Mode::Transparency)).chain(
                     Task::future(async move {
                         sleep(Duration::from_millis(50));
@@ -207,16 +207,16 @@ impl Screenland {
                     .get_task()
             }
             Message::EditObjectBaseSettings(message) => {
-                let task = self.settings.edit_object_base_settings.update(message);
-                self.settings.save();
+                let task = self.stored_data.edit_object_base_settings.update(message);
+                self.stored_data.save_edit_objects_base_settings();
                 if let Some(current_object) = self.current_object {
                     self.objects[current_object]
-                        .set_base_settings(self.settings.edit_object_base_settings.clone().into());
+                        .set_base_settings(self.stored_data.edit_object_base_settings.clone().into());
 
                     match &mut self.shader_objects[current_object] {
                         edit_object::ShaderObjects::Custom(custom_object_from_shader) => {
                             custom_object_from_shader.edit_object_base_settings =
-                                self.settings.edit_object_base_settings.clone().into()
+                                self.stored_data.edit_object_base_settings.clone().into()
                         }
                     }
                 }
@@ -227,9 +227,9 @@ impl Screenland {
                     edit_object::CreateObjects::Custom(i) => {
                         self.current_object = Some(self.objects.len());
                         self.objects
-                            .push(Box::new(self.settings.custom_objects[i].get_object(
+                            .push(Box::new(self.stored_data.custom_objects[i].get_object(
                                 self.objects.len(),
-                                &self.settings.edit_object_base_settings.clone().into(),
+                                &self.stored_data.edit_object_base_settings.clone().into(),
                             )))
                     }
                 }

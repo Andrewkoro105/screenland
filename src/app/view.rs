@@ -6,7 +6,7 @@ use iced::{
 };
 
 use crate::app::{
-    Mode, Screenland, edit_object::CreateObjects, settings::edit_object_base_settings, shader,
+    Mode, Screenland, edit_object::CreateObjects, stored_data::edit_object_base_settings, shader,
     update::Message,
 };
 
@@ -107,7 +107,7 @@ impl Screenland {
                 row![
                     "color: ",
                     container(
-                        self.settings
+                        self.stored_data
                             .edit_object_base_settings
                             .color
                             .r
@@ -119,7 +119,7 @@ impl Screenland {
                     )
                     .width(40),
                     container(
-                        self.settings
+                        self.stored_data
                             .edit_object_base_settings
                             .color
                             .g
@@ -131,7 +131,7 @@ impl Screenland {
                     )
                     .width(40),
                     container(
-                        self.settings
+                        self.stored_data
                             .edit_object_base_settings
                             .color
                             .b
@@ -143,7 +143,7 @@ impl Screenland {
                     )
                     .width(40),
                     container(
-                        self.settings
+                        self.stored_data
                             .edit_object_base_settings
                             .color
                             .a
@@ -155,18 +155,18 @@ impl Screenland {
                     )
                     .width(40),
                     "size: ",
-                    container(self.settings.edit_object_base_settings.size.view("", |a| {
+                    container(self.stored_data.edit_object_base_settings.size.view("", |a| {
                         Message::EditObjectBaseSettings(
                             edit_object_base_settings::Message::SetSize(a),
                         )
                     }))
                     .width(40),
-                    if self.settings.custom_objects.len() > 0 {
+                    if self.stored_data.custom_objects.len() > 0 {
                         " | "
                     } else {
                         ""
                     },
-                    Row::from_iter(self.settings.custom_objects.iter().enumerate().map(
+                    Row::from_iter(self.stored_data.custom_objects.iter().enumerate().map(
                         |(i, object)| {
                             button(object.get_icon())
                                 .on_press(Message::AddObject(CreateObjects::Custom(i)))

@@ -12,19 +12,21 @@ use crate::app::{
             CustomObject, data_type::DataType, icon::Icon, param::Param, points::PointsFormat,
         },
     },
-    settings::edit_object_base_settings::EditObjectBaseSettingsFromShader,
+    stored_data::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CustomObjectSettings {
-    name: String,
-    icon: Icon,
+    #[serde(skip)]
     #[serde(default)]
-    params: Vec<Param>,
+    pub name: String,
+    pub icon: Icon,
     #[serde(default)]
-    functions: HashMap<String, LitString>,
-    shader: LitString,
-    points_format: Option<PointsFormat>,
+    pub params: Vec<Param>,
+    #[serde(default)]
+    pub functions: HashMap<String, LitString>,
+    pub shader: LitString,
+    pub points_format: Option<PointsFormat>,
 }
 
 #[derive(Clone, PartialEq, Eq)]

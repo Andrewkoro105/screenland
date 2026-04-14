@@ -7,9 +7,7 @@ use std::{
 };
 
 use crate::app::{
-    edit_object::custom_object,
-    settings::Settings,
-    shader::{get_shader::get_shader, pipeline::edit_bg},
+    edit_object::custom_object, shader::{get_shader::get_shader, pipeline::edit_bg}, stored_data::{StoredData, path_system::{PathSystem, PathType}}
 };
 use app::Screenland;
 use chrono::Local;
@@ -64,17 +62,10 @@ pub struct Args {
 }
 
 fn main() -> Result<(), iced_layershell::Error> {
-    let xdg_dirs = Settings::get_xdg_dir();
     let args = Args::parse();
-    let arg_config = args
-        .path
-        .clone()
-        .map(Into::into)
-        .unwrap_or_else(|| Settings::get_path(Some(&xdg_dirs)));
+    let path_system = PathSystem::from_args(&args);
 
-    let logs_dir = xdg_dirs
-        .create_state_directory("logs")
-        .unwrap_or(".".into());
+    let logs_dir = path_system.get(PathType::Log);
     let now = SystemTime::now();
     let max_age = Duration::from_hours(2 * 24);
 
@@ -120,7 +111,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         .init();
 
     if args.generate_config {
-        Settings::new(arg_config, xdg_dirs).save();
+        StoredData::new(path_system).save();
         Ok(())
     } else if args.output_shader {
         println!("{}", get_shader(None));
@@ -144,9 +135,9 @@ fn main() -> Result<(), iced_layershell::Error> {
             },
         ]);
 
-        let settings = Settings::load(Some(args), Some(arg_config), Some(xdg_dirs));
-        if settings.disables_overlay {
-            iced::daemon(settings, Screenland::update, Screenland::view)
+        let storage_data = StoredData::load(Some(args), Some(path_system));
+        if storage_data.settings.disables_overlay {
+            iced::daemon(storage_data, Screenland::update, Screenland::view)
                 .title(Screenland::title)
                 .font(ICED_AW_FONT_BYTES)
                 .theme(Screenland::theme)
@@ -169,7 +160,7 @@ fn main() -> Result<(), iced_layershell::Error> {
                 })
         } else {
             iced_layershell::daemon(
-                move || settings.boot(),
+                move || storage_data.boot(),
                 || "Screenland".to_string(),
                 Screenland::update,
                 Screenland::view,

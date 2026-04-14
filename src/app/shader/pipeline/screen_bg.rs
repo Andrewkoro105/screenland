@@ -1,8 +1,14 @@
+use clap::Parser;
 use iced::wgpu::{self, Sampler, TextureView};
 
-use crate::{app::settings::Settings, screenshots::full_screenshot};
-
-
+use crate::{
+    Args,
+    app::stored_data::{
+        path_system::{PathSystem, PathType},
+        settings::Settings,
+    },
+    screenshots::full_screenshot,
+};
 
 pub struct Screen {
     pub texture_view: TextureView,
@@ -11,7 +17,12 @@ pub struct Screen {
 
 impl Screen {
     pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, _format: wgpu::TextureFormat) -> Self {
-        let image = full_screenshot(&Settings::load(None, None, None).color_format);
+        let args = Args::parse();
+        let image = full_screenshot(
+            &Settings::load(&PathSystem::from_args(&args).get(PathType::Settings), &args)
+                .unwrap_or_default()
+                .color_format,
+        );
 
         let (width, height) = image.dimensions();
 
@@ -109,7 +120,7 @@ impl ScreenBg {
                     },
                 ],
             }),
-            bgl
+            bgl,
         }
     }
 }
