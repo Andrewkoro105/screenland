@@ -49,7 +49,7 @@ pub struct Args {
     config: Option<String>,
     /// Disable overlay mode and force the screen capture application to open a full-screen window for each monitor
     #[arg(long)]
-    disables_overlay: bool,
+    disable_overlay: bool,
     /// Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
     #[arg(short, long)]
     output_shader: bool,

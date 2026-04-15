@@ -1,6 +1,6 @@
 # Screenland
 
-This is a program for creating and editing screenshots, as well as video recording for Linux (Wayland) (support for Linux (X11), Windows, and Mac is planned for the future).
+This is a program for creating and editing screenshots, as well as recording videos for Linux (Wayland) (support for Linux (X11), Windows, and Mac is planned for the future). It features modular and extensible object systems, as well as automatic selection and saving.
 
 # Installation
 
@@ -59,21 +59,25 @@ You can either select one area or hold down Shift to combine the desired areas (
 You can add objects to the screenshot that will change it
 
 - [X]  Line
-
   - [X]  Straight
   - [X]  Polyline
   - [ ]  Curve
   - [X]  Arrowhead type
   - [ ]  Line type
-- [X]  Rectangle (with a choice of line and fill type)
-- [X]  Circle (with a choice of line type and fill)
+- [X]  Rectangle
+  - [X]  Line
+  - [ ]  Fill
+- [X]  Circle
+  - [X]  Line
+  - [ ]  Fill
 - [X]  Blur
 - [ ]  Text (LaTeX)
 - [ ]  Numbering
 - [ ]  Image
-- [ ]  Additional objects added via configuration files
-  
-  All new objects have a name and a priority parameter (placing them either in the main menu or in the submenu)
+- [X]  Additional objects added via configuration files
+  - [X]  WGSL
+  - [ ]  Lua
+  - [X]  Generating the UI for settings
 
 Color and size selection are global settings!
 
@@ -101,7 +105,7 @@ Options:
   -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
   -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
       --config <CONFIG>              Path to config. By default: `~/.config/screenland`
-      --disables-overlay             Disable overlay mode and force the screen capture application to open a full-screen window for each monitor
+      --disable-overlay             Disable overlay mode and force the screen capture application to open a full-screen window for each monitor
   -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
       --output-shader-and-run        Displays the shader with the current settings and then runs screenland
       --input-log                    Enable input logging
