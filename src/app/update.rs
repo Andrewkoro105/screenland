@@ -146,22 +146,37 @@ impl Screenland {
                     }
                 }
             }
-            Message::TouchEnd => match self.mode {
+            Message::TouchEnd => match self.mode.clone() {
                 Mode::Base => Task::none(),
-                Mode::Move(_) => {
+                Mode::Move(move_message) => {
                     self.mode = Mode::Base;
-                    Task::done(Message::SelectionUpdate(None)).chain(
-                        self.current_object
-                            .map(|current_object| {
-                                Task::done(Message::UpdateEditObject((
-                                    current_object,
-                                    edit_object::Message::Custom(custom_object::Message::Point(
-                                        None,
-                                    )),
-                                )))
-                            })
-                            .unwrap_or(Task::none()),
-                    )
+                    Task::done(Message::SelectionUpdate(None))
+                        .chain(
+                            self.current_object
+                                .map(|current_object| {
+                                    Task::done(Message::UpdateEditObject((
+                                        current_object,
+                                        edit_object::Message::Custom(
+                                            custom_object::Message::Point(None),
+                                        ),
+                                    )))
+                                })
+                                .unwrap_or(Task::none()),
+                        )
+                        .chain(
+                            if let Message::SelectionUpdate(Some(selection::Message::MoveEnd)) =
+                                *move_message
+                            {
+                                if let Some(base_end) = self.stored_data.settings.base_end.as_ref()
+                                {
+                                    Task::done(Message::End(base_end.clone()))
+                                } else {
+                                    Task::none()
+                                }
+                            } else {
+                                Task::none()
+                            },
+                        )
                 }
                 Mode::Transparency => Task::none(),
             },
@@ -210,8 +225,9 @@ impl Screenland {
                 let task = self.stored_data.edit_object_base_settings.update(message);
                 self.stored_data.save_edit_objects_base_settings();
                 if let Some(current_object) = self.current_object {
-                    self.objects[current_object]
-                        .set_base_settings(self.stored_data.edit_object_base_settings.clone().into());
+                    self.objects[current_object].set_base_settings(
+                        self.stored_data.edit_object_base_settings.clone().into(),
+                    );
 
                     match &mut self.shader_objects[current_object] {
                         edit_object::ShaderObjects::Custom(custom_object_from_shader) => {
