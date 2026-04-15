@@ -14,7 +14,7 @@ To compile the program, install the Rust compiler. This can be done with the fol
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-or follow the instructions on the official website https://rust-lang.org/ru/tools/install/
+or follow the instructions on the official website https://rust-lang.org/ru/tools/install/.
 
 ## Cloning, building, and installing
 
@@ -73,7 +73,7 @@ You can add objects to the screenshot that will change it
 - [ ]  Image
 - [ ]  Additional objects added via configuration files
   
-  All new objects have a name and an priority parameter (placing them either in the main menu or in the submenu)
+  All new objects have a name and a priority parameter (placing them either in the main menu or in the submenu)
 
 Color and size selection are global settings!
 
@@ -101,7 +101,7 @@ Options:
   -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
   -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
       --config <CONFIG>              Path to config. By default: `~/.config/screenland`
-      --disables-overlay             Disable overlay mode and forces the screen capture application to open a full-screen window for each monitor
+      --disables-overlay             Disable overlay mode and force the screen capture application to open a full-screen window for each monitor
   -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
       --output-shader-and-run        Displays the shader with the current settings and then runs screenland
       --input-log                    Enable input logging
@@ -144,7 +144,7 @@ path: <PATH>
 format: <CHRONO_FORMAT>
 # Complete the screenshot immediately after selection
 base_end: (null; Save; Copy)
-# Disable overlay mode and forces the screen capture application to open a full-screen window for each monitor
+# Disable overlay mode and force the screen capture application to open a full-screen window for each monitor
 disables_overlay: <BOOL>
 # Default color and size settings for all objects
 edit_object_base_settings:
