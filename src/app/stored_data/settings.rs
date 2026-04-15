@@ -76,7 +76,7 @@ impl Settings {
                 result.cli_format = true;
             }
 
-            if args.disables_overlay {
+            if args.disable_overlay {
                 result.disables_overlay = true;
                 result.cli_disables_overlay = true;
             }
