@@ -6,7 +6,9 @@ This is a program for creating and editing screenshots, as well as recording vid
 
 The program is written in Rust, and until version 1 is released, you will need to compile it yourself to install it.
 
-## Preparation
+## Not NixOS
+
+### Preparation
 
 To compile the program, install the Rust compiler. This can be done with the following command:
 
@@ -16,7 +18,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 or follow the instructions on the official website https://rust-lang.org/ru/tools/install/.
 
-## Cloning, building, and installing
+### Cloning, building, and installing
 
 Execute:
 
@@ -27,9 +29,23 @@ cd screenland
 cargo install --path .
 ```
 
-## Key bindings
+### Key bindings
 
 The program will be installed in `$HOME/.cargo/bin/`, which should be taken into account when configuring keyboard shortcuts.
+
+## NixOS (flakes)
+
+Add the following line to `inputs` in your `flakes.nix` file
+
+```nix
+screenland.url = "github:Andrewkoro105/screenland";
+```
+
+and add the following to your package list:
+
+```nix
+screenland.packages.${pkgs.system}.default
+```
 
 # Basic features:
 
