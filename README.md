@@ -68,17 +68,7 @@ You can add objects to the screenshot that will change it
 - [X]  Rectangle (with a choice of line and fill type)
 - [X]  Circle (with a choice of line type and fill)
 - [X]  Blur
-- [ ]  Text
-  
-  Only the settings that are in the library for this will be implemented.
-  Settings:
-
-  - [ ]  Outline: Presence, size, color
-  - [ ]  Under/overlining
-  - [ ]  Font selection
-  - [ ]  Background
-  - [ ]  Line spacing
-  - [ ]  Alignment
+- [ ]  Text (LaTeX)
 - [ ]  Numbering
 - [ ]  Image
 - [ ]  Additional objects added via configuration files
