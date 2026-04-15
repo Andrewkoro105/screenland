@@ -95,15 +95,15 @@ Screenland is a program for creating and editing screenshots
 Usage: screenland [OPTIONS]
 
 Options:
-  -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
   -g, --generate-config              Generate config
+  -f, --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+  -p, --path <PATH>                  Path to the folder where screenshots will be saved
+  -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+  -c, --color-format <COLOR_FORMAT>  The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
+      --config <CONFIG>              Path to config. By default: `~/.config/screenland`
+      --disables-overlay             Disable overlay mode and forces the screen capture application to open a full-screen window for each monitor
   -o, --output-shader                Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
       --output-shader-and-run        Displays the shader with the current settings and then runs screenland
-      --config <CONFIG>              Path to config. By default: `~/.config/screenland/config.yaml`
-      --format <FORMAT>              File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-      --path <PATH>                  Path to the folder where screenshots will be saved
-  -e, --end <END>                    Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
-      --disables-overlay             Disable overlay mode
       --input-log                    Enable input logging
   -h, --help                         Print help
 ```

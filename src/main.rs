@@ -29,33 +29,33 @@ use tracing_subscriber::{
 #[command(name = "Screenland")]
 #[command(about = "Screenland is a program for creating and editing screenshots", long_about = None)]
 pub struct Args {
-    /// The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
-    #[arg(short, long)]
-    color_format: Option<String>,
     /// Generate config
     #[arg(short, long)]
     generate_config: bool,
+    /// File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+    #[arg(short, long)]
+    format: Option<String>,
+    /// Path to the folder where screenshots will be saved
+    #[arg(short, long)]
+    path: Option<String>,
+    /// Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
+    #[arg(short, long)]
+    end: Option<String>,
+    /// The placement of the color channels in the screenshot (rgba -> 0123; bgra -> 2103)
+    #[arg(short, long)]
+    color_format: Option<String>,
+    /// Path to config. By default: `~/.config/screenland`
+    #[arg(long)]
+    config: Option<String>,
+    /// Disable overlay mode and forces the screen capture application to open a full-screen window for each monitor
+    #[arg(long)]
+    disables_overlay: bool,
     /// Displays the shader with the current settings. Best used in conjunction with `bat`, for example: `-o | bat -l wgsl`
     #[arg(short, long)]
     output_shader: bool,
     /// Displays the shader with the current settings and then runs screenland
     #[arg(long)]
     output_shader_and_run: bool,
-    /// Path to config. By default: `~/.config/screenland/config.yaml`
-    #[arg(long)]
-    config: Option<String>,
-    /// File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-    #[arg(long)]
-    format: Option<String>,
-    /// Path to the folder where screenshots will be saved
-    #[arg(long)]
-    path: Option<String>,
-    /// Complete the screenshot immediately after selection (s | save | Save; c | copy | Copy)
-    #[arg(short, long)]
-    end: Option<String>,
-    /// Disable overlay mode
-    #[arg(long)]
-    disables_overlay: bool,
     /// Enable input logging
     #[arg(long)]
     input_log: bool,
