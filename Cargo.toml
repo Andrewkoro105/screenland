@@ -33,19 +33,14 @@ xdg = "3.0.0"
 
 [patch.crates-io]
 iced = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
-iced_beacon = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_core = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_debug = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_devtools = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_futures = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_graphics = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
-iced_highlighter = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_program = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_renderer = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_runtime = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
-iced_selector = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
-iced_test = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
-iced_tester = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_tiny_skia = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_wgpu = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
 iced_widget = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}

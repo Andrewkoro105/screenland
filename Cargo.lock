@@ -6422,28 +6422,3 @@ dependencies = [
  "syn",
  "winnow 0.7.15",
 ]
-
-[[patch.unused]]
-name = "iced_beacon"
-version = "0.14.0"
-source = "git+https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git?branch=feature%2Fwgpu_limit_settings#059b86dba5ff3e4b1050ec70aeedc7f6e59ac99f"
-
-[[patch.unused]]
-name = "iced_highlighter"
-version = "0.14.0"
-source = "git+https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git?branch=feature%2Fwgpu_limit_settings#059b86dba5ff3e4b1050ec70aeedc7f6e59ac99f"
-
-[[patch.unused]]
-name = "iced_selector"
-version = "0.14.0"
-source = "git+https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git?branch=feature%2Fwgpu_limit_settings#059b86dba5ff3e4b1050ec70aeedc7f6e59ac99f"
-
-[[patch.unused]]
-name = "iced_test"
-version = "0.14.0"
-source = "git+https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git?branch=feature%2Fwgpu_limit_settings#059b86dba5ff3e4b1050ec70aeedc7f6e59ac99f"
-
-[[patch.unused]]
-name = "iced_tester"
-version = "0.14.0"
-source = "git+https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git?branch=feature%2Fwgpu_limit_settings#059b86dba5ff3e4b1050ec70aeedc7f6e59ac99f"
