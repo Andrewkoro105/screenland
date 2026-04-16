@@ -3,14 +3,17 @@ use std::path::Path;
 use crate::app::update::Message as AppMessage;
 use bytemuck::{Pod, Zeroable};
 use glam::Vec4;
-use iced::{Color, Task};
-use iced_helper::ui_elements::num_input::{NumInput, base_value::ConstF32};
+use iced::Task;
+use iced_helper::ui_elements::num_input::{
+    NumInput,
+    base_value::ConstF32,
+    modification::{ColorCast, NullCast},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug)]
 pub enum Message {
     SetSize(String),
-    SetColor(Color),
     SetColorR(String),
     SetColorG(String),
     SetColorB(String),
@@ -19,16 +22,16 @@ pub enum Message {
 
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct ColorInput {
-    pub r: NumInput<f32, ConstF32<0>>,
-    pub g: NumInput<f32, ConstF32<0>>,
-    pub b: NumInput<f32, ConstF32<0>>,
-    pub a: NumInput<f32, ConstF32<1>>,
+    pub r: NumInput<f32, ConstF32<0>, ColorCast>,
+    pub g: NumInput<f32, ConstF32<0>, ColorCast>,
+    pub b: NumInput<f32, ConstF32<0>, ColorCast>,
+    pub a: NumInput<f32, ConstF32<1>, ColorCast>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EditObjectBaseSettings {
     pub color: ColorInput,
-    pub size: NumInput<f32, ConstF32<0>>,
+    pub size: NumInput<f32, ConstF32<0>, NullCast>,
 }
 
 #[repr(C)]
@@ -55,7 +58,7 @@ impl Default for EditObjectBaseSettings {
 
 impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
     fn from(value: EditObjectBaseSettings) -> Self {
-        Self {
+        let result = Self {
             color: Vec4::new(
                 value.color.r.get(),
                 value.color.g.get(),
@@ -64,7 +67,8 @@ impl From<EditObjectBaseSettings> for EditObjectBaseSettingsFromShader {
             ),
             size: value.size.get(),
             _padding: [0; _],
-        }
+        };
+        result
     }
 }
 
@@ -87,13 +91,6 @@ impl EditObjectBaseSettings {
         match message {
             Message::SetSize(str) => {
                 self.size.update(&str);
-                Task::none()
-            }
-            Message::SetColor(color) => {
-                self.color.r.set(color.r);
-                self.color.g.set(color.g);
-                self.color.b.set(color.b);
-                self.color.a.set(color.a);
                 Task::none()
             }
             Message::SetColorR(str) => {

@@ -10,7 +10,7 @@ use iced_helper::ui_elements::{
     ParamSettings,
     num_input::{
         NumInput,
-        base_value::{ConstF32, ConstI32, ConstU32},
+        base_value::{ConstF32, ConstI32, ConstU32}, modification::NullCast,
     },
 };
 use serde::{Deserialize, Serialize};
@@ -22,13 +22,13 @@ use crate::app::edit_object::custom_object::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShaderType {
     F32 {
-        num_input: NumInput<f32, ConstF32<0>>,
+        num_input: NumInput<f32, ConstF32<0>, NullCast>,
     },
     U32 {
-        num_input: NumInput<u32, ConstU32<0>>,
+        num_input: NumInput<u32, ConstU32<0>, NullCast>,
     },
     I32 {
-        num_input: NumInput<i32, ConstI32<0>>,
+        num_input: NumInput<i32, ConstI32<0>, NullCast>,
     },
     Enum {
         #[serde(skip)]
