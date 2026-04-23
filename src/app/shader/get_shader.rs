@@ -7,14 +7,22 @@ use crate::{
             EditObjectSettings,
             custom_object::{param::channel::ChannelIndex, settings::CustomIndexedObjectSettings},
         },
-        stored_data::StoredData,
         shader::pipeline::{base_storage_buffers::GetShader, edit_bg::get_storage_buffers_data},
+        stored_data::{
+            StoredData,
+            path_system::{PathSystem, PathType},
+        },
     },
 };
 
 pub fn get_shader(storage_buffers: Option<Vec<&dyn GetShader>>) -> String {
     let args = Args::parse();
-    let custom_objects = StoredData::load(Some(args.clone()), None).custom_objects;
+    let path_system = PathSystem::from_args(&args);
+    let custom_objects = if path_system.get(PathType::Settings).exists() {
+        StoredData::custom_objects_load(&path_system)
+    } else {
+        StoredData::get_default_custom_objects()
+    };
     let new_storage_buffers = get_storage_buffers_data();
     let result = include_str!("shader.wgsl")
         .to_string()

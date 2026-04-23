@@ -3,10 +3,10 @@ pub mod edit_object_base_settings;
 pub mod path_system;
 pub mod settings;
 use clap::Parser;
+use image::RgbaImage;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
-    fs::{self, DirEntry},
-    path::{Path, PathBuf},
+    fs::{self, DirEntry}, path::{Path, PathBuf}, sync::{Arc, Mutex}
 };
 
 use crate::{
@@ -15,18 +15,19 @@ use crate::{
         edit_object::custom_object::settings::{
             CustomIndexedObjectSettings, CustomObjectSettings,
             serde_help::{add_type_id, remove_type_id},
-        },
-        stored_data::{
+        }, end::End, stored_data::{
             edit_object_base_settings::EditObjectBaseSettings,
             path_system::{PathSystem, PathType},
             settings::Settings,
-        },
+        }
     },
 };
 
 #[derive(Clone)]
 pub struct StoredData {
     path_system: PathSystem,
+
+    pub result: Arc<Mutex<Option<(End, RgbaImage)>>>,
 
     pub settings: Settings,
 
@@ -36,7 +37,7 @@ pub struct StoredData {
 }
 
 impl StoredData {
-    pub fn load(args: Option<Args>, path_system: Option<PathSystem>) -> Self {
+    pub fn load(args: Option<Args>, path_system: Option<PathSystem>, result_app: Arc<Mutex<Option<(End, RgbaImage)>>>) -> Self {
         let args = args.unwrap_or_else(|| Args::parse());
         let path_system = path_system.unwrap_or_else(|| PathSystem::from_args(&args));
 
@@ -44,7 +45,25 @@ impl StoredData {
         let edit_object_base_settings =
             EditObjectBaseSettings::load(&path_system.get(PathType::EditObjectBaseSettings))
                 .unwrap_or_default();
-        let custom_objects = add_type_id(
+        let custom_objects = Self::custom_objects_load(&path_system);
+
+        if let Some(settings) = settings {
+            Self {
+                path_system,
+                result: result_app,
+                settings,
+                edit_object_base_settings,
+                custom_objects,
+            }
+        } else {
+            let mut result = Self::new(path_system, result_app);
+            result.edit_object_base_settings = edit_object_base_settings;
+            result
+        }
+    }
+
+    pub fn custom_objects_load(path_system: &PathSystem) -> Vec<CustomIndexedObjectSettings> {
+        add_type_id(
             fs::read_dir(path_system.get(PathType::CustomObjects))
                 .expect("Unable to read dir for custom_objects")
                 .filter_map(|dir_entry| {
@@ -63,20 +82,7 @@ impl StoredData {
                         })
                 })
                 .collect(),
-        );
-
-        if let Some(settings) = settings {
-            Self {
-                path_system,
-                settings,
-                edit_object_base_settings,
-                custom_objects,
-            }
-        } else {
-            let mut result = Self::new(path_system);
-            result.edit_object_base_settings = edit_object_base_settings;
-            result
-        }
+        )
     }
 
     pub fn save_edit_objects_base_settings(&self) {

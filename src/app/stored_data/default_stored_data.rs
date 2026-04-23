@@ -1,4 +1,7 @@
+use std::{sync::{Arc, Mutex}};
+
 use iced_helper::ui_elements::num_input::NumInput;
+use image::RgbaImage;
 use serde_saphyr::LitString;
 use maplit::hashmap;
 
@@ -8,21 +11,25 @@ use crate::app::{
             param::{Param, ShaderType},
             points::PointsFormat,
             settings::{
-                CustomObjectSettings,
-                serde_help::add_type_id,
+                CustomIndexedObjectSettings, CustomObjectSettings, serde_help::add_type_id
             },
-        },
-        stored_data::{StoredData, edit_object_base_settings::EditObjectBaseSettings, path_system::PathSystem, settings::Settings
-    },
+        }, end::End, stored_data::{StoredData, edit_object_base_settings::EditObjectBaseSettings, path_system::PathSystem, settings::Settings
+    }
 };
 
 impl StoredData {
-    pub fn new(path_system: PathSystem) -> Self {
+    pub fn new(path_system: PathSystem, result_app: Arc<Mutex<Option<(End, RgbaImage)>>>) -> Self {
         Self {
             path_system,
+            result: result_app,
             settings: Settings::default(),
             edit_object_base_settings: EditObjectBaseSettings::default(),
-            custom_objects: add_type_id(vec![
+            custom_objects: Self::get_default_custom_objects(),
+        }
+    }
+
+    pub fn get_default_custom_objects() -> Vec<CustomIndexedObjectSettings> {
+        add_type_id(vec![
                 CustomObjectSettings::new(
                     "rectangle".into(),
                     Icon::Name("square".into()),
@@ -231,7 +238,6 @@ impl StoredData {
     }".into()),
                     Some(PointsFormat::Cube),
                 ), 
-            ]),
-        }
+            ])
     }
 }

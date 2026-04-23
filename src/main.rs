@@ -2,12 +2,16 @@ pub mod app;
 pub mod screenshots;
 
 use std::{
-    fs::{self, File},
-    time::{Duration, SystemTime},
+    fs::{self, File}, sync::{Arc, Mutex}, time::{Duration, SystemTime}
 };
 
 use crate::app::{
-    edit_object::custom_object, shader::{get_shader::get_shader, pipeline::edit_bg}, stored_data::{StoredData, path_system::{PathSystem, PathType}}
+    edit_object::custom_object,
+    shader::{get_shader::get_shader, pipeline::edit_bg},
+    stored_data::{
+        StoredData,
+        path_system::{PathSystem, PathType},
+    },
 };
 use app::Screenland;
 use chrono::Local;
@@ -20,7 +24,7 @@ use iced_layershell::{
     settings::{LayerShellSettings, StartMode},
 };
 use strum::EnumCount;
-use tracing::level_filters::LevelFilter;
+use tracing::{level_filters::LevelFilter, warn};
 use tracing_subscriber::{
     Layer, filter::Targets, fmt, layer::SubscriberExt, util::SubscriberInitExt,
 };
@@ -62,6 +66,8 @@ pub struct Args {
 }
 
 fn main() -> Result<(), iced_layershell::Error> {
+    let result = Arc::new(Mutex::new(None));
+
     let args = Args::parse();
     let path_system = PathSystem::from_args(&args);
 
@@ -111,7 +117,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         .init();
 
     if args.generate_config {
-        StoredData::new(path_system).save();
+        StoredData::new(path_system, result.clone()).save();
         Ok(())
     } else if args.output_shader {
         println!("{}", get_shader(None));
@@ -135,9 +141,10 @@ fn main() -> Result<(), iced_layershell::Error> {
             },
         ]);
 
-        let storage_data = StoredData::load(Some(args), Some(path_system));
-        if storage_data.settings.disables_overlay {
-            iced::daemon(storage_data, Screenland::update, Screenland::view)
+        let storage_data = StoredData::load(Some(args), Some(path_system), result.clone());
+        let settings = storage_data.settings.clone();
+        if settings.disables_overlay {
+            iced::daemon(storage_data.clone(), Screenland::update, Screenland::view)
                 .title(Screenland::title)
                 .font(ICED_AW_FONT_BYTES)
                 .theme(Screenland::theme)
@@ -157,7 +164,7 @@ fn main() -> Result<(), iced_layershell::Error> {
                     iced::Error::GraphicsCreationFailed(err) => {
                         iced_layershell::Error::GraphicsCreationFailed(err)
                     }
-                })
+                })?
         } else {
             iced_layershell::daemon(
                 move || storage_data.boot(),
@@ -180,7 +187,15 @@ fn main() -> Result<(), iced_layershell::Error> {
                 },
                 ..Default::default()
             })
-            .run()
+            .run()?
         }
+
+        if let Some((end, img)) = result.lock().unwrap().clone() {
+            end.end(&settings, img);
+        } else {
+            warn!("The program terminated without producing a result.")
+        }
+
+        Ok(())
     }
 }

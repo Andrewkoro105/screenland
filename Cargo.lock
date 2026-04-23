@@ -1958,7 +1958,7 @@ checksum = "214cff7c8499e328774216690e58e315a1a5f8f6fdd1035aed6298e62ffc4c1d"
 dependencies = [
  "iced_core 0.14.0",
  "iced_fonts_macros",
- "iced_widget 0.14.0",
+ "iced_widget 0.14.2",
 ]
 
 [[package]]

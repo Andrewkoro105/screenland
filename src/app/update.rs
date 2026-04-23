@@ -182,29 +182,26 @@ impl Screenland {
             },
             Message::End(end) => {
                 self.auto_exit = false;
-                let selection = self.selection;
-                let windows_data = self.windows_data.clone();
-                let settings = self.stored_data.settings.clone();
-                Task::done(Message::SetMode(Mode::Transparency)).chain(
-                    Task::future(async move {
-                        sleep(Duration::from_millis(50));
-                        let screen = Self::screenshot(selection, &settings.color_format);
 
-                        let mut windows_task = Task::<Message>::none();
+                let color_format =  self.stored_data.settings.color_format.clone();
+                let selection = self.selection.clone();
+                let result = self.stored_data.result.clone();
 
-                        for (id, _) in windows_data.iter() {
-                            windows_task = windows_task.chain(window::close(*id));
-                        }
-                        windows_task.chain(
-                            Task::future(async move {
-                                end.end(&settings, screen);
-                            })
-                            .discard(),
-                        )
-                    })
-                    .then(|task| task)
-                    .chain(exit()),
-                )
+                Task::done(Message::SetMode(Mode::Transparency))
+                    .chain(
+                        Task::future(async move {
+                            sleep(Duration::from_millis(50));
+                            *result.lock().unwrap() = Some((
+                                end,
+                                Self::screenshot(
+                                    selection,
+                                    &color_format,
+                                ),
+                            ));
+                        })
+                        .discard(),
+                    )
+                    .chain(exit())
             }
             Message::ReloadShaderObjects => {
                 self.reload_shader_objects();

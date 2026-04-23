@@ -75,7 +75,7 @@ impl Screenland {
             ]
             .into()
         } else {
-            row![].into()
+            "Invalid window id".into()
         }
     }
 

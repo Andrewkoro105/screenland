@@ -24,12 +24,13 @@ iced_font_awesome = "0.4.1"
 maplit = "1.0.2"
 heck = "0.5"
 iced_helper = {git = "https://github.com/Andrewkoro105/iced_helper.git"}
+#iced_helper = {path = "../iced_helper"}
 iced_layershell = {git = "https://github.com/Andrewkoro105/exwlshelleventloop_with_wgpu_limit_settings.git", branch = "wgpu_limit_settings"}
+#iced_layershell = {path = "../exwlshelleventloop/iced_layershell"}
 strum = { version = "0.28", features = ["derive"] }
 tracing-subscriber = "0.3.23"
 tracing = "0.1.44"
 xdg = "3.0.0"
-#iced_helper = {path = "../iced_helper"}
 
 [patch.crates-io]
 iced = {git = "https://github.com/Andrewkoro105/iced_with_wgpu_limit_settings.git", branch = "feature/wgpu_limit_settings"}
