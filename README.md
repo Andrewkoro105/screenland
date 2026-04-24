@@ -74,6 +74,7 @@ You can either select one area or hold down Shift to combine the desired areas (
 
 You can add objects to the screenshot that will change it
 
+- [ ]  Pen
 - [X]  Line
   - [X]  Straight
   - [X]  Polyline
@@ -202,6 +203,7 @@ params:
     I32: 
       # Default value
       num_input: <I32>
+    # or
     Enum:
       enums:
         - - variant_name
