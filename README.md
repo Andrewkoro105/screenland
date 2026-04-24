@@ -2,6 +2,8 @@
 
 This is a program for creating and editing screenshots, as well as recording videos for Linux (Wayland) (support for Linux (X11), Windows, and Mac is planned for the future). It features modular and extensible object systems, as well as automatic selection and saving.
 
+![exemple](exemple.png)
+
 # Installation
 
 The program is written in Rust, and until version 1 is released, you will need to compile it yourself to install it.
