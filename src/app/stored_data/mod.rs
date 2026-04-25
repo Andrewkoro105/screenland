@@ -6,7 +6,9 @@ use clap::Parser;
 use image::RgbaImage;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
-    fs::{self, DirEntry}, path::{Path, PathBuf}, sync::{Arc, Mutex}
+    fs::{self, DirEntry},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
 };
 
 use crate::{
@@ -15,11 +17,13 @@ use crate::{
         edit_object::custom_object::settings::{
             CustomIndexedObjectSettings, CustomObjectSettings,
             serde_help::{add_type_id, remove_type_id},
-        }, end::End, stored_data::{
+        },
+        end::End,
+        stored_data::{
             edit_object_base_settings::EditObjectBaseSettings,
             path_system::{PathSystem, PathType},
             settings::Settings,
-        }
+        },
     },
 };
 
@@ -37,7 +41,11 @@ pub struct StoredData {
 }
 
 impl StoredData {
-    pub fn load(args: Option<Args>, path_system: Option<PathSystem>, result_app: Arc<Mutex<Option<(End, RgbaImage)>>>) -> Self {
+    pub fn load(
+        args: Option<Args>,
+        path_system: Option<PathSystem>,
+        result_app: Arc<Mutex<Option<(End, RgbaImage)>>>,
+    ) -> Self {
         let args = args.unwrap_or_else(|| Args::parse());
         let path_system = path_system.unwrap_or_else(|| PathSystem::from_args(&args));
 
@@ -75,9 +83,15 @@ impl StoredData {
                         .map(PathBuf::as_path)
                         .filter(|path| path.is_dir())
                         .map(|dir| {
+                            let name = dir.file_name().unwrap().to_str().unwrap().to_string();
                             let mut result: CustomObjectSettings =
-                                base_load(&dir.join("object.yaml"), "custom_objects").unwrap();
-                            result.name = dir.file_name().unwrap().to_str().unwrap().to_string();
+                                base_load(&dir.join("object.yaml"), "custom_objects").expect(
+                                    &format!(
+                                        "The “{}” object does not have an “object.yaml” file.",
+                                        name
+                                    ),
+                                );
+                            result.name = name;
                             result
                         })
                 })
