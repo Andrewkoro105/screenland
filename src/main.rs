@@ -2,7 +2,9 @@ pub mod app;
 pub mod screenshots;
 
 use std::{
-    fs::{self, File}, sync::{Arc, Mutex}, time::{Duration, SystemTime}
+    fs::{self, File},
+    sync::{Arc, Mutex},
+    time::{Duration, SystemTime},
 };
 
 use crate::app::{
@@ -117,6 +119,34 @@ fn main() -> Result<(), iced_layershell::Error> {
         .init();
 
     if args.generate_config {
+        let base_settings_path = path_system
+            .get(PathType::Settings)
+            .parent()
+            .unwrap()
+            .to_path_buf();
+        let mut settings_path = base_settings_path.clone();
+        if settings_path.exists() {
+            let settings_path_parent = settings_path.parent().unwrap().to_path_buf();
+            let mut backup_count = 0;
+            loop {
+                settings_path = settings_path_parent.join(format!(
+                    "{}_backup_{backup_count}",
+                    base_settings_path
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_string()
+                ));
+                if settings_path.exists() {
+                    backup_count += 1
+                } else {
+                    break;
+                }
+            }
+            warn!("move: {base_settings_path:?} -> {settings_path:?}");
+            fs::rename(base_settings_path, settings_path).unwrap()
+        }
+        
         StoredData::new(path_system, result.clone()).save();
         Ok(())
     } else if args.output_shader {
