@@ -2026,7 +2026,7 @@ dependencies = [
 [[package]]
 name = "iced_helper"
 version = "0.1.0"
-source = "git+https://github.com/Andrewkoro105/iced_helper.git#df111da8913da9784f4cc6f02d691b9e3da13d2f"
+source = "git+https://github.com/Andrewkoro105/iced_helper.git#c0874ab6626171c67db1e563f1bda7d28728918b"
 dependencies = [
  "futures",
  "futures-channel",
