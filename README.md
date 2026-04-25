@@ -85,10 +85,10 @@ You can add objects to the screenshot that will change it
   - [ ]  Line type
 - [X]  Rectangle
   - [X]  Line
-  - [ ]  Fill
+  - [X]  Fill
 - [X]  Circle
   - [X]  Line
-  - [ ]  Fill
+  - [X]  Fill
 - [X]  Blur
 - [ ]  Text (LaTeX)
 - [ ]  Numbering

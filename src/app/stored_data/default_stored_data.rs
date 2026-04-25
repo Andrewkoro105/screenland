@@ -33,10 +33,15 @@ impl StoredData {
                 CustomObjectSettings::new(
                     "rectangle".into(),
                     Icon::Name("square".into()),
-                    vec![],
+                    vec![
+                        Param::new(
+                            "rect_type".to_string(),
+                            ShaderType::Enum { current: 0, enums: vec![("line".to_string(), Icon::Name("square".into())), ("fill".to_string(), Icon::SolidName("square".into()))] }
+                        )
+                    ],
                     hashmap! {},
                     LitString(r"
-    if in_cube(pixel_pos, data.cube.start, data.cube.end) && !in_cube(pixel_pos, data.cube.start + data.base_settings.size, data.cube.end - data.base_settings.size) {
+    if in_cube(pixel_pos, data.cube.start, data.cube.end) && (!in_cube(pixel_pos, data.cube.start + data.base_settings.size, data.cube.end - data.base_settings.size) || data.rect_type.index == rectangle_fill) {
         return vec4(mix(pixel_color.rgb, data.base_settings.color.rgb, data.base_settings.color.a), pixel_color.a);
     } else {
         return pixel_color;
@@ -46,7 +51,12 @@ impl StoredData {
                 CustomObjectSettings::new(
                     "circle".into(),
                     Icon::Name("circle".into()),
-                    vec![],
+                    vec![
+                        Param::new(
+                            "circle_type".to_string(),
+                            ShaderType::Enum { current: 0, enums: vec![("line".to_string(), Icon::Name("circle".into())), ("fill".to_string(), Icon::SolidName("circle".into()))] }
+                        )
+                    ],
                     hashmap! {
                         "in".to_string() => LitString(r"
       (pos: vec2<f32>, center: vec2<f32>, radius: vec2<f32>) -> bool {
@@ -57,7 +67,8 @@ impl StoredData {
     let result_color = vec4(mix(pixel_color.rgb, data.base_settings.color.rgb, data.base_settings.color.a), pixel_color.a);
     let radius = (data.cube.end - data.cube.start) / 2;
     let center = data.cube.start + radius;
-    if circle_in(pixel_pos, center, radius) && !circle_in(pixel_pos, center, radius - data.base_settings.size) {
+
+    if circle_in(pixel_pos, center, radius) && (!circle_in(pixel_pos, center, radius - data.base_settings.size) || data.circle_type.index == circle_fill) {
         return result_color;
     } else {
         return pixel_color;
