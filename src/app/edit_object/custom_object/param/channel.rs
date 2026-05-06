@@ -55,13 +55,13 @@ impl ChannelType {
 
     fn get_storage_buffer_data(
         &self,
-        len_padding: usize,
+        alignment_size: usize,
         name: impl Display,
         type_name: impl Display,
     ) -> BaseStorageBufferData {
         BaseStorageBufferData::new(
             self.get_size(),
-            len_padding,
+            alignment_size,
             format!("{name}_channel").as_str(),
             type_name.to_string(),
         )

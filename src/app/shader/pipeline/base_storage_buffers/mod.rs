@@ -1,3 +1,5 @@
+//! Buffer management system
+
 use std::{collections::HashMap, hash::Hash};
 
 use bytemuck::NoUninit;
@@ -9,19 +11,21 @@ use crate::app::shader::pipeline::base_storage_buffers::base_storage_buffer::{
 
 pub mod base_storage_buffer;
 
-pub trait GetDates {
-    fn get_data(&self) -> Vec<(u32, &BaseStorageBufferData)>;
+pub trait GetDates<T> {
+    fn get_data(&self) -> Vec<(u32, &T)>;
 }
 
 pub trait GetShader {
     fn get_shader(&self) -> String;
 }
 
+/// Manages storage buffers with default settings using `BaseStorageBuffer`. `BufferType` is used to index the buffers; typically, an `Enum` is used for this purpose.
+/// It is assumed that `BaseStorageBuffers` containing the data needed to create the buffers will be created first, after which they are converted into `BaseStorageBuffers` containing the buffers.
 pub struct BaseStorageBuffers<BufferType: Hash + PartialEq + Eq, T>
-where
-    Self: GetDates,
 {
+    /// The group number in which the buffers will be located
     group: u32,
+    /// First buffer index 
     start_binding: u32,
     buffers: HashMap<BufferType, T>,
 }
@@ -41,18 +45,18 @@ impl<BufferType: Hash + PartialEq + Eq> BaseStorageBuffers<BufferType, BaseStora
             .collect()
     }
 
-    pub fn set_buffer(&mut self, channel: &BufferType, device: &wgpu::Device, len: u32) -> bool {
+    pub fn resize(&mut self, buffer_type: &BufferType, device: &wgpu::Device, len: u32) -> bool {
         self.buffers
-            .get_mut(channel)
+            .get_mut(buffer_type)
             .unwrap()
-            .set_buffer(device, len)
+            .resize(device, len)
     }
 
-    pub fn write<A: NoUninit>(&self, channel: &BufferType, queue: &wgpu::Queue, data: &[A]) {
+    pub fn write<A: NoUninit>(&self, buffer_type: &BufferType, queue: &wgpu::Queue, data: &[A]) {
         self.buffers
-            .get(channel)
+            .get(buffer_type)
             .unwrap()
-            .write_buffer(queue, data);
+            .write(queue, data);
     }
 }
 
@@ -74,8 +78,6 @@ impl<BufferType: Hash + PartialEq + Eq> BaseStorageBuffers<BufferType, BaseStora
 }
 
 impl<BufferType: Hash + PartialEq + Eq, T> BaseStorageBuffers<BufferType, T>
-where
-    Self: GetDates,
 {
     pub fn new(group: u32, start_binding: u32, buffers: HashMap<BufferType, T>) -> Self {
         Self {
@@ -92,7 +94,7 @@ where
 
 impl<BufferType: Hash + PartialEq + Eq, T> GetShader for BaseStorageBuffers<BufferType, T>
 where
-    Self: GetDates,
+    Self: GetDates<BaseStorageBufferData>,
 {
     fn get_shader(&self) -> String {
         let dates = self.get_data();
@@ -112,7 +114,7 @@ where
     }
 }
 
-impl<BufferType: Hash + PartialEq + Eq> GetDates
+impl<BufferType: Hash + PartialEq + Eq> GetDates<BaseStorageBufferData>
     for BaseStorageBuffers<BufferType, BaseStorageBuffer>
 {
     fn get_data(&self) -> Vec<(u32, &BaseStorageBufferData)> {
@@ -128,7 +130,7 @@ impl<BufferType: Hash + PartialEq + Eq> GetDates
     }
 }
 
-impl<BufferType: Hash + PartialEq + Eq> GetDates
+impl<BufferType: Hash + PartialEq + Eq> GetDates<BaseStorageBufferData>
     for BaseStorageBuffers<BufferType, BaseStorageBufferData>
 {
     fn get_data(&self) -> Vec<(u32, &BaseStorageBufferData)> {

@@ -10,6 +10,7 @@ use crate::{
     screenshots::full_screenshot,
 };
 
+/// Representation of screenshot data in a shader
 pub struct Screen {
     pub texture_view: TextureView,
     pub sampler: Sampler,
@@ -74,6 +75,7 @@ impl Screen {
     }
 }
 
+/// BindGroup with a screenshot
 pub struct ScreenBg {
     pub bg: wgpu::BindGroup,
     pub bgl: wgpu::BindGroupLayout,

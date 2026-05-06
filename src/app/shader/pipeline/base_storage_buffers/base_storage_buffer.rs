@@ -1,32 +1,55 @@
+//! Buffer control system
+
 use bytemuck::NoUninit;
 use heck::ToPascalCase;
 use iced::wgpu;
 
+/// Static buffer data
 #[derive(Clone)]
 pub struct BaseStorageBufferData {
+    /// Size of type in buffer
     type_size: usize,
-    len_padding: usize,
+    /// The size to which the passed structure is resized (for basic types, this is their size) divided by 4
+    alignment_size: usize,
+    /// Buffer structure name
     name: String,
+    /// Type name in the buffer
     type_name: String,
 }
 
+/// Holds the `wgpu::Buffer` and the data needed to configure and use it
 pub struct BaseStorageBuffer {
+    /// WGPU buffer
     buff: wgpu::Buffer,
+    /// The buffer number offset from the starting number
     offset_binding: u32,
+    /// The number of elements in the buffer
     len: u32,
+    /// Static buffer data
     data: BaseStorageBufferData,
 }
 
 impl BaseStorageBufferData {
+    /// Creates a new `BaseStorageBufferData`
+    ///
+    /// # Arguments
+    ///
+    /// `type_size` - size of type in buffer
+    ///
+    /// `alignment_size` - the size to which the passed structure is resized (for basic types, this is their size) divided by 4
+    ///
+    /// `name` - buffer structure name
+    ///
+    /// `type_name` - type name in the buffer
     pub fn new(
         type_size: usize,
-        len_padding: usize,
+        alignment_size: usize,
         name: impl Into<String>,
         type_name: impl Into<String>,
     ) -> Self {
         Self {
             type_size,
-            len_padding,
+            alignment_size,
             name: name.into(),
             type_name: type_name.into(),
         }
@@ -34,8 +57,17 @@ impl BaseStorageBufferData {
 }
 
 impl BaseStorageBuffer {
+    /// Creates a new `BaseStorageBuffer`
+    ///
+    /// # Arguments
+    ///
+    /// `device` - WGPU device for buffer initialization
+    ///
+    /// `data` - static buffer data
+    ///
+    /// `offset_binding` - static buffer data
     pub fn new(device: &wgpu::Device, data: BaseStorageBufferData, offset_binding: u32) -> Self {
-        let buff = Self::get_buffer(device, 0, &data.name, data.type_size, data.len_padding);
+        let buff = Self::get_buffer(device, 0, &data.name, data.type_size, data.alignment_size);
         Self {
             data,
             offset_binding,
@@ -64,10 +96,10 @@ impl BaseStorageBuffer {
         }
     }
 
-    pub fn write_buffer<A: NoUninit>(&self, queue: &wgpu::Queue, data: &[A]) {
+    pub fn write<A: NoUninit>(&self, queue: &wgpu::Queue, data: &[A]) {
         let new_data = [
             bytemuck::bytes_of(&self.len),
-            vec![0; (self.data.len_padding - 1) * 4].as_slice(),
+            vec![0; (self.data.alignment_size - 1) * std::mem::size_of::<u32>()].as_slice(),
             bytemuck::cast_slice(data),
         ]
         .concat();
@@ -75,7 +107,7 @@ impl BaseStorageBuffer {
         queue.write_buffer(&self.buff, 0, new_data.as_slice());
     }
 
-    pub fn set_buffer(&mut self, device: &wgpu::Device, len: u32) -> bool {
+    pub fn resize(&mut self, device: &wgpu::Device, len: u32) -> bool {
         if len != self.len {
             self.len = len;
             self.buff = Self::get_buffer(
@@ -83,7 +115,7 @@ impl BaseStorageBuffer {
                 len,
                 &self.data.name,
                 self.data.type_size,
-                self.data.len_padding,
+                self.data.alignment_size,
             );
 
             true
@@ -100,14 +132,28 @@ impl BaseStorageBuffer {
         &self.data
     }
 
+    /// Returns a buffer with default settings
+    ///
+    /// # Arguments
+    ///
+    /// `device` - WGPU device for buffer initialization
+    ///
+    /// `len` - The number of elements in the buffer
+    ///
+    /// `name` - Unique buffer name
+    ///
+    /// `type_size` - size of type in buffer
+    ///
+    /// `alignment_size` - the size to which the passed structure is resized (for basic types, this is their size) divided by 4
+    ///
     fn get_buffer(
         device: &wgpu::Device,
         len: u32,
         name: &String,
         type_size: usize,
-        len_padding: usize,
+        alignment_size: usize,
     ) -> wgpu::Buffer {
-        let size = Self::get_size(len, type_size, len_padding);
+        let size = Self::get_size(len, type_size, alignment_size);
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some(name),
             size,
@@ -116,9 +162,18 @@ impl BaseStorageBuffer {
         })
     }
 
-    fn get_size(len: u32, type_size: usize, len_padding: usize) -> u64 {
+    /// Calculates the buffer size
+    ///
+    /// # Arguments
+    ///
+    /// `len` - The number of elements in the buffer
+    ///
+    /// `type_size` - size of type in buffer
+    ///
+    /// `alignment_size` - the size to which the passed structure is resized (for basic types, this is their size) divided by 4
+    fn get_size(len: u32, type_size: usize, alignment_size: usize) -> u64 {
         let len = if len == 0 { 1 } else { len } as usize;
-        (std::mem::size_of::<u32>() * len_padding + len * type_size) as _
+        (std::mem::size_of::<u32>() * alignment_size + len * type_size) as _
     }
 }
 

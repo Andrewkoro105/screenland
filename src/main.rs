@@ -38,7 +38,7 @@ pub struct Args {
     /// Generate config
     #[arg(short, long)]
     generate_config: bool,
-    /// File name format. To add the date and time, use https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+    /// File name format. To add the date and time, use <https://docs.rs/chrono/latest/chrono/format/strftime/index.html>
     #[arg(short, long)]
     format: Option<String>,
     /// Path to the folder where screenshots will be saved

@@ -18,17 +18,23 @@ use strum::IntoEnumIterator;
 
 pub mod get_shader;
 
+/// Data blocks that are updated synchronously
 #[derive(Debug, Clone)]
 pub enum Command {
+    /// No data to update
     None,
+    /// Update the selected region
     Selection(Selection),
+    /// Updating the points displayed to the user
     Points(Vec<UIPoint>),
+    /// Updating custom objects consists of the state of the objects and their channels 
     UpdateEditObjects {
         shader_objects: Vec<edit_object::ShaderObjects>,
         custom_objects_channel: custom_object::param::channel::Channels,
     },
 }
 
+/// The `Program` shader primitive passes data to the queue and reconfigures the pipeline
 #[derive(Debug, Clone)]
 pub struct Primitive {
     start_data: BaseData,
@@ -61,7 +67,7 @@ impl shader::Primitive for Primitive {
                     &selection.get_data(),
                 ),
                 Command::Points(ui_points) => {
-                    let edited = pipeline.edit_bg.data.storage_buffers.set_buffer(
+                    let edited = pipeline.edit_bg.data.storage_buffers.resize(
                         &BufferType::Points,
                         device,
                         ui_points.len() as _,
@@ -92,7 +98,7 @@ impl shader::Primitive for Primitive {
 
                     let resize = {
                         let edited_custom_objects_buffer =
-                            pipeline.edit_bg.data.storage_buffers.set_buffer(
+                            pipeline.edit_bg.data.storage_buffers.resize(
                                 &BufferType::CustomObjects,
                                 device,
                                 custom_objects.len() as _,
@@ -101,7 +107,7 @@ impl shader::Primitive for Primitive {
                         let mut edited_channel_buffers = false;
                         for channel_type in ChannelType::iter() {
                             let edited_channel_buffer =
-                                pipeline.edit_bg.data.storage_buffers.set_buffer(
+                                pipeline.edit_bg.data.storage_buffers.resize(
                                     &BufferType::Channel(channel_type.clone()),
                                     device,
                                     custom_objects_channel.get(&channel_type).len() as _,
@@ -149,6 +155,7 @@ impl shader::Primitive for Primitive {
     }
 }
 
+/// Data passed to the shader during an update
 pub struct Program {
     pub monitor_pos: Vec2,
     pub commands: Vec<Command>,

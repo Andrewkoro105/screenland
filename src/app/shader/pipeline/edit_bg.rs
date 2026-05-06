@@ -22,6 +22,7 @@ pub struct BaseData {
     pub monitor_pos: Vec2,
 }
 
+/// Recursively enumerate all Storage Buffers defined in EditBG via BaseStorageBufferData
 #[derive(Hash, PartialEq, EnumIter, EnumCount)]
 pub enum BufferType {
     Points,
@@ -40,6 +41,7 @@ pub struct EditBGData {
     pub storage_buffers: BaseStorageBuffers<BufferType, BaseStorageBuffer>,
 }
 
+/// Bind Group for values that change the screenshot and its data 
 pub struct EditBG {
     pub bg: wgpu::BindGroup,
     pub data: EditBGData,

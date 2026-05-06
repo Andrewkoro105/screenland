@@ -9,10 +9,13 @@ pub mod base_storage_buffers;
 pub mod edit_bg;
 pub mod screen_bg;
 
+/// Stores data for the render pipeline description
 pub struct Pipeline {
     pub pipeline: wgpu::RenderPipeline,
 
+    /// bind Group for values that change the screenshot and its data 
     pub edit_bg: EditBG,
+    /// BindGroup with a screenshot
     pub screen_bg: ScreenBg,
 }
 
