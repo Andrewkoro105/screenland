@@ -1,5 +1,6 @@
-use std::fmt::Debug;
+//! Specifies which coordinate system the object will use
 
+use std::fmt::Debug;
 use glam::Vec2;
 use heck::ToSnakeCase;
 use iced::Task;
@@ -20,6 +21,7 @@ use crate::app::{
     },
 };
 
+/// It determines which coordinate system the object will use, and implements its integration both on the program side—by managing the updating of coordinate systems and passing them to the shader—and on the shader side, by directly participating in its generation.   
 #[derive(Clone, Display, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum PointsFormat {
     Cube,

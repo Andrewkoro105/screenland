@@ -1,3 +1,5 @@
+//! Creates `UIPoints` to describe curves and polylines (curves are not yet available)
+
 use std::ops::Not;
 
 use glam::{Vec2, vec2};
@@ -12,6 +14,7 @@ use crate::{
     into_points_system,
 };
 
+/// Messages for data transfer in `BezierPoints`
 #[derive(Clone, Debug)]
 pub enum Message {
     Move(usize),
@@ -19,6 +22,7 @@ pub enum Message {
     ActivatePoints(usize),
 }
 
+/// Creates `UIPoints` to describe curves and polylines (curves are not yet available)
 #[derive(Debug, Clone, Default)]
 pub struct BezierPoints {
     start_touch: Option<Vec2>,

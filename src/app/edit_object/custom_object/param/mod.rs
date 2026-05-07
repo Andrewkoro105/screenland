@@ -1,3 +1,5 @@
+//! The object parameters requested from the user in a special menu
+
 pub mod channel;
 
 use std::{collections::HashMap, hash::Hash, mem};
@@ -19,6 +21,7 @@ use crate::app::edit_object::custom_object::{
     data_type::DataType, icon::Icon, param::channel::ChannelType,
 };
 
+/// Types that can be requested from the user via a special menu
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ShaderType {
     F32 {
@@ -46,6 +49,7 @@ pub enum Message {
     SetEnum(u32),
 }
 
+/// An object parameter that will be requested from the user via a special menu. It also plays a direct role in shader generation, both by defining the data structure passed to the object’s shader and by creating the supporting infrastructure.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Param {
     name: String,

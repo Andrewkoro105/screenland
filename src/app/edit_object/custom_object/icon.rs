@@ -1,9 +1,11 @@
-use std::path::PathBuf;
+//!It offers various ways to upload an icon 
 
+use std::path::PathBuf;
 use iced::widget::image;
 use iced_font_awesome::{fa_icon, fa_icon_solid};
 use serde::{Deserialize, Serialize};
 
+/// It offers various ways to upload an icon 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Icon {
     Name(String),

@@ -1,3 +1,7 @@
+//! Items you can add to a screenshot
+//! 
+//! In the future, we plan to keep only custom objects, but only once the text and pen objects have been implemented, since those are the most difficult to implement as custom objects.
+
 pub mod custom_object;
 pub mod ui_point;
 pub mod ui_utils;

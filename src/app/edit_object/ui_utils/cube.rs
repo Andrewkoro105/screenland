@@ -1,3 +1,5 @@
+//! Creates a `UIPoint` for manipulating a rectangular area
+
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::Task;
@@ -15,6 +17,7 @@ use crate::{
     into_points_system,
 };
 
+/// Messages for data transfer in `Cube`
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Message {
     Move,
@@ -28,13 +31,19 @@ pub enum Message {
     MoveStartYEndX,
 }
 
+/// Creates a `UIPoint` for manipulating a rectangular area
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct Cube {
+    /// The beginning of the region
     pub start: Vec2,
+    /// End of the region
     pub end: Vec2,
+    /// The drag handle for moving the entire area with the mouse
     pub start_touch: Vec2,
+    /// Indicates whether the area has been captured for the move operation (since a `bool` cannot be passed to the shader, a `u32` is used; `0` means `false` and `1` means `true`)
     pub touched: u32,
+    /// Indicates whether the user has explicitly started selecting an area. Interface elements should be hidden until the user begins selecting an area and the area is in its initial state (since a `bool` cannot be passed to the shader, a `u32` is used; `0` represents `false` and `1` represents `true`).
     pub init: u32,
 }
 

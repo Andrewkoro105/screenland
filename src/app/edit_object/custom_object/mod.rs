@@ -1,13 +1,15 @@
+//! System for adding custom objects to a screenshot
+
 pub mod data_type;
 pub mod icon;
 pub mod param;
 pub mod points;
 pub mod settings;
-use std::{mem, ops::Not};
 
 use glam::Vec2;
 use iced::{Task, widget::Column};
 use std::fmt::Debug;
+use std::{mem, ops::Not};
 use strum::EnumCount;
 
 use crate::app::{
@@ -33,6 +35,16 @@ pub enum Message {
     Point(Option<PointsMessage>),
 }
 
+/// A custom object that can be loaded from a file using `serde` and added to a screenshot.
+///
+/// # Loading
+///
+/// Initially, all data is loaded into the application's global settings, where it is read as `CustomObjectSettings` and immediately converted to `CustomIndexedObjectSettings` (indices are used as unique IDs).
+/// Then, when the button to add this object is clicked, it is converted to `CustomObject` (this structure); at this stage, a sequence number is added to it among the added objects so that its messages can reach it.
+/// 
+/// # Sending Values to the Shader
+/// 
+/// To convert a `CustomObject` into a `CustomObjectFromShader`, the lengths of all channels are first saved (these later become `ChannelIndex` values), then all data stored via the channel system is written into them, and finally they are formed into a `CustomObjectFromShader`, which can be passed directly to the shader 
 #[derive(Debug)]
 pub struct CustomObject {
     type_id: u32,
@@ -42,6 +54,7 @@ pub struct CustomObject {
     params: Vec<Param>,
 }
 
+/// Basic data about any object passed to the shader
 #[repr(C)]
 #[derive(Clone, Debug, Default)]
 pub struct CustomObjectFromShader {
@@ -106,7 +119,6 @@ impl EditObject for CustomObject {
             .map(|points_data| {
                 points_data.as_mut().get_message(position).map(|reload| {
                     reload.messages_map(|data| {
-
                         app::Message::UpdateEditObject((
                             self.i,
                             edit_object::Message::Custom(Message::Point(Some(data))),
@@ -117,7 +129,10 @@ impl EditObject for CustomObject {
             .unwrap_or_default()
     }
 
-    fn set_base_settings(&mut self, base_settings: edit_object_base_settings::EditObjectBaseSettingsFromShader) {
+    fn set_base_settings(
+        &mut self,
+        base_settings: edit_object_base_settings::EditObjectBaseSettingsFromShader,
+    ) {
         self.base_settings = base_settings;
     }
 

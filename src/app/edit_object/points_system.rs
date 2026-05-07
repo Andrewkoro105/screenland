@@ -1,3 +1,5 @@
+//! Standardizes the use of point systems
+
 use glam::Vec2;
 use iced::{Task, advanced::graphics::futures::MaybeSend};
 
@@ -9,11 +11,13 @@ use crate::app::{
     },
 };
 
+/// Indicates whether objects need to be reloaded into the shader; this is necessary if the amount of data in the channels has changed
 pub struct Reload<T> {
     reload: bool,
     data: T,
 }
 
+/// Standardizes the use of point systems
 pub trait PointsSystem<Message> {
     fn view(&self) -> Vec<UIPointElement<Message>>;
 
@@ -96,6 +100,7 @@ impl<T> Reload<T> {
 }
 
 impl Reload<Task<app::Message>> {
+    /// Returns `data` after calling `app::Message::ReloadShaderObjects` on it if `reload` is `true`
     pub fn get_task(self) -> Task<app::Message> {
         if self.reload {
             Task::done(app::Message::ReloadShaderObjects)

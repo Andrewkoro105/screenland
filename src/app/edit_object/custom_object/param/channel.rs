@@ -1,3 +1,5 @@
+//! Enhanced interaction with storage buffers as data channels for custom objects
+
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
@@ -11,6 +13,8 @@ use glam::Vec2;
 use heck::ToSnakeCase;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
+/// Channel types, each of which corresponds to a `BaseStorageBufferData`
+/// It also participates in shader generation so that when adding a channel, you don't have to specify its receiving part in the shader
 #[derive(EnumIter, Display, EnumCount, Clone, Debug, Default, Hash, PartialEq)]
 pub enum ChannelType {
     #[default]
@@ -25,11 +29,14 @@ pub enum ChannelType {
 
 impl Eq for ChannelType {}
 
+/// Indexes for all channels consolidated into a single structure
 #[derive(Clone, Debug, Default)]
 pub struct ChannelIndex {
     channels: HashMap<ChannelType, u32>,
 }
 
+/// A system for storing and managing all channels of type `ChannelType`.
+/// It provides a simple interface for querying, adding, and updating data in a channel. It also allows you to retrieve the entire channel as a byte array for passing it to a shader.
 #[derive(Clone, Default)]
 pub struct Channels {
     null_data: [u8; 0],

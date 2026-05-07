@@ -1,6 +1,9 @@
+//! Provides a simplified interface for generating structure fields and initializing them on the shader side
+
 use heck::ToSnakeCase;
 use std::hash::Hash;
 
+/// Provides a simplified interface for generating structure fields and initializing them on the shader side
 pub trait DataType: Sized + Hash + PartialEq + Eq {
     fn get_type_name(&self) -> String {
         if self.is_iter() {

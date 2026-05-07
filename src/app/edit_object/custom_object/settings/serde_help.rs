@@ -1,3 +1,5 @@
+//! Utility functions for `serde` that help load `CustomIndexedObjectSettings`
+
 use serde::{Deserialize, Serialize, Serializer};
 use serde_saphyr::LitString;
 

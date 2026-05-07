@@ -1,7 +1,8 @@
+//! Description of custom objects in global settings
+
 pub mod serde_help;
 
 use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 use serde_saphyr::LitString;
 
@@ -15,6 +16,7 @@ use crate::app::{
     stored_data::edit_object_base_settings::EditObjectBaseSettingsFromShader,
 };
 
+/// Custom object settings loaded via `serde`
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CustomObjectSettings {
     #[serde(skip)]
@@ -29,6 +31,7 @@ pub struct CustomObjectSettings {
     pub points_format: Option<PointsFormat>,
 }
 
+/// The final settings for custom objects, which are stored in the global settings 
 #[derive(Clone, PartialEq, Eq)]
 pub struct CustomIndexedObjectSettings {
     type_id: u32,

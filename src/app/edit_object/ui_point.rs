@@ -1,21 +1,28 @@
+//! Control points for objects
+
 use bytemuck::{Pod, Zeroable};
 use glam::Vec2;
 use iced::Task;
 
 use crate::app;
 
+/// Point messages 
 #[derive(Clone)]
 pub struct UIMessages<M> {
+    /// The main message of a point triggered when it is moved
     pub message: M,
+    /// Messages triggered when a point is clicked 
     pub start_messages: Vec<M>,
 }
 
+/// An interface element that links a node and its messages
 #[derive(Clone)]
 pub struct UIPointElement<M> {
     pub point: UIPoint,
     pub messages: UIMessages<M>,
 }
 
+/// The data points that will be passed to the shader
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable, Default)]
 pub struct UIPoint {
